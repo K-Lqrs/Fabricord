@@ -11,7 +11,6 @@ public class DiscordEmbed {
     public static void sendPlayerJoinEmbed(ServerPlayerEntity player, DiscordBot discordBot) {
         String channelId = ConfigManager.getLogChannelID();
         if (channelId == null || channelId.isEmpty()) {
-            // Handle missing channel ID
             return;
         }
         String imageUrl = "https://cravatar.eu/helmavatar/" + player.getUuid().toString() + "/128";
@@ -24,7 +23,6 @@ public class DiscordEmbed {
     public static void sendPlayerLeftEmbed(ServerPlayerEntity player, DiscordBot discordBot) {
         String channelId = ConfigManager.getLogChannelID();
         if (channelId == null || channelId.isEmpty()) {
-            // Handle missing channel ID
             return;
         }
         String imageUrl = "https://cravatar.eu/helmavatar/" + player.getUuid().toString() + "/128";

@@ -8,6 +8,10 @@ import net.minecraft.server.MinecraftServer;
 public class Fabricord implements ModInitializer {
 
 	private DiscordBot discordBot;
+	private static final ConfigManager configManager = new ConfigManager();  // 静的変数を初期化
+
+	public Fabricord() {
+	}
 
 	@Override
 	public void onInitialize() {
@@ -18,6 +22,7 @@ public class Fabricord implements ModInitializer {
 
 	private void onServerStarting(MinecraftServer server) {
 		this.discordBot = new DiscordBot(server);
+		configManager.checkAndCreateConfig();  // static変数を使用
 		discordBot.registerEventListeners();
 		discordBot.startBot();
 	}

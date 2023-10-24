@@ -2,7 +2,6 @@ package net.elysium.mod.fabricord.discord;
 
 import net.dv8tion.jda.api.*;
 import net.dv8tion.jda.api.entities.Activity;
-import net.dv8tion.jda.api.entities.channel.attribute.IGuildChannelContainer;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.GatewayIntent;
@@ -24,6 +23,7 @@ public class DiscordBot {
     };
 
     private final MinecraftServer server;
+
     public JDA jda;
 
     public DiscordBot(MinecraftServer server) {
@@ -100,21 +100,20 @@ public class DiscordBot {
         // プレイヤーがサーバーに参加したときのイベントハンドラー
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             ServerPlayerEntity player = handler.player;
-            String message = String.format("%s joined the server", player.getName().getString());
-            sendToDiscord(message);
+            DiscordEmbed.sendPlayerJoinEmbed(player, this);
         });
 
         // プレイヤーがサーバーから退出したときのイベントハンドラー
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
             ServerPlayerEntity player = handler.player;
-            String message = String.format("%s left the server", player.getName().getString());
-            sendToDiscord(message);
+            DiscordEmbed.sendPlayerLeftEmbed(player, this);
         });
 
         // プレイヤーがチャットメッセージを送信したときのイベントハンドラー
         ServerMessageEvents.CHAT_MESSAGE.register((player, message, viewer) -> {
-            String chatMessage = String.format("%s » %s", player.getSender().toString(), message.toString());
+            String chatMessage = String.format("%s » %s", message.getEntityName(), message);
             sendToDiscord(chatMessage);
         });
+
     }
 }
