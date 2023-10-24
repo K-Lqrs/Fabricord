@@ -1,0 +1,18 @@
+# Thank you for introducing the mod.
+# You can bridge Discord and Minecraft chat!
+
+# Click here for various links↓.
+# GitHub -> https://github.com/Elysium-7/VariousPlugin
+# Discord -> https://discord.gg/cWd3Cz6dkV
+
+# BotToken for use with Discord.
+# To get a BotToken -> https://discord.com/developers/applications
+BotToken: ""
+
+# Channel for sending Minecraft logs.
+Log_Channel_ID: ""
+
+# The bot's online status can be changed.
+# "ONLINE", "IDLE" and "DO_NOT_DISTURB" are available.
+# If blank, "ONLINE" is automatically select.
+Bot_Online_Status: ""

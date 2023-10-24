@@ -24,7 +24,7 @@ public class ConfigManager {
     public void checkAndCreateConfig() {
         LOGGER.info("Checking data folders...");
 
-        File dataFolder = new File(FabricLoader.getInstance().getGameDir().toFile(), "your_mod_id");
+        File dataFolder = new File(FabricLoader.getInstance().getGameDir().toFile(), "fabricord");
         if (!dataFolder.exists()) {
             LOGGER.info("Data folder not found, Start generation.");
             if (dataFolder.mkdirs()) {
