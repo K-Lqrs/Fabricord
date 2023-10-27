@@ -110,8 +110,10 @@ public class DiscordBot {
         });
 
         // プレイヤーがチャットメッセージを送信したときのイベントハンドラー
-        ServerMessageEvents.CHAT_MESSAGE.register((player, message, viewer) -> {
-            String chatMessage = String.format("%s » %s", message.getEntityName(), message);
+        ServerMessageEvents.CHAT_MESSAGE.register((Chatmessage, sender, parameters) -> {
+            String user = sender.getDisplayName().getString();
+            String message = Chatmessage.getContent().getString();
+            String chatMessage = String.format("**%s** » %s", user, message);
             sendToDiscord(chatMessage);
         });
 
