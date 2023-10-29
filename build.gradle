@@ -29,6 +29,10 @@ loom {
 	}
 }
 
+configurations {
+	includeInJar
+}
+
 // Add the generated resources to the main source set
 sourceSets {
 	main {
@@ -44,8 +48,11 @@ dependencies {
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	includeInJar 'org.yaml:snakeyaml:2.0'
+	includeInJar 'net.dv8tion:JDA:5.0.0-beta.12'
 	implementation 'net.dv8tion:JDA:5.0.0-beta.12'
 	implementation 'org.yaml:snakeyaml:2.0'
+	implementation 'net.java.dev.jna:jna:5.13.0'
 }
 
 processResources {
@@ -67,14 +74,26 @@ java {
 	targetCompatibility = JavaVersion.VERSION_17
 }
 
+
 jar {
+	// LICENSE ファイルのリネーム
 	from("LICENSE") {
-		rename { "${it}_${project.base.archivesName.get()}"}
+		rename { "${it}_${project.base.archivesName.get()}" }
 	}
+
+	// 依存関係の追加
+	from(configurations.includeInJar.collect { it.isDirectory() ? it : zipTree(it) })
+
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+	// oshi関連の除外
+	exclude("oshi.**")
+	exclude("oshi/**")
 }
 
+
 // configure the maven publication
-pu
+publishing {
 	publications {
 		mavenJava(MavenPublication) {
 			from components.java
@@ -84,12 +103,4 @@ pu
 	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
 	repositories {
 	}
-}
-
-shadowJar {
-	archiveClassifier.set('')
-	mergeServiceFiles()
-	configurations = [project.configurations.runtimeClasspath]
-	exclude 'oshi.**'
-	exclude 'oshi/**'
 }
