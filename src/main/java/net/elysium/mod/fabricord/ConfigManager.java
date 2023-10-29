@@ -13,6 +13,8 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Map;
 
+import static net.elysium.mod.fabricord.Fabricord.MOD_ID;
+
 public class ConfigManager {
 
     private static final Logger LOGGER = LogManager.getLogger(ConfigManager.class);
@@ -22,9 +24,10 @@ public class ConfigManager {
     private static String botOnlineStatus;
 
     public void checkAndCreateConfig() {
-        LOGGER.info("Checking data folders...");
+        try {
+            LOGGER.info("Checking data folders...");
 
-        File dataFolder = new File(FabricLoader.getInstance().getGameDir().toFile(), "fabricord");
+        File dataFolder = new File(FabricLoader.getInstance().getGameDir().toFile(), MOD_ID);
         if (!dataFolder.exists()) {
             LOGGER.info("Data folder not found, Start generation.");
             if (dataFolder.mkdirs()) {
@@ -51,9 +54,13 @@ public class ConfigManager {
                 LOGGER.error("Failed to create config file", e);
             }
         }
+    } catch (Exception e) {
+        LOGGER.error("An error occurred while checking and creating config:", e);
     }
+}
 
     private void loadConfig(File pluginDataFolder) {
+        try {
         File configFile = new File(pluginDataFolder, "config.yml");
         if (!configFile.exists()) return;
 
@@ -66,7 +73,10 @@ public class ConfigManager {
         } catch (IOException e) {
             LOGGER.error("Failed to load config file", e);
         }
+    } catch (Exception e) {
+        LOGGER.error("An error occurred while loading config:", e);
     }
+}
 
     public static String getBotToken() {
         return botToken;
@@ -80,3 +90,4 @@ public class ConfigManager {
         return botOnlineStatus;
     }
 }
+

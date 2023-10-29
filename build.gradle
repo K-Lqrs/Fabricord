@@ -44,10 +44,8 @@ dependencies {
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	implementation "net.kyori:adventure-api:4.14.0"
-	implementation "net.dv8tion:JDA:5.0.0-beta.12"
+	implementation 'net.dv8tion:JDA:5.0.0-beta.12'
 	implementation 'org.yaml:snakeyaml:2.0'
-	implementation 'org.slf4j:slf4j-api:1.7.30'
 }
 
 processResources {
@@ -76,7 +74,7 @@ jar {
 }
 
 // configure the maven publication
-publishing {
+pu
 	publications {
 		mavenJava(MavenPublication) {
 			from components.java
@@ -92,5 +90,6 @@ shadowJar {
 	archiveClassifier.set('')
 	mergeServiceFiles()
 	configurations = [project.configurations.runtimeClasspath]
+	exclude 'oshi.**'
 	exclude 'oshi/**'
 }
