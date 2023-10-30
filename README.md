@@ -5,8 +5,12 @@ A modern message style like DiscordSRV will be reproduced as a Fabric version mo
 
  
 
-
-
-
-
-
+# How to read the version
+## Example Version 1.0+1-1.20.1
+### 1.0 -> Major version
+Integer is used for major or special updates,
+and first decimal place is used for minor bug fixes or adjustments.
+### +1 -> Minor version
+The number goes up with each commit. Has a role comparable to that of a build number.
+### -1.20.1 -> MC version
+Easy to understand!
