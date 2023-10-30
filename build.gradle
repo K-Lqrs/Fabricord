@@ -1,6 +1,5 @@
 plugins {
 	id 'fabric-loom' version '1.4-SNAPSHOT'
-	id 'maven-publish'
 	id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
@@ -33,7 +32,6 @@ configurations {
 	includeInJar
 }
 
-// Add the generated resources to the main source set
 sourceSets {
 	main {
 		resources {
@@ -52,7 +50,6 @@ dependencies {
 	includeInJar 'net.dv8tion:JDA:5.0.0-beta.12'
 	implementation 'net.dv8tion:JDA:5.0.0-beta.12'
 	implementation 'org.yaml:snakeyaml:2.0'
-	implementation 'net.java.dev.jna:jna:5.13.0'
 }
 
 processResources {
@@ -76,31 +73,14 @@ java {
 
 
 jar {
-	// LICENSE ファイルのリネーム
 	from("LICENSE") {
 		rename { "${it}_${project.base.archivesName.get()}" }
 	}
 
-	// 依存関係の追加
 	from(configurations.includeInJar.collect { it.isDirectory() ? it : zipTree(it) })
 
 	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
-	// oshi関連の除外
 	exclude("oshi.**")
 	exclude("oshi/**")
-}
-
-
-// configure the maven publication
-publishing {
-	publications {
-		mavenJava(MavenPublication) {
-			from components.java
-		}
-	}
-
-	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
-	repositories {
-	}
 }
