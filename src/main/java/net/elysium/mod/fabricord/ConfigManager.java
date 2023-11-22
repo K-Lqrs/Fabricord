@@ -1,7 +1,6 @@
 package net.elysium.mod.fabricord;
 
 import net.fabricmc.loader.api.FabricLoader;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.yaml.snakeyaml.Yaml;
 
@@ -17,8 +16,7 @@ import static net.elysium.mod.fabricord.Fabricord.MOD_ID;
 
 public class ConfigManager {
 
-    private static final Logger LOGGER = LogManager.getLogger(ConfigManager.class);
-
+    private static final Logger LOGGER = Fabricord.LOGGER;
     private static String botToken;
     private static String logChannelID;
     private static String botOnlineStatus;

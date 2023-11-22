@@ -10,7 +10,7 @@ import org.apache.logging.log4j.Logger;
 public class Fabricord implements ModInitializer {
 
 	public static final String MOD_ID = "fabricord";
-	private static final Logger LOGGER = LogManager.getLogger(Fabricord.class);
+	static final Logger LOGGER = LogManager.getLogger(Fabricord.class);
 
 	private DiscordBot discordBot;
 	private static final ConfigManager configManager = new ConfigManager();

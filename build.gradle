@@ -50,6 +50,9 @@ dependencies {
 	includeInJar 'net.dv8tion:JDA:5.0.0-beta.12'
 	implementation 'net.dv8tion:JDA:5.0.0-beta.12'
 	implementation 'org.yaml:snakeyaml:2.0'
+	implementation 'net.java.dev.jna:jna:4.5.0'
+	includeInJar 'net.java.dev.jna:jna:4.5.0'
+
 }
 
 processResources {
@@ -80,7 +83,4 @@ jar {
 	from(configurations.includeInJar.collect { it.isDirectory() ? it : zipTree(it) })
 
 	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-
-	exclude("oshi.**")
-	exclude("oshi/**")
 }
