@@ -1,24 +1,33 @@
 package net.elysium.mod.fabricord.discord;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import net.dv8tion.jda.api.*;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.elysium.mod.fabricord.ConfigManager;
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.format.TextColor;
 import org.jetbrains.annotations.NotNull;
+
+import java.awt.*;
+import java.util.Comparator;
 
 public class DiscordBot {
 
     private final ListenerAdapter discordListener = new ListenerAdapter() {
         @Override
         public void onMessageReceived(@NotNull MessageReceivedEvent event) {
-            handleDiscordMessage(event);
+           handleDiscordMessage(event);
         }
     };
 
@@ -79,21 +88,36 @@ public class DiscordBot {
 
     public void handleDiscordMessage(MessageReceivedEvent event) {
         String channelId = ConfigManager.getLogChannelID();
-
-        // Check if the message is from the specified channel
-        if (!event.getChannel().getId().equals(channelId)) return;
-
-        if (event.getAuthor().isBot()) return;
+        if (!event.getChannel().getId().equals(channelId) || event.getAuthor().isBot()) {
+            return;
+        }
 
         var member = event.getMember();
-        String memberName = member != null ? member.getUser().getName() : "Unknown Name";
+        var memberName = member != null ? member.getUser().getName() : "Unknown Name";
+        var memberId = member != null ? member.getUser().getId() : "00000000000000000000";
+        var idSuggest = "<@" + memberId + ">";
+        var highestRole = member != null ? member.getRoles().stream().max(Comparator.comparingInt(Role::getPosition)).orElse(null) : null;
+        var roleName = highestRole != null ? highestRole.getName() : "Unknown";
+        var roleColor = highestRole != null && highestRole.getColor() != null ? highestRole.getColor() : Color.WHITE;
+        var kyoriRoleColor = TextColor.color(roleColor.getRed(), roleColor.getGreen(), roleColor.getBlue());
 
-        Text textMessage = Text.of(("[Discord" + memberName + "]" + " » " + event.getMessage().getContentDisplay()));
+        var componentMessage = Component.text("[", TextColor.color(0xFFFFFF))
+                .append(Component.text("Discord", TextColor.color(0x55CDFC)))
+                .append(Component.text(" | ", TextColor.color(0xFFFFFF)))
+                .append(Component.text(roleName, kyoriRoleColor))
+                .append(Component.text("]", TextColor.color(0xFFFFFF)))
+                .append(Component.text(" "))
+                .append(Component.text(memberName)
+                        .clickEvent(ClickEvent.suggestCommand(idSuggest)))
+                .append(Component.text(" » " + event.getMessage().getContentDisplay()));
 
-        // Sending the message to all players on the server
-        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-            player.sendMessage(textMessage, false);
-        }
+        String json = GsonComponentSerializer.gson().serialize(componentMessage);
+
+        net.minecraft.text.Text textMessage = net.minecraft.text.Text.Serializer.fromJson(json);
+
+        server.getPlayerManager().getPlayerList().forEach(player ->
+                player.sendMessage(textMessage, false)
+        );
     }
 
     public void registerEventListeners() {
@@ -113,7 +137,7 @@ public class DiscordBot {
         ServerMessageEvents.CHAT_MESSAGE.register((Chatmessage, sender, parameters) -> {
             String user = sender.getDisplayName().getString();
             String message = Chatmessage.getContent().getString();
-            String chatMessage = String.format("**%s** » %s", user, message);
+            String chatMessage = String.format("%s » %s", user, message);
             sendToDiscord(chatMessage);
         });
 
