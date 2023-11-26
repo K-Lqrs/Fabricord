@@ -8,7 +8,7 @@ A modern message style like DiscordSRV will be reproduced as a Fabric version mo
 Fabricord is a mod for Fabric servers that bridges the gap between Minecraft and Discord. It enables seamless integration, allowing messages from Discord to be read directly within the Minecraft server. This mod enhances the communication experience, making it more interactive and engaging.
 
 ## Features
-- Read Discord messages in Minecraft server chat.
+- Mutual transfer of Discord chat,Minecraft chat.
 - Modern and visually appealing message presentation.
 - Easy referencing of Discord user IDs within Minecraft.
 
