@@ -97,20 +97,28 @@ public class DiscordBot {
         var memberId = member != null ? member.getUser().getId() : "00000000000000000000";
         var idSuggest = "<@" + memberId + ">";
         var highestRole = member != null ? member.getRoles().stream().max(Comparator.comparingInt(Role::getPosition)).orElse(null) : null;
-        var roleName = highestRole != null ? highestRole.getName() : "Unknown";
+        var roleName = highestRole != null ? highestRole.getName() : null;
         var roleId = highestRole != null ? highestRole.getId() : null;
-        var rIdSuggest = "<@&" + roleId + ">";
+        var rIdSuggest = roleId != null ? "<@&" + roleId + ">" : null;
         var roleColor = highestRole != null && highestRole.getColor() != null ? highestRole.getColor() : Color.WHITE;
         var kyoriRoleColor = TextColor.color(roleColor.getRed(), roleColor.getGreen(), roleColor.getBlue());
 
+
         var componentMessage = Component.text("[", TextColor.color(0xFFFFFF))
-                .append(Component.text("Discord", TextColor.color(0x55CDFC)))
-                .append(Component.text(" | ", TextColor.color(0xFFFFFF)))
-                .append(Component.text(roleName, kyoriRoleColor)
-                        .clickEvent(ClickEvent.suggestCommand(rIdSuggest)))
-                .append(Component.text("]", TextColor.color(0xFFFFFF)))
-                .append(Component.text(" "))
-                .append(Component.text(memberName)
+                .append(Component.text("Discord", TextColor.color(0x55CDFC)));
+
+        if (roleName != null) {
+            componentMessage = componentMessage.append(Component.text(" | ", TextColor.color(0xFFFFFF)))
+                    .append(Component.text(roleName, kyoriRoleColor)
+                            .clickEvent(ClickEvent.suggestCommand(rIdSuggest)))
+                    .append(Component.text("]", TextColor.color(0xFFFFFF)))
+                    .append(Component.text(" "));
+        } else {
+            componentMessage = componentMessage.append(Component.text("]", TextColor.color(0xFFFFFF)))
+                    .append(Component.text(" "));
+        }
+
+        componentMessage = componentMessage.append(Component.text(memberName)
                         .clickEvent(ClickEvent.suggestCommand(idSuggest)))
                 .append(Component.text(" » " + event.getMessage().getContentDisplay()));
 
