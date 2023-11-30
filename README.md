@@ -41,4 +41,4 @@ Bot_Online_Status: ""
 ```
 
 ## License
-Fabricord is available under the [MIT License](https://github.com/Elysium-7/Fabricord/blob/main/LICENSE).
+Fabricord is available under the [Apache 2.0 License](https://github.com/KT-Ruxy/Fabricord/blob/main/LICENSE).
