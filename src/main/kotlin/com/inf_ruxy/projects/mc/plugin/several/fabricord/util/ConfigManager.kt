@@ -1,13 +1,12 @@
 package com.inf_ruxy.projects.mc.plugin.several.fabricord.util
 
-import com.inf_ruxy.projects.mc.plugin.several.fabricord.Fabricord.MOD_ID
 import com.inf_ruxy.projects.mc.plugin.several.fabricord.Fabricord.logger
-import net.fabricmc.loader.api.FabricLoader
+import com.inf_ruxy.projects.mc.plugin.several.fabricord.FabricordApi.dataFolder
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Paths
 
 class ConfigManager {
-
-    private var dataFolder: File = File(FabricLoader.getInstance().gameDir.toFile(), MOD_ID)
 
     fun checkDataFolder() {
         try {
@@ -29,5 +28,26 @@ class ConfigManager {
         }
     }
 
+    fun checkConfigFile() {
+        try {
+            logger.info("Checking config file...")
+            val configFile = File(dataFolder, "config.yml")
+            configFile.apply {
+                when {
+                    !exists() -> {
+                        logger.info("Config file does not exist. Copying config file from Jar...")
+                        javaClass.getResourceAsStream("/config.yml").use { source ->
+                            source?.let { Files.copy(it, Paths.get(absolutePath)) }
+                        }
+                        if (exists()) logger.info("Config file copied successfully.")
+                        else logger.error("Failed to copy config file.")
+                    }
+                    else -> logger.info("Config file already exists.")
+                }
+            }
+        } catch (e: Exception) {
+            logger.error("Error checking config file.\n" + e.message)
+        }
+    }
 
 }
