@@ -2,8 +2,10 @@ package com.inf_ruxy.projects.mc.plugin.several.fabricord.discord
 
 import com.inf_ruxy.projects.mc.plugin.several.fabricord.Fabricord.logger
 import com.inf_ruxy.projects.mc.plugin.several.fabricord.FabricordApi.config
+import com.inf_ruxy.projects.mc.plugin.several.fabricord.FabricordApi.discordConsoleCommandListener
 import com.inf_ruxy.projects.mc.plugin.several.fabricord.FabricordApi.discordEmbed
 import com.inf_ruxy.projects.mc.plugin.several.fabricord.FabricordApi.dml
+import com.inf_ruxy.projects.mc.plugin.several.fabricord.FabricordApi.mcml
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.OnlineStatus
@@ -80,26 +82,29 @@ class DiscordBotManager {
     private val discordListener = object : ListenerAdapter() {
         override fun onMessageReceived(event: MessageReceivedEvent) {
             dml.handleDiscordMessage(event)
+            discordConsoleCommandListener.onMessageReceived(event)
         }
     }
 
     fun registerEventListeners() {
         ServerPlayConnectionEvents.JOIN.register(ServerPlayConnectionEvents.Join { handler: ServerPlayNetworkHandler, _: PacketSender?, _: MinecraftServer? ->
             val player = handler.player
-            discordEmbed.sendPlayerJoinEmbed(player, this)
+            discordEmbed.sendPlayerJoinEmbed(player)
         })
 
         ServerPlayConnectionEvents.DISCONNECT.register(ServerPlayConnectionEvents.Disconnect { handler: ServerPlayNetworkHandler, _: MinecraftServer? ->
             val player = handler.player
-            discordEmbed.sendPlayerLeftEmbed(player, this)
+            discordEmbed.sendPlayerLeftEmbed(player)
         })
 
-        ServerMessageEvents.CHAT_MESSAGE.register(ServerMessageEvents.ChatMessage { chatmessage: SignedMessage, sender: ServerPlayerEntity, _: MessageType.Parameters? ->
-            val user = sender.displayName.string
+        ServerMessageEvents.CHAT_MESSAGE.register(ServerMessageEvents.ChatMessage { chatmessage: SignedMessage, player: ServerPlayerEntity, _: MessageType.Parameters? ->
+            val sender = player.displayName.string
             val message = chatmessage.content.string
-            val chatMessage = String.format("%s » %s", user, message)
-            sendToDiscord(chatMessage)
+            val chatMessage = String.format("%s » %s", sender, message)
+            mcml.handleMCMessage(player, sender, chatMessage)
         })
+
+
     }
 
     fun sendToDiscord(message: String) {

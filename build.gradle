@@ -36,8 +36,8 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 	modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}"
 
-	implementation 'org.yaml:snakeyaml:2.0'
-	includeInJar 'org.yaml:snakeyaml:2.0'
+	implementation "org.yaml:snakeyaml:2.0"
+	includeInJar "org.yaml:snakeyaml:2.0"
 
 	implementation ('net.dv8tion:JDA:5.0.0-beta.17'){
 		exclude(group: 'net.java.dev.jna', module: 'jna')
@@ -45,6 +45,9 @@ dependencies {
 	includeInJar ('net.dv8tion:JDA:5.0.0-beta.17'){
 		exclude(group: 'net.java.dev.jna', module: 'jna')
 	}
+
+	implementation "club.minnced:discord-webhooks:0.8.4"
+	includeInJar "club.minnced:discord-webhooks:0.8.4"
 
 	implementation "net.kyori:adventure-api:4.14.0"
 	includeInJar "net.kyori:adventure-api:4.14.0"

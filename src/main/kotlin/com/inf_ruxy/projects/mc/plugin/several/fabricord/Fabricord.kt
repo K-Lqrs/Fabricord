@@ -13,6 +13,7 @@ object Fabricord : ModInitializer {
 	override fun onInitialize() {
 		logger.info("Initializing$MOD_ID...")
 		try {
+			ServerLifecycleEvents.SERVER_STARTED.register(FabricordApi::serverStarted)
 			ServerLifecycleEvents.SERVER_STARTING.register(FabricordApi::serverStarting)
 			ServerLifecycleEvents.SERVER_STOPPING.register(FabricordApi::serverStopping)
 		} catch (e: Exception) {
