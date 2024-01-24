@@ -3,6 +3,8 @@ package com.inf_ruxy.projects.mc.plugin.several.fabricord
 import com.inf_ruxy.projects.mc.plugin.several.fabricord.Fabricord.MOD_ID
 import com.inf_ruxy.projects.mc.plugin.several.fabricord.Fabricord.logger
 import com.inf_ruxy.projects.mc.plugin.several.fabricord.discord.DiscordBotManager
+import com.inf_ruxy.projects.mc.plugin.several.fabricord.discord.DiscordEmbed
+import com.inf_ruxy.projects.mc.plugin.several.fabricord.discord.events.DiscordMessageListener
 import com.inf_ruxy.projects.mc.plugin.several.fabricord.util.ConfigLoader
 import com.inf_ruxy.projects.mc.plugin.several.fabricord.util.ConfigManager
 import net.fabricmc.loader.api.FabricLoader
@@ -13,7 +15,9 @@ object FabricordApi {
 
     private lateinit var configManager: ConfigManager
     private lateinit var discordBotManager: DiscordBotManager
+    lateinit var discordEmbed: DiscordEmbed
     lateinit var config: ConfigLoader
+    lateinit var dml: DiscordMessageListener
 
     val dataFolder: File = File(FabricLoader.getInstance().gameDir.toFile(), MOD_ID)
 
@@ -21,6 +25,8 @@ object FabricordApi {
         configManager = ConfigManager()
         config = ConfigLoader()
         discordBotManager = DiscordBotManager()
+        discordEmbed = DiscordEmbed()
+        dml = DiscordMessageListener(server)
 
         configManager.checkDataFolder()
         configManager.checkConfigFile()
@@ -30,12 +36,16 @@ object FabricordApi {
             return
         } else {
             discordBotManager.startBot()
+            discordBotManager.registerEventListeners()
         }
 
     }
 
     fun serverStopping(server: MinecraftServer) {
-
+        if (discordBotManager.jda == null) return
+        if (config.isBotTokenOrLogChannelIDNull()) {
+            discordBotManager.stopBot()
+        }
     }
 
 

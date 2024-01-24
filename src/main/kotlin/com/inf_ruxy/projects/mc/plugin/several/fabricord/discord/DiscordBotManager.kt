@@ -2,6 +2,8 @@ package com.inf_ruxy.projects.mc.plugin.several.fabricord.discord
 
 import com.inf_ruxy.projects.mc.plugin.several.fabricord.Fabricord.logger
 import com.inf_ruxy.projects.mc.plugin.several.fabricord.FabricordApi.config
+import com.inf_ruxy.projects.mc.plugin.several.fabricord.FabricordApi.discordEmbed
+import com.inf_ruxy.projects.mc.plugin.several.fabricord.FabricordApi.dml
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.OnlineStatus
@@ -9,8 +11,17 @@ import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.requests.GatewayIntent
+import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
+import net.fabricmc.fabric.api.networking.v1.PacketSender
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
+import net.minecraft.network.message.MessageType
+import net.minecraft.network.message.SignedMessage
+import net.minecraft.server.MinecraftServer
+import net.minecraft.server.network.ServerPlayNetworkHandler
+import net.minecraft.server.network.ServerPlayerEntity
 import java.util.*
 import javax.security.auth.login.LoginException
+
 
 class DiscordBotManager {
 
@@ -26,19 +37,21 @@ class DiscordBotManager {
                 "DO_NOT_DISTURB" -> OnlineStatus.DO_NOT_DISTURB
                 "INVISIBLE" -> OnlineStatus.INVISIBLE
                 "IDLE" -> OnlineStatus.IDLE
+                null -> OnlineStatus.ONLINE
                 else -> OnlineStatus.ONLINE
             }
 
-            val activity = when (activityType!!.lowercase(Locale.getDefault())) {
+            val activity = when (activityType?.lowercase(Locale.getDefault())) {
                 "playing" -> Activity.playing(activityMessage)
                 "watching" -> Activity.watching(activityMessage)
                 "listening" -> Activity.listening(activityMessage)
                 "competing" -> Activity.competing(activityMessage)
+                null -> Activity.playing(activityMessage)
                 else -> Activity.playing(activityMessage)
             }
 
             jda = JDABuilder.createDefault(token)
-                .enableIntents(GatewayIntent.DIRECT_MESSAGES, GatewayIntent.MESSAGE_CONTENT)
+                .enableIntents(GatewayIntent.MESSAGE_CONTENT)
                 .setStatus(onlineStatus)
                 .setActivity(activity)
                 .addEventListeners(discordListener)
@@ -54,10 +67,39 @@ class DiscordBotManager {
 
     }
 
+    fun stopBot() {
+        try {
+            jda?.shutdown()
+            logger.info("The Discord Bot has been successfully deactivated.")
+            sendToDiscord(":octagonal_sign: **Server has Stopped!**")
+        } catch (e: Exception) {
+            logger.error("Bot could not be terminated successfully.\n" + e.message)
+        }
+    }
+
     private val discordListener = object : ListenerAdapter() {
         override fun onMessageReceived(event: MessageReceivedEvent) {
-            TODO("Discordからのメッセージを処理するやつ")
+            dml.handleDiscordMessage(event)
         }
+    }
+
+    fun registerEventListeners() {
+        ServerPlayConnectionEvents.JOIN.register(ServerPlayConnectionEvents.Join { handler: ServerPlayNetworkHandler, _: PacketSender?, _: MinecraftServer? ->
+            val player = handler.player
+            discordEmbed.sendPlayerJoinEmbed(player, this)
+        })
+
+        ServerPlayConnectionEvents.DISCONNECT.register(ServerPlayConnectionEvents.Disconnect { handler: ServerPlayNetworkHandler, _: MinecraftServer? ->
+            val player = handler.player
+            discordEmbed.sendPlayerLeftEmbed(player, this)
+        })
+
+        ServerMessageEvents.CHAT_MESSAGE.register(ServerMessageEvents.ChatMessage { chatmessage: SignedMessage, sender: ServerPlayerEntity, _: MessageType.Parameters? ->
+            val user = sender.displayName.string
+            val message = chatmessage.content.string
+            val chatMessage = String.format("%s » %s", user, message)
+            sendToDiscord(chatMessage)
+        })
     }
 
     fun sendToDiscord(message: String) {
