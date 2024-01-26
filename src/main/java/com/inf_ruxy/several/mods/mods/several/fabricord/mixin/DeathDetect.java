@@ -1,6 +1,6 @@
-package com.inf_ruxy.projects.mc.plugin.several.fabricord.mixin;
+package com.inf_ruxy.several.mods.mods.several.fabricord.mixin;
 
-import com.inf_ruxy.projects.mc.plugin.several.fabricord.discord.DiscordEmbed;
+import com.inf_ruxy.several.mods.fabricord.discord.DiscordEmbed;
 import net.minecraft.entity.damage.DamageTracker;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.UUID;
 
-import static com.inf_ruxy.projects.mc.plugin.several.fabricord.FabricordApi.discordEmbed;
+import static com.inf_ruxy.several.mods.fabricord.FabricordApi.discordEmbed;
 
 @Mixin(ServerPlayerEntity.class)
 public abstract class DeathDetect {

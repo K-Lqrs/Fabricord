@@ -1,15 +1,15 @@
-package com.inf_ruxy.projects.mc.plugin.several.fabricord
+package com.inf_ruxy.several.mods.fabricord
 
-import com.inf_ruxy.projects.mc.plugin.several.fabricord.Fabricord.MOD_ID
-import com.inf_ruxy.projects.mc.plugin.several.fabricord.Fabricord.logger
-import com.inf_ruxy.projects.mc.plugin.several.fabricord.discord.DiscordBotManager
-import com.inf_ruxy.projects.mc.plugin.several.fabricord.discord.DiscordEmbed
-import com.inf_ruxy.projects.mc.plugin.several.fabricord.discord.console.DiscordConsoleCommandListener
-import com.inf_ruxy.projects.mc.plugin.several.fabricord.discord.console.DiscordLogAppender
-import com.inf_ruxy.projects.mc.plugin.several.fabricord.discord.events.DiscordMessageListener
-import com.inf_ruxy.projects.mc.plugin.several.fabricord.discord.events.MCMessageListener
-import com.inf_ruxy.projects.mc.plugin.several.fabricord.util.ConfigLoader
-import com.inf_ruxy.projects.mc.plugin.several.fabricord.util.ConfigManager
+import com.inf_ruxy.several.mods.fabricord.Fabricord.MOD_ID
+import com.inf_ruxy.several.mods.fabricord.Fabricord.logger
+import com.inf_ruxy.several.mods.fabricord.discord.DiscordBotManager
+import com.inf_ruxy.several.mods.fabricord.discord.DiscordEmbed
+import com.inf_ruxy.several.mods.fabricord.discord.console.DiscordConsoleCommandListener
+import com.inf_ruxy.several.mods.fabricord.discord.console.DiscordLogAppender
+import com.inf_ruxy.several.mods.fabricord.discord.events.DiscordMessageListener
+import com.inf_ruxy.several.mods.fabricord.discord.events.MCMessageListener
+import com.inf_ruxy.several.mods.fabricord.util.ConfigLoader
+import com.inf_ruxy.several.mods.fabricord.util.ConfigManager
 import org.apache.logging.log4j.core.LoggerContext
 import org.apache.logging.log4j.core.config.Configuration
 import org.apache.logging.log4j.LogManager
@@ -29,7 +29,7 @@ object FabricordApi {
 
     val dataFolder: File = File(FabricLoader.getInstance().gameDir.toFile(), MOD_ID)
 
-    fun serverStarted(server: MinecraftServer) {
+    fun serverStarting(server: MinecraftServer) {
         configManager = ConfigManager()
         config = ConfigLoader()
         discordBotManager = DiscordBotManager()
@@ -43,7 +43,7 @@ object FabricordApi {
         config.loadConfig()
     }
 
-    fun serverStarting(server: MinecraftServer) {
+    fun serverStarted(server: MinecraftServer) {
         if (config.isBotTokenAndLogChannelIDNull()) {
             logger.error("Bot token or log channel ID is null. Please check your config file.")
             return

@@ -1,6 +1,6 @@
-package com.inf_ruxy.projects.mc.plugin.several.fabricord.discord.console
+package com.inf_ruxy.several.mods.fabricord.discord.console
 
-import com.inf_ruxy.projects.mc.plugin.several.fabricord.FabricordApi.config
+import com.inf_ruxy.several.mods.fabricord.FabricordApi.config
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import org.apache.logging.log4j.core.LogEvent

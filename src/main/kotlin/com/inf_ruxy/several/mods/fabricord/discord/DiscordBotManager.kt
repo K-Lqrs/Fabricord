@@ -1,11 +1,11 @@
-package com.inf_ruxy.projects.mc.plugin.several.fabricord.discord
+package com.inf_ruxy.several.mods.fabricord.discord
 
-import com.inf_ruxy.projects.mc.plugin.several.fabricord.Fabricord.logger
-import com.inf_ruxy.projects.mc.plugin.several.fabricord.FabricordApi.config
-import com.inf_ruxy.projects.mc.plugin.several.fabricord.FabricordApi.discordConsoleCommandListener
-import com.inf_ruxy.projects.mc.plugin.several.fabricord.FabricordApi.discordEmbed
-import com.inf_ruxy.projects.mc.plugin.several.fabricord.FabricordApi.dml
-import com.inf_ruxy.projects.mc.plugin.several.fabricord.FabricordApi.mcml
+import com.inf_ruxy.several.mods.fabricord.Fabricord.logger
+import com.inf_ruxy.several.mods.fabricord.FabricordApi.config
+import com.inf_ruxy.several.mods.fabricord.FabricordApi.discordConsoleCommandListener
+import com.inf_ruxy.several.mods.fabricord.FabricordApi.discordEmbed
+import com.inf_ruxy.several.mods.fabricord.FabricordApi.dml
+import com.inf_ruxy.several.mods.fabricord.FabricordApi.mcml
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.OnlineStatus

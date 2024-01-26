@@ -1,6 +1,6 @@
-package com.inf_ruxy.projects.mc.plugin.several.fabricord.discord.events
+package com.inf_ruxy.several.mods.fabricord.discord.events
 
-import com.inf_ruxy.projects.mc.plugin.several.fabricord.FabricordApi.config
+import com.inf_ruxy.several.mods.fabricord.FabricordApi.config
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.kyori.adventure.text.Component

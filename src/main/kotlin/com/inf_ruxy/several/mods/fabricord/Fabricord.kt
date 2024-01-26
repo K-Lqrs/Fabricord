@@ -1,4 +1,4 @@
-package com.inf_ruxy.projects.mc.plugin.several.fabricord
+package com.inf_ruxy.several.mods.fabricord
 
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
@@ -11,7 +11,7 @@ object Fabricord : ModInitializer {
 	val logger: Logger = LoggerFactory.getLogger("Fabricord")
 
 	override fun onInitialize() {
-		logger.info("Initializing$MOD_ID...")
+		logger.info("Initializing $MOD_ID...")
 		try {
 			ServerLifecycleEvents.SERVER_STARTED.register(FabricordApi::serverStarted)
 			ServerLifecycleEvents.SERVER_STARTING.register(FabricordApi::serverStarting)

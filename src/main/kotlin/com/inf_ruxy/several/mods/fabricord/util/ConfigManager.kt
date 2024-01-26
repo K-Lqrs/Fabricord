@@ -1,7 +1,7 @@
-package com.inf_ruxy.projects.mc.plugin.several.fabricord.util
+package com.inf_ruxy.several.mods.fabricord.util
 
-import com.inf_ruxy.projects.mc.plugin.several.fabricord.Fabricord.logger
-import com.inf_ruxy.projects.mc.plugin.several.fabricord.FabricordApi.dataFolder
+import com.inf_ruxy.several.mods.fabricord.Fabricord.logger
+import com.inf_ruxy.several.mods.fabricord.FabricordApi.dataFolder
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
