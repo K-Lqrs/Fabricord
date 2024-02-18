@@ -1,15 +1,15 @@
-package com.inf_ruxy.several.mods.fabricord
+package com.inf_ruxy.mods.several.fabricord
 
-import com.inf_ruxy.several.mods.fabricord.Fabricord.MOD_ID
-import com.inf_ruxy.several.mods.fabricord.Fabricord.logger
-import com.inf_ruxy.several.mods.fabricord.discord.DiscordBotManager
-import com.inf_ruxy.several.mods.fabricord.discord.DiscordEmbed
-import com.inf_ruxy.several.mods.fabricord.discord.console.DiscordConsoleCommandListener
-import com.inf_ruxy.several.mods.fabricord.discord.console.DiscordLogAppender
-import com.inf_ruxy.several.mods.fabricord.discord.events.DiscordMessageListener
-import com.inf_ruxy.several.mods.fabricord.discord.events.MCMessageListener
-import com.inf_ruxy.several.mods.fabricord.util.ConfigLoader
-import com.inf_ruxy.several.mods.fabricord.util.ConfigManager
+import com.inf_ruxy.mods.several.fabricord.Fabricord.MOD_ID
+import com.inf_ruxy.mods.several.fabricord.Fabricord.logger
+import com.inf_ruxy.mods.several.fabricord.discord.DiscordBotManager
+import com.inf_ruxy.mods.several.fabricord.discord.DiscordEmbed
+import com.inf_ruxy.mods.several.fabricord.discord.console.DiscordConsoleCommandListener
+import com.inf_ruxy.mods.several.fabricord.discord.console.DiscordLogAppender
+import com.inf_ruxy.mods.several.fabricord.discord.events.DiscordMessageListener
+import com.inf_ruxy.mods.several.fabricord.discord.events.MCMessageListener
+import com.inf_ruxy.mods.several.fabricord.util.ConfigLoader
+import com.inf_ruxy.mods.several.fabricord.util.ConfigManager
 import org.apache.logging.log4j.core.LoggerContext
 import org.apache.logging.log4j.core.config.Configuration
 import org.apache.logging.log4j.LogManager
@@ -44,16 +44,16 @@ object FabricordApi {
     }
 
     fun serverStarted(server: MinecraftServer) {
-        if (config.isBotTokenAndLogChannelIDNull()) {
-            logger.error("Bot token or log channel ID is null. Please check your config file.")
-            return
-        } else {
+        if (config.botToken != null && config.logChannelID != null) {
             discordBotManager.startBot()
             discordBotManager.registerEventListeners()
-            if (config.doBridgeConsole()) {
+            if (config.doConsoleBridge == true && config.consoleLogChannelID != null) {
                 val discordLogAppender = discordBotManager.jda?.let { DiscordLogAppender.createAppender(it) }
                 discordLogAppender?.let { addAppenderToLogger(it) }
             }
+        } else {
+            logger.error("Bot token or log channel ID is null. Please check your config file.")
+            return
         }
     }
 
@@ -68,10 +68,9 @@ object FabricordApi {
     }
 
     fun serverStopping(server: MinecraftServer) {
-        if (config.isBotTokenAndLogChannelIDNull()) {
+        if (config.botToken != null && config.logChannelID != null) {
             discordBotManager.stopBot()
         }
     }
-
 
 }

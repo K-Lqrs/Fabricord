@@ -1,7 +1,7 @@
-package com.inf_ruxy.several.mods.fabricord.discord
+package com.inf_ruxy.mods.several.fabricord.discord
 
-import com.inf_ruxy.several.mods.fabricord.FabricordApi.config
-import com.inf_ruxy.several.mods.fabricord.FabricordApi.discordBotManager
+import com.inf_ruxy.mods.several.fabricord.FabricordApi.config
+import com.inf_ruxy.mods.several.fabricord.FabricordApi.discordBotManager
 import net.dv8tion.jda.api.EmbedBuilder
 import net.minecraft.server.network.ServerPlayerEntity
 import java.awt.Color

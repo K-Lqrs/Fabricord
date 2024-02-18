@@ -1,4 +1,4 @@
-package com.inf_ruxy.several.mods.fabricord
+package com.inf_ruxy.mods.several.fabricord
 
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents

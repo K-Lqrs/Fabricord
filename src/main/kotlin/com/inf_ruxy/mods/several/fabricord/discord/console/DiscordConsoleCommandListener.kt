@@ -1,6 +1,6 @@
-package com.inf_ruxy.several.mods.fabricord.discord.console
+package com.inf_ruxy.mods.several.fabricord.discord.console
 
-import com.inf_ruxy.several.mods.fabricord.FabricordApi.config
+import com.inf_ruxy.mods.several.fabricord.FabricordApi.config
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.ParseResults
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent

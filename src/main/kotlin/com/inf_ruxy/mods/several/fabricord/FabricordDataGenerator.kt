@@ -1,4 +1,4 @@
-package com.inf_ruxy.several.mods.fabricord
+package com.inf_ruxy.mods.several.fabricord
 
 import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator

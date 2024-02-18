@@ -13,13 +13,13 @@
 	"entrypoints": {
 		"main": [
 			{
-				"value": "com.inf_ruxy.projects.mc.plugin.several.fabricord.Fabricord",
+				"value": "com.inf_ruxy.mods.several.fabricord.Fabricord",
 				"adapter": "kotlin"
 			}
 		],
 		"fabric-datagen": [
 			{
-				"value": "com.inf_ruxy.projects.mc.plugin.several.fabricord.FabricordDataGenerator",
+				"value": "com.inf_ruxy.mods.several.fabricord.FabricordDataGenerator",
 				"adapter": "kotlin"
 			}
 		]
@@ -32,7 +32,7 @@
 		"minecraft": "~1.20.1",
 		"java": ">=17",
 		"fabric-api": "*",
-		"fabric-language-kotlin": ">=1.9.22"
+		"fabric-language-kotlin": ">=1.10.17"
 	},
 	"suggests": {
 		"another-mod": "*"

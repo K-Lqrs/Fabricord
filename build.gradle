@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
 	id 'fabric-loom' version '1.5-SNAPSHOT'
-	id 'maven-publish'
+	id 'com.github.johnrengelman.shadow' version '7.1.2'
   id "org.jetbrains.kotlin.jvm" version "1.9.22"
 }
 
@@ -83,8 +83,16 @@ java {
 	targetCompatibility = JavaVersion.VERSION_17
 }
 
+shadowJar {
+	zip64 true
+}
+
 jar {
 	from("LICENSE") {
-		rename { "${it}_${this.base.archivesName.get()}"}
+		rename { "${it}_${project.base.archivesName.get()}" }
 	}
+
+	from(configurations.includeInJar.collect { it.isDirectory() ? it : zipTree(it) })
+
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }

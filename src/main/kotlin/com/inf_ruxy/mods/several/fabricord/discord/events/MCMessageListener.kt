@@ -1,10 +1,10 @@
-package com.inf_ruxy.several.mods.fabricord.discord.events
+package com.inf_ruxy.mods.several.fabricord.discord.events
 
 import club.minnced.discord.webhook.WebhookClient
 import club.minnced.discord.webhook.send.WebhookMessageBuilder
-import com.inf_ruxy.several.mods.fabricord.Fabricord.logger
-import com.inf_ruxy.several.mods.fabricord.FabricordApi.config
-import com.inf_ruxy.several.mods.fabricord.FabricordApi.discordBotManager
+import com.inf_ruxy.mods.several.fabricord.Fabricord.logger
+import com.inf_ruxy.mods.several.fabricord.FabricordApi.config
+import com.inf_ruxy.mods.several.fabricord.FabricordApi.discordBotManager
 import net.minecraft.server.network.ServerPlayerEntity
 
 class MCMessageListener {
