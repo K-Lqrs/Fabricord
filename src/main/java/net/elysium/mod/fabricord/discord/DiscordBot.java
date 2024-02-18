@@ -1,7 +1,5 @@
 package net.elysium.mod.fabricord.discord;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import net.dv8tion.jda.api.*;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Role;
@@ -65,7 +63,7 @@ public class DiscordBot {
 
             sendToDiscord("**:white_check_mark: Server has Started!**");
         } catch (Exception e) {
-            // Handle exception
+            throw new RuntimeException(e);
         }
     }
 
@@ -80,7 +78,6 @@ public class DiscordBot {
     private void sendToDiscord(String message) {
         String channelId = ConfigManager.getLogChannelID();
         if (channelId == null || channelId.isEmpty()) {
-            // Handle missing channel ID
             return;
         }
         jda.getTextChannelById(channelId).sendMessage(message).queue();
@@ -153,4 +150,5 @@ public class DiscordBot {
         });
 
     }
+
 }

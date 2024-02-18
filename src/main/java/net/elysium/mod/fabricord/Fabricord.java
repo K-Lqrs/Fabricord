@@ -15,13 +15,10 @@ public class Fabricord implements ModInitializer {
 	private DiscordBot discordBot;
 	private static final ConfigManager configManager = new ConfigManager();
 
-	public Fabricord() {
-	}
 
 	@Override
 	public void onInitialize() {
 		try {
-			// Register server lifecycle listeners
 			ServerLifecycleEvents.SERVER_STARTING.register(this::onServerStarting);
 			ServerLifecycleEvents.SERVER_STOPPING.register(this::onServerStopping);
 		} catch (Exception e) {
