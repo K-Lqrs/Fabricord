@@ -15,7 +15,15 @@ Fabricord is a mod of DiscordSRV for FabricServer that bridges Discord and Fabri
 - Easy user mentions system from within Minecraft using role IDs and user IDs.
 - Send messages of death and achievement acquisition
 ## Installation
-After installing the mod on your Minecraft server, configure the Discord bot token and channel ID as per the instructions. For detailed setup guidance, please refer to our [GitHub repository](https://github.com/KT-Ruxy/Fabricord).
+Setup is very easy. !
+ 1. install the Mod on the server and start it once.
+     The first time you start the mod, a configuration file will be generated automatically. 2.
+ 2. open config.yml in the server root/fabricord
+ 3. enter BotToken/Log_Channel_ID as a minimum. 4.
+ 4. and start the server again.
+
+ There are other settings that can be configured.
+ Refer to Modrinth for message styles.
 
 ## License
 Fabricord is available under the [Apache License](https://github.com/KT-Ruxy/Fabricord/blob/main/LICENSE).
