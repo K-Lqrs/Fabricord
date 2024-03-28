@@ -1,0 +1,8 @@
+<Configuration status="WARN">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout
+                    pattern="%highlight{[%d{HH:mm:ss.SSS}][%-5level] [Fabricord] %msg%n}{FATAL=red blink, ERROR=red, WARN=yellow, INFO=white, DEBUG=gray, TRACE=default}"/>
+        </Console>
+    </Appenders>
+</Configuration>

@@ -1,0 +1,98 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+plugins {
+	id 'fabric-loom' version '1.5-SNAPSHOT'
+  id "org.jetbrains.kotlin.jvm" version "1.9.23"
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+	archivesName = project.archives_base_name
+}
+
+repositories {
+	mavenCentral()
+	maven { url "https://jitpack.io"  }
+	maven {
+		name = "CodeMC"
+		url = uri("https://repo.codemc.io/repository/maven-public/")
+	}
+}
+
+fabricApi {
+	configureDataGeneration()
+}
+
+configurations {
+	includeInJar
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}"
+
+	implementation "org.yaml:snakeyaml:2.0"
+	includeInJar "org.yaml:snakeyaml:2.0"
+
+	implementation ('net.dv8tion:JDA:5.0.0-beta.17'){
+		exclude(group: 'net.java.dev.jna', module: 'jna')
+	}
+	includeInJar ('net.dv8tion:JDA:5.0.0-beta.17'){
+		exclude(group: 'net.java.dev.jna', module: 'jna')
+	}
+
+	implementation "club.minnced:discord-webhooks:0.8.4"
+	includeInJar "club.minnced:discord-webhooks:0.8.4"
+
+	implementation "net.kyori:adventure-api:4.14.0"
+	includeInJar "net.kyori:adventure-api:4.14.0"
+
+	implementation "net.kyori:adventure-text-serializer-gson:4.14.0"
+	includeInJar "net.kyori:adventure-text-serializer-gson:4.14.0"
+
+	implementation "org.apache.logging.log4j:log4j-core:2.14.1"
+	implementation "org.apache.logging.log4j:log4j-api:2.14.1"
+	includeInJar "org.apache.logging.log4j:log4j-core:2.14.1"
+	includeInJar "org.apache.logging.log4j:log4j-api:2.14.1"
+
+}
+
+processResources {
+	inputs.property "version", project.version
+
+	filesMatching("fabric.mod.json") {
+		expand "version": project.version
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 17
+}
+
+tasks.withType(KotlinCompile).configureEach {
+	kotlinOptions {
+		jvmTarget = 17
+	}
+}
+
+java {
+	withSourcesJar()
+
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
+}
+
+jar {
+	from("LICENSE") {
+		rename { "${it}_${base.archivesName.get()}" }
+	}
+
+	from(configurations.includeInJar.collect { it.isDirectory() ? it : zipTree(it) })
+
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
