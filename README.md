@@ -16,11 +16,11 @@ Fabricord is a mod of DiscordSRV for FabricServer that bridges Discord and Fabri
 - Send messages of death and achievement acquisition
 ## Installation
 Setup is very easy. !
- 1. install the Mod on the server and start it once.
-     The first time you start the mod, a configuration file will be generated automatically. 2.
- 2. open config.yml in the server root/fabricord
- 3. enter BotToken/Log_Channel_ID as a minimum. 4.
- 4. and start the server again.
+- install the Mod on the server and start it once.
+     ┗The first time you start the mod, a configuration file will be generated automatically.
+- open config.yml in the server root/fabricord
+- enter BotToken/Log_Channel_ID as a minimum.
+- and start the server again.
 
  There are other settings that can be configured.
  Refer to Modrinth for message styles.
