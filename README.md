@@ -17,6 +17,7 @@ Fabricord is a mod of DiscordSRV for FabricServer that bridges Discord and Fabri
 ## Installation
 Setup is very easy. !
 - install the Mod on the server and start it once.
+
      ┗The first time you start the mod, a configuration file will be generated automatically.
 - open config.yml in the server root/fabricord
 - enter BotToken/Log_Channel_ID as a minimum.
