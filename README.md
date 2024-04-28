@@ -1,4 +1,5 @@
-**We plan to make it compatible with versions other than the latest version.**
+**No further updates will be made unless there are problems with this mod, corrections by users, or additional suggestions. 
+However, we are considering supporting other versions.**
 
 # Fabricord
 A modern message style like DiscordSRV will be reproduced as a Fabric version mod.

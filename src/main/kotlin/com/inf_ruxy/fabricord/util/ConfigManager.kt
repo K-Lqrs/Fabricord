@@ -167,7 +167,7 @@ class ConfigManager {
                     botActivityStatus = config.getNullableString("Bot_Activity_Status")
                     botActivityMessage = config.getNullableString("Bot_Activity_Message")
                     messageStyle = config.getNullableString("Message_Style")
-                    webHookUrl = config.getNullableString("WebHook_URL")
+                    webHookUrl = config.getNullableString("Webhook_URL")
                 }
 
                 logger.info("Config loaded successfully.")
