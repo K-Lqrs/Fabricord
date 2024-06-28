@@ -11,3 +11,13 @@ class ServerStartEvent: Event() {
         }
     }
 }
+
+class ServerStopEvent: Event() {
+    companion object {
+        private val instance = ServerStopEvent()
+        @JvmStatic
+        fun get(): ServerStopEvent {
+            return instance
+        }
+    }
+}
