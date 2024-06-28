@@ -36,6 +36,8 @@ object Fabricord : Listener {
     var logChannelID: String? = null
 
     // Optional
+    var serverStartMessage: String? = null
+    var serverStopMessage: String? = null
     var botOnlineStatus: String? = null
     var botActivityStatus: String? = null
     var botActivityMessage: String? = null
@@ -128,6 +130,12 @@ object Fabricord : Listener {
         }
         if (messageStyle.isNullOrBlank()) {
             messageStyle = "classic"
+        }
+        if (serverStartMessage.isNullOrBlank()) {
+            serverStartMessage = ":white_check_mark: Server has started!"
+        }
+        if (serverStopMessage.isNullOrBlank()) {
+            serverStopMessage = ":octagonal_sign: Server has stopped!"
         }
     }
 
