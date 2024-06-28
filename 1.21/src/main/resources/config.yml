@@ -3,7 +3,7 @@
 
 # Click here for various links↓.
 # GitHub -> https://github.com/KT-Ruxy/Fabricord
-# modrinth -> https://modrinth.com/mod/fabricord
+# Modrinth -> https://modrinth.com/mod/fabricord
 
 
 # BotToken for use with Discord.
@@ -12,7 +12,7 @@ BotToken: ""
 
 
 # Channel for sending Minecraft logs.
-#if Blank, the mod will not send Minecraft Server General Chat to Discord.
+# If Blank, the mod will not send Minecraft Server General Chat to Discord.
 # To get a Channel ID -> https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID
 Log_Channel_ID: ""
 
@@ -22,22 +22,22 @@ Log_Channel_ID: ""
 
 # The bot's activity can be changed.
 # "PLAYING", "STREAMING", "LISTENING" and "WATCHING" are available.
-# If blank, "PLAYING" is automatically select.
+# If blank, "PLAYING" is automatically selected.
 Bot_Activity_Status: ""
 
 
 # The bot's activity text can be changed.
-# If blank, "Minecraft" is automatically select.
+# If blank, "Minecraft" is automatically selected.
 Bot_Activity_Message: ""
 
 # The bot's online status can be changed.
 # "ONLINE", "IDLE" and "DO_NOT_DISTURB" are available.
-# If blank, "ONLINE" is automatically select.
+# If blank, "ONLINE" is automatically selected.
 Bot_Online_Status: ""
 
 # The Log Style can be changed.
 # "classic", "modern" are available.
-# If blank, "classic" is automatically select.
+# If blank, "classic" is automatically selected.
 Message_Style: ""
 
 

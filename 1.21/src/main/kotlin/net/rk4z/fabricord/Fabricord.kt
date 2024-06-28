@@ -6,6 +6,7 @@ import net.rk4z.beacon.EventBus
 import net.rk4z.beacon.Listener
 import net.rk4z.beacon.handler
 import net.rk4z.fabricord.events.ServerStartEvent
+import net.rk4z.fabricord.util.Utils.copyResourceToFile
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -23,6 +24,7 @@ object Fabricord : Listener {
     val serverDir = loader.gameDir.toAbsolutePath()
     val configDir = serverDir.resolve(MOD_ID)
 
+
     init {
         EventBus.registerAllListeners("net.rk4z.fabricord")
     }
@@ -32,6 +34,11 @@ object Fabricord : Listener {
     }
 
     private fun checkRequiredFileAndDirectories() {
-
+        if (!configDir.toFile().exists()) {
+            logger.info("Creating config directory at $configDir")
+            configDir.toFile().mkdirs()
+        }
+        // リソースからコンフィグファイルをコピーする
+        copyResourceToFile("config.yml", configDir.resolve("default_config.json"))
     }
 }

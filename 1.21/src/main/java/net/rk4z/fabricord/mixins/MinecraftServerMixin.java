@@ -17,7 +17,7 @@ import java.util.function.Function;
  */
 @Mixin(MinecraftServer.class)
 public class MinecraftServerMixin {
-;
+
     /**
      * This method is injected at the end of the startServer method of the MinecraftServer class.
      * It calls the ServerStartEvent on the EventBus.
@@ -26,8 +26,8 @@ public class MinecraftServerMixin {
      * @param cir      The callback information returnable.
      * @param <S>      A subclass of MinecraftServer.
      */
-    @Inject(method = "startServer", at = @At("TAIL"))
-    private static <S extends MinecraftServer> void injectStartServer(Function<Thread, S> function, CallbackInfoReturnable<S> cir) {
+    @Inject(method = "startServer", at = @At(value = "INVOKE", target = "Ljava/lang/Thread;start()V", shift = At.Shift.AFTER))
+    private static <S extends MinecraftServer> void StartServer(Function<Thread, S> function, CallbackInfoReturnable<S> cir) {
         EventBus.callEvent(ServerStartEvent.get());
     }
 
