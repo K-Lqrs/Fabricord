@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MinecraftServerMixin {
 
     @Inject(method = "<init>", at = @At("TAIL"))
-    public void StartClient(CallbackInfo ci) {
+    public void StartServer(CallbackInfo ci) {
         EventBus.callEvent(ServerStartEvent.get());
     }
 
