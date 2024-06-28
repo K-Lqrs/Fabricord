@@ -22,4 +22,11 @@ dependencies {
     modImplementation("net.fabricmc.fabric-api:fabric-api:$fabricVersion")
 
     implementation("net.rk4z:beacon:1.2.5")
+    implementation("net.dv8tion:JDA:5.0.0-beta.24"){
+        exclude("net.java.dev.jna", "jna")
+    }
+
+    implementation("org.yaml:snakeyaml:2.0")
+    implementation("club.minnced:discord-webhooks:0.8.4")
+    implementation("net.kyori:adventure-text-serializer-gson:4.14.0")
 }

@@ -14,7 +14,7 @@ BotToken: ""
 # Channel for sending Minecraft logs.
 # If Blank, the mod will not send Minecraft Server General Chat to Discord.
 # To get a Channel ID -> https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID
-Log_Channel_ID: ""
+LogChannelID: ""
 
 
 # >----- Advanced Settings -----< #
@@ -23,22 +23,22 @@ Log_Channel_ID: ""
 # The bot's activity can be changed.
 # "PLAYING", "STREAMING", "LISTENING" and "WATCHING" are available.
 # If blank, "PLAYING" is automatically selected.
-Bot_Activity_Status: ""
+BotActivityStatus: ""
 
 
 # The bot's activity text can be changed.
 # If blank, "Minecraft" is automatically selected.
-Bot_Activity_Message: ""
+BotActivityMessage: ""
 
 # The bot's online status can be changed.
 # "ONLINE", "IDLE" and "DO_NOT_DISTURB" are available.
 # If blank, "ONLINE" is automatically selected.
-Bot_Online_Status: ""
+BotOnlineStatus: ""
 
 # The Log Style can be changed.
 # "classic", "modern" are available.
 # If blank, "classic" is automatically selected.
-Message_Style: ""
+MessageStyle: ""
 
 
 # If Message_Style is "modern", you need to set the Webhook URL.
