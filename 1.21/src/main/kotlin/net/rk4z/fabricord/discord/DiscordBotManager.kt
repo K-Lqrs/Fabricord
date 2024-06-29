@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.minecraft.server.MinecraftServer
+import net.minecraft.server.network.ServerPlayerEntity
 import net.rk4z.beacon.EventBus
 import net.rk4z.fabricord.Fabricord.botActivityMessage
 import net.rk4z.fabricord.Fabricord.botActivityStatus
@@ -19,8 +20,8 @@ import net.rk4z.fabricord.Fabricord.logChannelID
 import net.rk4z.fabricord.Fabricord.logger
 import net.rk4z.fabricord.Fabricord.serverStartMessage
 import net.rk4z.fabricord.Fabricord.serverStopMessage
+import net.rk4z.fabricord.events.DiscordMCPlayerMentionEvent
 import net.rk4z.fabricord.events.DiscordMessageReceiveEvent
-import net.rk4z.fabricord.events.DiscordMinecraftPlayerMentionEvent
 import java.util.*
 import javax.security.auth.login.LoginException
 
@@ -33,7 +34,7 @@ object DiscordBotManager {
     private val intents = GatewayIntent.MESSAGE_CONTENT
 
     fun startBot() {
-        val onlineStatus = when (botOnlineStatus?.uppercase(Locale.getDefault()))  {
+        val onlineStatus = when (botOnlineStatus?.uppercase(Locale.getDefault())) {
             "ONLINE" -> OnlineStatus.ONLINE
             "IDLE" -> OnlineStatus.IDLE
             "DO_NOT_DISTURB" -> OnlineStatus.DO_NOT_DISTURB
@@ -93,34 +94,49 @@ object DiscordBotManager {
 
             val messageContent = event.message.contentRaw
             val players = server.playerManager.playerList
-            var updatedMessageContent = messageContent
 
             var foundMCID = false
-            players.forEach { player ->
-                val mcid = player.name.toString()
-                if (messageContent.contains(mcid)) {
+            var foundUUID = false
+            val mentionedPlayers = mutableListOf<ServerPlayerEntity>()
+
+            val mcidPattern = Regex("@([a-zA-Z0-9_]+)")
+            val mcidMatches = mcidPattern.findAll(messageContent)
+            mcidMatches.forEach { match ->
+                val mcid = match.groupValues[1]
+                val player = players.find { it.name.string == mcid }
+                player?.let {
                     foundMCID = true
+                    mentionedPlayers.add(it)
                 }
             }
 
             val uuidPattern = Regex("@\\{([0-9a-fA-F-]+)}")
-            val matches = uuidPattern.findAll(messageContent)
-            matches.forEach { match ->
+            val uuidMatches = uuidPattern.findAll(messageContent)
+            uuidMatches.forEach { match ->
                 val uuidStr = match.groupValues[1]
                 val player = players.find { it.uuid.toString() == uuidStr }
                 player?.let {
-                    updatedMessageContent = updatedMessageContent.replace(match.value, it.name.toString())
+                    foundUUID = true
+                    mentionedPlayers.add(it)
                 }
             }
 
-            if (updatedMessageContent != messageContent || foundMCID) {
-                event.message.editMessage(updatedMessageContent).queue()
-                EventBus.callEventAsync(DiscordMinecraftPlayerMentionEvent.get(event, server))
+            if (foundMCID || foundUUID) {
+                EventBus.callEventAsync(
+                    DiscordMCPlayerMentionEvent.get(
+                        event,
+                        server,
+                        mentionedPlayers,
+                        foundUUID
+                    )
+                )
             } else {
+                logger.info("No MCID or UUID found in the message.")
                 EventBus.callEventAsync(DiscordMessageReceiveEvent.get(event, server))
             }
         }
     }
+
 
     fun sendToDiscord(message: String) {
         logChannelID?.let { jda?.getTextChannelById(it)?.sendMessage(message)?.queue() }
