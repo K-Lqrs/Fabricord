@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "net.rk4z.fabricord.mixins",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "MinecraftServerMixin",
+    "PlayerManagerMixin",
+    "ServerPlayerEntityMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
