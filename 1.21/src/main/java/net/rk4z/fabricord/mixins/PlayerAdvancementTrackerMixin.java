@@ -40,7 +40,6 @@ public class PlayerAdvancementTrackerMixin {
 
     @Unique
     private boolean shouldAnnounceToChat(Advancement advancement) {
-        // comp_1913 is a function name that Yarn has (presumably) not yet fully deciphered.
         return advancement.comp_1913().isPresent() && advancement.comp_1913().get().shouldAnnounceToChat();
     }
 }
