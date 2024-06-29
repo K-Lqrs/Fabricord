@@ -19,19 +19,19 @@ import java.util.Date;
 public class PlayerManagerMixin {
     @Inject(method = "onPlayerConnect", at = @At("RETURN"))
     public void onPlayerConnect(ClientConnection cc, ServerPlayerEntity player, ConnectedClientData ccData, CallbackInfo ci) {
-        EventBus.callEventAsync(PlayerJoinEvent.get());
+        EventBus.callEventAsync(PlayerJoinEvent.get(player));
         String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date());
         String message = timestamp + " > " + player.getName().getString() + " has joined the server.";
 
-        Fabricord.INSTANCE.getLogContainer().add(message);
+        Fabricord.INSTANCE.addLog(message);
     }
 
     @Inject(method = "remove", at = @At("HEAD"))
     public void onPlayerDisconnect(ServerPlayerEntity player, CallbackInfo ci) {
-        EventBus.callEventAsync(PlayerLeaveEvent.get());
+        EventBus.callEventAsync(PlayerLeaveEvent.get(player));
         String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date());
         String message = timestamp + " > " + player.getName().getString() + " has left the server.";
 
-        Fabricord.INSTANCE.getLogContainer().add(message);
+        Fabricord.INSTANCE.addLog(message);
     }
 }

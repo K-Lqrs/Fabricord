@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.requests.GatewayIntent
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.rk4z.beacon.EventBus
+import net.rk4z.fabricord.Fabricord
 import net.rk4z.fabricord.Fabricord.botActivityMessage
 import net.rk4z.fabricord.Fabricord.botActivityStatus
 import net.rk4z.fabricord.Fabricord.botOnlineStatus
@@ -68,6 +69,8 @@ object DiscordBotManager {
             botIsInitialized = true
             logger.info("Discord bot is now online")
             serverStartMessage?.let { sendToDiscord(it) }
+            val log = "Discord bot is now online"
+            Fabricord.addLog(log)
         } catch (e: LoginException) {
             logger.error("Failed to login to Discord with the provided token", e)
             logger.error(e.stackTraceToString())
@@ -81,6 +84,8 @@ object DiscordBotManager {
         }
         jda?.shutdown()
         botIsInitialized = false
+        val log = "Discord bot has been shutdown"
+        Fabricord.addLog(log)
         serverStopMessage?.let { sendToDiscord(it) }
         logger.info("Discord bot has been shutdown")
     }
@@ -137,13 +142,12 @@ object DiscordBotManager {
         }
     }
 
-
     fun sendToDiscord(message: String) {
         logChannelID?.let { jda?.getTextChannelById(it)?.sendMessage(message)?.queue() }
     }
 
     fun sendToDiscordForConsole(message: String) {
-        if (enableConsoleLog) {
+        if (enableConsoleLog!!) {
             consoleLogChannelID?.let { jda?.getTextChannelById(it)?.sendMessage("```$message```")?.queue() }
         }
     }

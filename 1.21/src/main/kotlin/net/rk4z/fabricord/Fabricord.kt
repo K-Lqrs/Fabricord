@@ -11,6 +11,7 @@ import net.rk4z.fabricord.events.ServerStartEvent
 import net.rk4z.fabricord.events.ServerStopEvent
 import net.rk4z.fabricord.util.Utils.copyResourceToFile
 import net.rk4z.fabricord.util.Utils.getNullableString
+import net.rk4z.fabricord.util.Utils.getNullableBoolean
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.yaml.snakeyaml.Yaml
@@ -35,24 +36,12 @@ object Fabricord : Listener {
     val modDir: Path = serverDir.resolve(MOD_ID)
     val configFile: Path = modDir.resolve("config.yml")
 
+    private val yaml = Yaml()
     val logContainer: MutableList<String> = mutableListOf()
 
-    // Required
-    var botToken: String? = null
-    var logChannelID: String? = null
-
-    // Optional
-    var enableConsoleLog: Boolean = false
-    var consoleLogChannelID: String? = null
-    var serverStartMessage: String? = null
-    var serverStopMessage: String? = null
-    var botOnlineStatus: String? = null
-    var botActivityStatus: String? = null
-    var botActivityMessage: String? = null
-    var messageStyle: String? = null
-    var webHookUrl: String? = null
-
-    private val yaml = Yaml()
+    fun addLog(log: String) {
+        logContainer.add("$log\n")
+    }
 
     init {
         initialize()
@@ -78,10 +67,15 @@ object Fabricord : Listener {
 
     val stopHandler = handler<ServerStopEvent> {
         logger.info("Shutting down $name v$version")
-        val timeStamp = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(Date())
-        val logFile = File("log_${name}_$timeStamp.log")
+        logDump()
+        DiscordBotManager.stopBot()
+        EventBus.shutdown()
+    }
 
+    private fun logDump() {
         try {
+            val timeStamp = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(Date())
+            val logFile = File("log_${name}_$timeStamp.log")
             logFile.bufferedWriter().use { writer ->
                 logContainer.forEach { log ->
                     writer.write(log)
@@ -91,8 +85,6 @@ object Fabricord : Listener {
         } catch (e: IOException) {
             e.printStackTrace()
         }
-        DiscordBotManager.stopBot()
-        EventBus.shutdown()
     }
 
     private fun checkRequiredFilesAndDirectories(): Boolean {
@@ -115,6 +107,26 @@ object Fabricord : Listener {
         }
     }
 
+    // Required
+    var botToken: String? = null
+    var logChannelID: String? = null
+
+    // Optional
+    var enableConsoleLog: Boolean? = false
+    var consoleLogChannelID: String? = null
+
+    var serverStartMessage: String? = null
+    var serverStopMessage: String? = null
+    var playerJoinMessage: String? = null
+    var playerLeaveMessage: String? = null
+
+    var botOnlineStatus: String? = null
+    var botActivityStatus: String? = null
+    var botActivityMessage: String? = null
+
+    var messageStyle: String? = null
+    var webHookUrl: String? = null
+
     private fun loadConfig() {
         try {
             if (Files.notExists(configFile)) {
@@ -125,12 +137,22 @@ object Fabricord : Listener {
             Files.newInputStream(configFile).use { inputStream ->
                 val config: Map<String, Any> = yaml.load(inputStream)
 
+                // Required
                 botToken = config.getNullableString("BotToken")
                 logChannelID = config.getNullableString("LogChannelID")
+                // Optional
+                enableConsoleLog = config.getNullableBoolean("EnableConsoleLog")
+                consoleLogChannelID = config.getNullableString("ConsoleLogChannelID")
+
+                serverStartMessage = config.getNullableString("ServerStartMessage")
+                serverStopMessage = config.getNullableString("ServerStopMessage")
+                playerJoinMessage = config.getNullableString("PlayerJoinMessage")
+                playerLeaveMessage = config.getNullableString("PlayerLeaveMessage")
 
                 botOnlineStatus = config.getNullableString("BotOnlineStatus")
                 botActivityStatus = config.getNullableString("BotActivityStatus")
                 botActivityMessage = config.getNullableString("BotActivityMessage")
+
                 messageStyle = config.getNullableString("MessageStyle")
                 webHookUrl = config.getNullableString("WebHookUrl")
             }
