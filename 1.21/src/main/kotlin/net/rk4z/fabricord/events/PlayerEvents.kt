@@ -1,5 +1,6 @@
 package net.rk4z.fabricord.events
 
+import net.minecraft.advancement.AdvancementEntry
 import net.minecraft.server.network.ServerPlayerEntity
 import net.rk4z.beacon.Event
 
@@ -26,6 +27,15 @@ class PlayerDeathEvent(val player: ServerPlayerEntity) : Event() {
         @JvmStatic
         fun get(player: ServerPlayerEntity): PlayerDeathEvent {
             return PlayerDeathEvent(player)
+        }
+    }
+}
+
+class PlayerGrantCriterionEvent(val player: ServerPlayerEntity, val criterion: String, val advancement: AdvancementEntry) : Event() {
+    companion object {
+        @JvmStatic
+        fun get(player: ServerPlayerEntity, criterion: String, advancement: AdvancementEntry): PlayerGrantCriterionEvent {
+            return PlayerGrantCriterionEvent(player, criterion, advancement)
         }
     }
 }

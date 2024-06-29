@@ -3,6 +3,7 @@ package net.rk4z.fabricord.discord
 import net.rk4z.beacon.Listener
 import net.rk4z.beacon.handler
 import net.rk4z.fabricord.events.PlayerDeathEvent
+import net.rk4z.fabricord.events.PlayerGrantCriterionEvent
 import net.rk4z.fabricord.events.PlayerJoinEvent
 import net.rk4z.fabricord.events.PlayerLeaveEvent
 
@@ -28,5 +29,12 @@ class DiscordPlayerEventHandler : Listener {
         val deathMessage = player.damageTracker.deathMessage
 
         DiscordEmbed.sendPlayerDeathEmbed(player, deathMessage)
+    }
+
+    val onPlayerGrantCriterion = handler<PlayerGrantCriterionEvent> { event ->
+        val player = event.player
+        val criterion = event.criterion
+        val advancement = event.advancement
+        DiscordEmbed.sendPlayerGrantCriterionEmbed(player, criterion, advancement)
     }
 }

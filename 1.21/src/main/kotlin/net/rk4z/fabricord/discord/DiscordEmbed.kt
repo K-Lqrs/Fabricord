@@ -1,6 +1,7 @@
 package net.rk4z.fabricord.discord
 
 import net.dv8tion.jda.api.EmbedBuilder
+import net.minecraft.advancement.AdvancementEntry
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.rk4z.fabricord.Fabricord.logChannelID
@@ -41,5 +42,12 @@ object DiscordEmbed {
         val uuid = player.uuid.toString()
         val imageUrl = "https://visage.surgeplay.com/face/256/$uuid"
         sendEmbedToDiscord(Color.BLACK, deathMessage.toString(), imageUrl)
+    }
+
+    fun sendPlayerGrantCriterionEmbed(player: ServerPlayerEntity, criterion: String, advancement: AdvancementEntry) {
+        val name = player.name
+        val uuid = player.uuid.toString()
+        val imageUrl = "https://visage.surgeplay.com/face/256/$uuid"
+        sendEmbedToDiscord(Color.YELLOW, "$name has made the advancement $criterion", imageUrl)
     }
 }
