@@ -30,7 +30,3 @@ dependencies {
     implementation("club.minnced:discord-webhooks:0.8.4")
     implementation("net.kyori:adventure-text-serializer-gson:4.14.0")
 }
-
-loom {
-    accessWidenerPath = file("src/main/resources/fabricord.accesswidener")
-}
