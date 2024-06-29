@@ -4,21 +4,31 @@ import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.entities.Activity
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
+import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.requests.GatewayIntent
+import net.minecraft.server.MinecraftServer
+import net.rk4z.beacon.EventBus
 import net.rk4z.fabricord.Fabricord.botActivityMessage
 import net.rk4z.fabricord.Fabricord.botActivityStatus
 import net.rk4z.fabricord.Fabricord.botOnlineStatus
 import net.rk4z.fabricord.Fabricord.botToken
+import net.rk4z.fabricord.Fabricord.consoleLogChannelID
+import net.rk4z.fabricord.Fabricord.enableConsoleLog
 import net.rk4z.fabricord.Fabricord.logChannelID
 import net.rk4z.fabricord.Fabricord.logger
 import net.rk4z.fabricord.Fabricord.serverStartMessage
 import net.rk4z.fabricord.Fabricord.serverStopMessage
+import net.rk4z.fabricord.events.DiscordMessageReceiveEvent
+import net.rk4z.fabricord.events.DiscordMinecraftPlayerMentionEvent
 import java.util.*
 import javax.security.auth.login.LoginException
 
+@Suppress("unused", "MemberVisibilityCanBePrivate")
 object DiscordBotManager {
     var jda: JDA? = null
     var botIsInitialized: Boolean = false
+    private val server: MinecraftServer? = null
 
     private val intents = GatewayIntent.MESSAGE_CONTENT
 
@@ -50,6 +60,7 @@ object DiscordBotManager {
                 .setStatus(onlineStatus)
                 .setActivity(activity)
                 .enableIntents(intents)
+                .addEventListeners(discordListener)
                 .build()
                 .awaitReady()
 
@@ -73,7 +84,51 @@ object DiscordBotManager {
         logger.info("Discord bot has been shutdown")
     }
 
+    private val discordListener = object : ListenerAdapter() {
+        override fun onMessageReceived(event: MessageReceivedEvent) {
+            val server = server ?: run {
+                logger.error("MinecraftServer is not initialized. Cannot process Discord message.")
+                return
+            }
+
+            val messageContent = event.message.contentRaw
+            val players = server.playerManager.playerList
+            var updatedMessageContent = messageContent
+
+            var foundMCID = false
+            players.forEach { player ->
+                val mcid = player.name.toString()
+                if (messageContent.contains(mcid)) {
+                    foundMCID = true
+                }
+            }
+
+            val uuidPattern = Regex("@\\{([0-9a-fA-F-]+)}")
+            val matches = uuidPattern.findAll(messageContent)
+            matches.forEach { match ->
+                val uuidStr = match.groupValues[1]
+                val player = players.find { it.uuid.toString() == uuidStr }
+                player?.let {
+                    updatedMessageContent = updatedMessageContent.replace(match.value, it.name.toString())
+                }
+            }
+
+            if (updatedMessageContent != messageContent || foundMCID) {
+                event.message.editMessage(updatedMessageContent).queue()
+                EventBus.callEventAsync(DiscordMinecraftPlayerMentionEvent.get(event, server))
+            } else {
+                EventBus.callEventAsync(DiscordMessageReceiveEvent.get(event, server))
+            }
+        }
+    }
+
     fun sendToDiscord(message: String) {
         logChannelID?.let { jda?.getTextChannelById(it)?.sendMessage(message)?.queue() }
+    }
+
+    fun sendToDiscordForConsole(message: String) {
+        if (enableConsoleLog) {
+            consoleLogChannelID?.let { jda?.getTextChannelById(it)?.sendMessage("```$message```")?.queue() }
+        }
     }
 }

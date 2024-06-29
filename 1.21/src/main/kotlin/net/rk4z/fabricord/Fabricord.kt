@@ -1,10 +1,12 @@
 package net.rk4z.fabricord
 
+import com.ibm.icu.text.SimpleDateFormat
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.metadata.ModMetadata
 import net.rk4z.beacon.EventBus
 import net.rk4z.beacon.Listener
 import net.rk4z.beacon.handler
+import net.rk4z.fabricord.discord.DiscordBotManager
 import net.rk4z.fabricord.events.ServerStartEvent
 import net.rk4z.fabricord.events.ServerStopEvent
 import net.rk4z.fabricord.util.Utils.copyResourceToFile
@@ -12,9 +14,11 @@ import net.rk4z.fabricord.util.Utils.getNullableString
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.yaml.snakeyaml.Yaml
+import java.io.File
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.Date
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 object Fabricord : Listener {
@@ -31,11 +35,15 @@ object Fabricord : Listener {
     val modDir: Path = serverDir.resolve(MOD_ID)
     val configFile: Path = modDir.resolve("config.yml")
 
+    val logContainer: MutableList<String> = mutableListOf()
+
     // Required
     var botToken: String? = null
     var logChannelID: String? = null
 
     // Optional
+    var enableConsoleLog: Boolean = false
+    var consoleLogChannelID: String? = null
     var serverStartMessage: String? = null
     var serverStopMessage: String? = null
     var botOnlineStatus: String? = null
@@ -65,11 +73,25 @@ object Fabricord : Listener {
     }
 
     val startHandler = handler<ServerStartEvent> {
-        TODO()
+        DiscordBotManager.startBot()
     }
 
     val stopHandler = handler<ServerStopEvent> {
         logger.info("Shutting down $name v$version")
+        val timeStamp = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(Date())
+        val logFile = File("log_${name}_$timeStamp.log")
+
+        try {
+            logFile.bufferedWriter().use { writer ->
+                logContainer.forEach { log ->
+                    writer.write(log)
+                    writer.newLine()
+                }
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        DiscordBotManager.stopBot()
         EventBus.shutdown()
     }
 
@@ -105,6 +127,7 @@ object Fabricord : Listener {
 
                 botToken = config.getNullableString("BotToken")
                 logChannelID = config.getNullableString("LogChannelID")
+
                 botOnlineStatus = config.getNullableString("BotOnlineStatus")
                 botActivityStatus = config.getNullableString("BotActivityStatus")
                 botActivityMessage = config.getNullableString("BotActivityMessage")

@@ -3,7 +3,8 @@
   "package": "net.rk4z.fabricord.mixins",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "MinecraftServerMixin"
+    "MinecraftServerMixin",
+    "PlayerManagerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
