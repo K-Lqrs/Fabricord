@@ -29,7 +29,7 @@ public class PlayerAdvancementTrackerMixin {
         AdvancementProgress progress = getProgress(advancementEntry);
 
         if (progress.isDone() && shouldAnnounceToChat(advancementEntry.value())) {
-            EventBus.callEventAsync(PlayerGrantCriterionEvent.get(owner, string, advancementEntry));
+            EventBus.callEventAsync(PlayerGrantCriterionEvent.get(owner, string));
         }
     }
 

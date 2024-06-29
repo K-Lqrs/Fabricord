@@ -42,4 +42,11 @@ object DiscordEmbed {
         val imageUrl = "https://visage.surgeplay.com/face/256/$uuid"
         sendEmbedToDiscord(Color.BLACK, deathMessage.toString(), imageUrl)
     }
+
+    fun sendPlayerGrantCriterionEmbed(player: ServerPlayerEntity, criterion: String) {
+        val name = player.name
+        val uuid = player.uuid.toString()
+        val imageUrl = "https://visage.surgeplay.com/face/256/$uuid"
+        sendEmbedToDiscord(Color.YELLOW, "$name has made the advancement $criterion", imageUrl)
+    }
 }

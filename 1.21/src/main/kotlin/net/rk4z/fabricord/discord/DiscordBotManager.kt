@@ -136,7 +136,6 @@ object DiscordBotManager {
                     )
                 )
             } else {
-                logger.info("No MCID or UUID found in the message.")
                 EventBus.callEventAsync(DiscordMessageReceiveEvent.get(event, server))
             }
         }

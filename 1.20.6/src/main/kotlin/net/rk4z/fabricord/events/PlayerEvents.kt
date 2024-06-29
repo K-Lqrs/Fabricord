@@ -29,3 +29,12 @@ class PlayerDeathEvent(val player: ServerPlayerEntity) : Event() {
         }
     }
 }
+
+class PlayerGrantCriterionEvent(val player: ServerPlayerEntity, val criterion: String) : Event() {
+    companion object {
+        @JvmStatic
+        fun get(player: ServerPlayerEntity, criterion: String): PlayerGrantCriterionEvent {
+            return PlayerGrantCriterionEvent(player, criterion)
+        }
+    }
+}

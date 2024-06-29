@@ -34,7 +34,6 @@ class DiscordPlayerEventHandler : Listener {
     val onPlayerGrantCriterion = handler<PlayerGrantCriterionEvent> { event ->
         val player = event.player
         val criterion = event.criterion
-        val advancement = event.advancement
-        DiscordEmbed.sendPlayerGrantCriterionEmbed(player, criterion, advancement)
+        DiscordEmbed.sendPlayerGrantCriterionEmbed(player, criterion)
     }
 }
