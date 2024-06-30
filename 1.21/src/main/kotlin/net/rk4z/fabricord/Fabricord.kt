@@ -140,10 +140,12 @@ object Fabricord : Listener {
                 // Required
                 botToken = config.getNullableString("BotToken")
                 logChannelID = config.getNullableString("LogChannelID")
-                // Optional
+
+                // this feature is not supported in the current version
                 enableConsoleLog = config.getNullableBoolean("EnableConsoleLog")
                 consoleLogChannelID = config.getNullableString("ConsoleLogChannelID")
 
+                // Optional
                 serverStartMessage = config.getNullableString("ServerStartMessage")
                 serverStopMessage = config.getNullableString("ServerStopMessage")
                 playerJoinMessage = config.getNullableString("PlayerJoinMessage")

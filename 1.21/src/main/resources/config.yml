@@ -46,4 +46,24 @@ MessageStyle: ""
 Webhook_URL: ""
 
 
+# The message that appears when the server starts.
+# If blank, the message will use the default message.
+ServerStartMessage: ""
+
+
+# The message that appears when the server stops.
+# If blank, the message will use the default message.
+ServerStopMessage: ""
+
+
+# The message that appears when a player joins the server.
+# If blank, the message will use the default message.
+PlayerJoinMessage: ""
+
+
+# The message that appears when a player leaves the server.
+# If blank, the message will use the default message.
+PlayerLeaveMessage: ""
+
+
 # >-----------------------------< #
