@@ -5,7 +5,7 @@ import net.fabricmc.loader.api.metadata.ModMetadata
 import net.rk4z.beacon.Listener
 import net.rk4z.beacon.Priority
 import net.rk4z.beacon.handler
-import net.rk4z.fabricord.events.ServerStartEvent
+import net.rk4z.fabricord.events.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -14,7 +14,7 @@ import java.nio.file.Path
 import java.text.SimpleDateFormat
 import java.util.*
 
-@Suppress("unused")
+@Suppress("unused", "MemberVisibilityCanBePrivate")
 object Fabricord : Listener {
     const val MOD_ID = "fabricord"
 
@@ -59,7 +59,7 @@ object Fabricord : Listener {
         logger.info("Starting $name v$version")
     }
 
-    val onServerStop = handler<ServerStartEvent>(
+    val onServerStop = handler<ServerStopEvent>(
         priority = Priority.HIGHEST
     ) {
         addLog("Server stopping...")

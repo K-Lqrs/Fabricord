@@ -6,6 +6,7 @@ import net.rk4z.beacon.EventBus
 import net.rk4z.fabricord.events.ServerStartEvent
 import net.rk4z.fabricord.events.ServerStopEvent
 
+@Suppress("unused")
 class Initializer : ModInitializer {
     override fun onInitialize() {
         EventBus.initialize()
