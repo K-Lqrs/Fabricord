@@ -1,6 +1,3 @@
-*/build
-*/.gradle
-*/.idea
-*/run
-
-Fabricord.iml
+.idea
+.gradle
+build
