@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "fabricord",
+  "version": "${version}",
+  "name": "Fabricord",
+  "description": "Modern and simple Discord Bridge Mod for FabricServer.",
+  "authors": [
+    "Ruxy"
+  ],
+  "license": "Apache-2.0",
+  "icon": "assets/fabricord/icon.png",
+  "environment": "server",
+  "entrypoints": {
+    "main": [
+      {
+        "value": "net.rk4z.fabricord.Initializer",
+        "adapter": "kotlin"
+      }
+    ]
+  },
+  "mixins": [
+    "fabricord.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.15.6",
+    "minecraft": "~1.20.4",
+    "java": ">=17",
+    "fabric-api": "*",
+    "fabric-language-kotlin": ">=1.11.0"
+  }
+}
