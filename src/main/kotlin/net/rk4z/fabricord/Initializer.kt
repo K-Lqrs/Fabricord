@@ -9,6 +9,7 @@ import net.rk4z.fabricord.events.ServerStopEvent
 @Suppress("unused")
 class Initializer : ModInitializer {
     override fun onInitialize() {
+        Fabricord.INSTANCE = Fabricord()
         EventBus.initialize()
         EventBus.registerAllListeners("net.rk4z.fabricord")
         EventBus.callEventAsync(ServerStartEvent.get())

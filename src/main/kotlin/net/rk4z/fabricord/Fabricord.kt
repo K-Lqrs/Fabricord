@@ -1,7 +1,9 @@
 package net.rk4z.fabricord
 
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.metadata.ModMetadata
+import net.rk4z.beacon.EventBus
 import net.rk4z.beacon.Listener
 import net.rk4z.beacon.Priority
 import net.rk4z.beacon.handler
@@ -15,8 +17,12 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
-object Fabricord : Listener {
-    const val MOD_ID = "fabricord"
+class Fabricord : Listener {
+    companion object {
+        const val MOD_ID = "fabricord"
+
+        lateinit var INSTANCE: Fabricord
+    }
 
     val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
@@ -49,6 +55,16 @@ object Fabricord : Listener {
             }
         } catch (e: IOException) {
             e.printStackTrace()
+        }
+    }
+
+    val onServerLoad = handler<ServerLoadEvent>(
+        priority = Priority.HIGHEST
+    ) {
+        addLog("Server loading...")
+        logger.info("Loading $name v$version")
+        ServerLifecycleEvents.SERVER_STOPPING.register {
+            EventBus.callEventAsync(ServerStopEvent.get())
         }
     }
 

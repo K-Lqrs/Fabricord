@@ -17,11 +17,13 @@ dependencies {
     val mappingsVersion: String by project
     val loaderVersion: String by project
     val fabricVersion: String by project
+    val fabricLanguageKotlinVersion: String by project
 
     minecraft("com.mojang:minecraft:$minecraftVersion")
     mappings("net.fabricmc:yarn:$mappingsVersion")
     modImplementation("net.fabricmc:fabric-loader:$loaderVersion")
     modImplementation("net.fabricmc.fabric-api:fabric-api:$fabricVersion")
+    modImplementation("net.fabricmc:fabric-language-kotlin:$fabricLanguageKotlinVersion")
 
     implementation("net.rk4z:beacon:1.2.5")
     implementation("net.dv8tion:JDA:5.0.0-beta.24"){
@@ -39,6 +41,14 @@ dependencies {
     includeInJar("org.yaml:snakeyaml:2.0")
     includeInJar("club.minnced:discord-webhooks:0.8.4")
     includeInJar("net.kyori:adventure-text-serializer-gson:4.14.0")
+}
+
+tasks.named<ProcessResources>("processResources") {
+    inputs.property("version", project.version)
+
+    filesMatching("fabric.mod.json") {
+        expand(mapOf("version" to project.version))
+    }
 }
 
 tasks.withType<Jar> {
