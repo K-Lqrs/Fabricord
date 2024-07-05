@@ -4,6 +4,7 @@ import net.fabricmc.api.DedicatedServerModInitializer
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.metadata.ModMetadata
+import net.minecraft.server.MinecraftServer
 import net.rk4z.beacon.*
 import net.rk4z.fabricord.discord.DiscordBotManager
 import net.rk4z.fabricord.discord.DiscordBotManager.botIsInitialized
@@ -22,6 +23,7 @@ import java.nio.file.Path
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.io.path.bufferedWriter
+import kotlin.io.path.notExists
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 @EventHandler
@@ -37,7 +39,7 @@ object Fabricord : IEventHandler, DedicatedServerModInitializer {
     val name: String = meta.name
     val version: String = meta.version.friendlyString
 
-    val serverDir: Path = loader.gameDir.toAbsolutePath()
+    val serverDir: Path = loader.gameDir.toRealPath()
     val modDir: Path = serverDir.resolve(MOD_ID)
     val configFile: Path = modDir.resolve("config.yml")
 
@@ -74,22 +76,25 @@ object Fabricord : IEventHandler, DedicatedServerModInitializer {
 
     override fun onInitializeServer() {
         EventBus.initialize()
-        ServerLifecycleEvents.SERVER_STARTING.register { EventBus.post(ServerInitEvent.get(), true) }
-        ServerLifecycleEvents.SERVER_STARTED.register { EventBus.post(ServerStartEvent.get(), true) }
-        ServerLifecycleEvents.SERVER_STOPPING.register { EventBus.post(ServerShutdownEvent.get(), true) }
+        ServerLifecycleEvents.SERVER_STARTING.register { s: MinecraftServer ->
+            EventBus.post(ServerInitEvent.get(s)) }
+        ServerLifecycleEvents.SERVER_STARTED.register { EventBus.post(ServerStartEvent.get()) }
+        ServerLifecycleEvents.SERVER_STOPPING.register { EventBus.post(ServerShutdownEvent.get()) }
     }
 
     val onServerInit = handler<ServerInitEvent>(
         condition = { true },
         priority = Priority.HIGHEST
-    ) {
+    ) { e ->
         try {
             addLog("Server initializing...")
             logger.info("Initializing $name v$version")
+            DiscordBotManager.init(e.s)
             DiscordMessageHandler()
             DiscordPlayerEventHandler()
             checkRequiredFilesAndDirectories()
             loadConfig()
+            logger.info("Bot token: $botToken, Log channel ID: $logChannelID")
             nullCheck()
             initializeIsDone = true
         } catch (e: Exception) {
@@ -101,7 +106,7 @@ object Fabricord : IEventHandler, DedicatedServerModInitializer {
     val onServerStart = handler<ServerStartEvent>(
         condition = { true },
         priority = Priority.HIGHEST
-    ) {
+    ) { e ->
         addLog("Server starting...")
         logger.info("Starting $name v$version")
         if (requiredNullCheck()) {
@@ -133,6 +138,7 @@ object Fabricord : IEventHandler, DedicatedServerModInitializer {
     private fun logDump() {
         try {
             addLog("Dumping logs to file...")
+            logger.info("Dumping logs to file. Please wait...")
             val timeStamp = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(Date())
             val logFile = modDir.resolve("log_${name}_$timeStamp.txt")
             logFile.bufferedWriter().use { writer ->
@@ -154,7 +160,9 @@ object Fabricord : IEventHandler, DedicatedServerModInitializer {
                 Files.createDirectories(modDir)
             }
             addLog("Checking config file at $configFile")
-            copyResourceToFile("config.yml", configFile)
+            if (configFile.notExists()) {
+                copyResourceToFile("config.yml", configFile)
+            }
         } catch (e: SecurityException) {
             addLog("Failed to create/check required files or directories due to security restrictions")
             logger.error("Failed to create/check required files or directories due to security restrictions", e)
@@ -170,6 +178,7 @@ object Fabricord : IEventHandler, DedicatedServerModInitializer {
     private fun loadConfig() {
         try {
             addLog("Loading config file...")
+            logger.info("Loading config file...")
 
             if (Files.notExists(configFile)) {
                 addLog("Config file not found at $configFile")
@@ -224,10 +233,10 @@ object Fabricord : IEventHandler, DedicatedServerModInitializer {
             messageStyle = "classic"
         }
         if (serverStartMessage.isNullOrBlank()) {
-            serverStartMessage = ":white_check_mark: Server has started!"
+            serverStartMessage = ":white_check_mark: **Server has started!**"
         }
         if (serverStopMessage.isNullOrBlank()) {
-            serverStopMessage = ":octagonal_sign: Server has stopped!"
+            serverStopMessage = ":octagonal_sign: **Server has stopped!**"
         }
     }
 

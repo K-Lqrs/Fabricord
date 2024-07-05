@@ -30,9 +30,15 @@ import javax.security.auth.login.LoginException
 object DiscordBotManager {
     var jda: JDA? = null
     var botIsInitialized: Boolean = false
-    private val server: MinecraftServer? = null
+    private var server: MinecraftServer? = null
 
     private val intents = GatewayIntent.MESSAGE_CONTENT
+
+    // Initialize the MinecraftServer instance
+    // This is required to process Discord messages
+    fun init(s: MinecraftServer) {
+        server = s
+    }
 
     fun startBot() {
         val onlineStatus = when (botOnlineStatus?.uppercase(Locale.getDefault())) {
@@ -78,12 +84,12 @@ object DiscordBotManager {
     }
 
     fun stopBot() {
-        jda?.shutdownNow()
+        jda?.shutdown()
         botIsInitialized = false
         val log = "Discord bot has been shutdown"
         Fabricord.addLog(log)
-        serverStopMessage?.let { sendToDiscord(it) }
         logger.info("Discord bot has been shutdown")
+        serverStopMessage?.let { sendToDiscord(it) }
     }
 
     private val discordListener = object : ListenerAdapter() {

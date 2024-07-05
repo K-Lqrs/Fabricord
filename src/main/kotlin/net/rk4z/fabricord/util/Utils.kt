@@ -5,7 +5,6 @@ import net.rk4z.fabricord.Fabricord.logger
 import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.StandardCopyOption
 
 object Utils {
     fun Map<String, Any>.getNullableString(key: String): String? =
@@ -23,7 +22,7 @@ object Utils {
             logger.error("Resource $fullPath not found in Jar")
             return
         }
-        Files.copy(inputStream, outputPath, StandardCopyOption.REPLACE_EXISTING)
+        Files.copy(inputStream, outputPath)
         logger.info("Copied resource $fullPath to $outputPath")
     }
 
