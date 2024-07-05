@@ -94,7 +94,6 @@ object Fabricord : IEventHandler, DedicatedServerModInitializer {
             DiscordPlayerEventHandler()
             checkRequiredFilesAndDirectories()
             loadConfig()
-            logger.info("Bot token: $botToken, Log channel ID: $logChannelID")
             nullCheck()
             initializeIsDone = true
         } catch (e: Exception) {
