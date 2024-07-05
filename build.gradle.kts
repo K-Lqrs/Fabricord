@@ -25,7 +25,7 @@ dependencies {
     modImplementation("net.fabricmc.fabric-api:fabric-api:$fabricVersion")
     modImplementation("net.fabricmc:fabric-language-kotlin:$fabricLanguageKotlinVersion")
 
-    implementation("net.rk4z:beacon:1.2.5")
+    implementation("net.rk4z:beacon:1.3.3")
     implementation("net.dv8tion:JDA:5.0.0-beta.24"){
         exclude("net.java.dev.jna", "jna")
     }
@@ -34,7 +34,7 @@ dependencies {
     implementation("club.minnced:discord-webhooks:0.8.4")
     implementation("net.kyori:adventure-text-serializer-gson:4.14.0")
 
-    includeInJar("net.rk4z:beacon:1.2.5")
+    includeInJar("net.rk4z:beacon:1.3.3")
     includeInJar("net.dv8tion:JDA:5.0.0-beta.24") {
         exclude("net.java.dev.jna", "jna")
     }

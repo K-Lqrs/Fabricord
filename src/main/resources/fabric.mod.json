@@ -11,9 +11,9 @@
   "icon": "assets/fabricord/icon.png",
   "environment": "server",
   "entrypoints": {
-    "main": [
+    "server": [
       {
-        "value": "net.rk4z.fabricord.Initializer",
+        "value": "net.rk4z.fabricord.Fabricord",
         "adapter": "kotlin"
       }
     ]

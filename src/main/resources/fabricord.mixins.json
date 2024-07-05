@@ -2,11 +2,10 @@
   "required": true,
   "package": "net.rk4z.fabricord.mixins",
   "compatibilityLevel": "JAVA_21",
-  "server": [
-    "MinecraftServerMixin",
-    "FabricLoaderImplMixin"
-  ],
   "injectors": {
     "defaultRequire": 1
-  }
+  },
+  "mixins": [
+  ],
+  "refmap": "Fabricord-refmap.json"
 }

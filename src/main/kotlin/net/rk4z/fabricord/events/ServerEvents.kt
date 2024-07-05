@@ -2,10 +2,10 @@ package net.rk4z.fabricord.events
 
 import net.rk4z.beacon.Event
 
-class ServerLoadEvent : Event() {
+class ServerInitEvent : Event() {
     companion object {
         @JvmStatic
-        fun get() = ServerLoadEvent()
+        fun get() = ServerInitEvent()
     }
 }
 
@@ -16,9 +16,9 @@ class ServerStartEvent : Event() {
     }
 }
 
-class ServerStopEvent : Event() {
+class ServerShutdownEvent : Event() {
     companion object {
         @JvmStatic
-        fun get() = ServerStopEvent()
+        fun get() = ServerShutdownEvent()
     }
 }
