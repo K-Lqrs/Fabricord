@@ -1,6 +1,8 @@
 package net.rk4z.fabricord.util
 
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.Text
+import net.minecraft.util.Language
 import net.rk4z.fabricord.Fabricord.logger
 import java.io.InputStream
 import java.nio.file.Files
@@ -12,8 +14,6 @@ object Utils {
 
     fun Map<String, Any>.getNullableBoolean(key: String): Boolean? =
         this[key]?.toString()?.takeIf { it.isNotBlank() }?.toBooleanStrictOrNull()
-
-
 
     fun copyResourceToFile(resourcePath: String, outputPath: Path) {
         val fullPath = "/$resourcePath"

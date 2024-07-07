@@ -90,8 +90,9 @@ object Fabricord : IEventHandler, DedicatedServerModInitializer {
             addLog("Server initializing...")
             logger.info("Initializing $name v$version")
             DiscordBotManager.init(e.s)
-            DiscordMessageHandler()
+            DiscordMessageHandler(e.s)
             DiscordPlayerEventHandler()
+            DiscordPlayerEventHandler().registerEventListeners()
             checkRequiredFilesAndDirectories()
             loadConfig()
             nullCheck()
@@ -105,7 +106,7 @@ object Fabricord : IEventHandler, DedicatedServerModInitializer {
     val onServerStart = handler<ServerStartEvent>(
         condition = { true },
         priority = Priority.HIGHEST
-    ) { e ->
+    ) {
         addLog("Server starting...")
         logger.info("Starting $name v$version")
         if (requiredNullCheck()) {

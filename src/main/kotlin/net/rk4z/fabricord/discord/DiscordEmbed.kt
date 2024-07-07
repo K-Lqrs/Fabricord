@@ -24,27 +24,27 @@ object DiscordEmbed {
     }
 
     fun sendPlayerJoinEmbed(player: ServerPlayerEntity) {
-        val name = player.name
+        val name = player.name.string
         val uuid = player.uuid.toString()
         val imageUrl = "https://visage.surgeplay.com/face/256/$uuid"
         sendEmbedToDiscord(Color.GREEN, "$name joined the server", imageUrl)
     }
 
     fun sendPlayerLeftEmbed(player: ServerPlayerEntity) {
-        val name = player.name
+        val name = player.name.string
         val uuid = player.uuid.toString()
         val imageUrl = "https://visage.surgeplay.com/face/256/$uuid"
         sendEmbedToDiscord(Color.RED, "$name left the server", imageUrl)
     }
 
-    fun sendPlayerDeathEmbed(player: ServerPlayerEntity, deathMessage: Text) {
+    fun sendPlayerDeathEmbed(player: ServerPlayerEntity, deathMessage: String) {
         val uuid = player.uuid.toString()
         val imageUrl = "https://visage.surgeplay.com/face/256/$uuid"
-        sendEmbedToDiscord(Color.BLACK, deathMessage.toString(), imageUrl)
+        sendEmbedToDiscord(Color.BLACK, deathMessage, imageUrl)
     }
 
     fun sendPlayerGrantCriterionEmbed(player: ServerPlayerEntity, criterion: String) {
-        val name = player.name
+        val name = player.name.string
         val uuid = player.uuid.toString()
         val imageUrl = "https://visage.surgeplay.com/face/256/$uuid"
         sendEmbedToDiscord(Color.YELLOW, "$name has made the advancement $criterion", imageUrl)

@@ -7,6 +7,7 @@ import net.minecraft.advancement.PlayerAdvancementTracker;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.rk4z.beacon.EventBus;
 import net.rk4z.fabricord.events.PlayerGrantCriterionEvent;
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -21,7 +22,7 @@ public class PlayerAdvancementTrackerMixin {
     private ServerPlayerEntity owner;
 
     @Inject(method = "grantCriterion", at = @At("RETURN"))
-    public void onGrantCriterion(AdvancementEntry advancementEntry, String string, CallbackInfoReturnable<Boolean> cir) {
+    public void onGrantCriterion(AdvancementEntry advancementEntry, String string, @NotNull CallbackInfoReturnable<Boolean> cir) {
         if (!cir.getReturnValueZ()) {
             return;
         }
@@ -39,7 +40,7 @@ public class PlayerAdvancementTrackerMixin {
     }
 
     @Unique
-    private boolean shouldAnnounceToChat(Advancement advancement) {
+    private boolean shouldAnnounceToChat(@NotNull Advancement advancement) {
         return advancement.comp_1913().isPresent() && advancement.comp_1913().get().shouldAnnounceToChat();
     }
 }

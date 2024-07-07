@@ -6,6 +6,7 @@ import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
+import net.minecraft.server.MinecraftServer
 import net.minecraft.sound.SoundEvents
 import net.minecraft.text.Text
 import net.rk4z.beacon.EventHandler
@@ -19,9 +20,12 @@ import java.awt.Color
 
 @Suppress("unused")
 @EventHandler
-class DiscordMessageHandler : IEventHandler {
+class DiscordMessageHandler(s: MinecraftServer) : IEventHandler {
+    private val registryManager = s.registryManager
 
-    val handleDiscordMessage = handler<DiscordMessageReceiveEvent> { event ->
+    val handleDiscordMessage = handler<DiscordMessageReceiveEvent>(
+        condition = { true }
+    ) { event ->
         val message: Text? = createMessage(event.c, false, null)
 
         event.s.playerManager.playerList.forEach { player ->
@@ -29,7 +33,9 @@ class DiscordMessageHandler : IEventHandler {
         }
     }
 
-    val handleMentionedDiscordMessage = handler<DiscordMCPlayerMentionEvent> { event ->
+    val handleMentionedDiscordMessage = handler<DiscordMCPlayerMentionEvent>(
+        condition = { true }
+    ) { event ->
         val updatedMessageContent = replaceUUIDsWithMCIDs(event.c.message.contentRaw, event.s.playerManager.playerList)
 
         event.m.forEach { player ->
@@ -99,7 +105,7 @@ class DiscordMessageHandler : IEventHandler {
         componentMessage = componentMessage.append(messageContent)
 
         val json = GsonComponentSerializer.gson().serialize(componentMessage)
-        return Text.Serialization.fromJson(json)
+        return Text.Serialization.fromJson(json, registryManager)
     }
 
 }
