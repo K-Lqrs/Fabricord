@@ -1,13 +1,10 @@
 {
   "required": true,
-  "package": "net.rk4z.fabricord.mixins",
+  "package": "net.rk4z.fabricord.mixin",
   "compatibilityLevel": "JAVA_21",
   "injectors": {
     "defaultRequire": 1
   },
-  "mixins": [
-    "PlayerAdvancementTrackerMixin",
-    "ServerPlayerEntityMixin"
-  ],
-  "refmap": "Fabricord-refmap.json"
+  "server": [
+  ]
 }

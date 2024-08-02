@@ -6,13 +6,13 @@ import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
-import net.minecraft.server.MinecraftServer
+import net.minecraft.registry.DynamicRegistryManager
 import net.minecraft.sound.SoundEvents
 import net.minecraft.text.Text
 import net.rk4z.beacon.EventHandler
 import net.rk4z.beacon.IEventHandler
 import net.rk4z.beacon.handler
-import net.rk4z.fabricord.Fabricord.logChannelID
+import net.rk4z.fabricord.Fabricord
 import net.rk4z.fabricord.events.DiscordMCPlayerMentionEvent
 import net.rk4z.fabricord.events.DiscordMessageReceiveEvent
 import net.rk4z.fabricord.util.Utils.replaceUUIDsWithMCIDs
@@ -20,22 +20,17 @@ import java.awt.Color
 
 @Suppress("unused")
 @EventHandler
-class DiscordMessageHandler(s: MinecraftServer) : IEventHandler {
-    private val registryManager = s.registryManager
+class DiscordMessageHandler : IEventHandler {
 
-    val handleDiscordMessage = handler<DiscordMessageReceiveEvent>(
-        condition = { true }
-    ) { event ->
-        val message: Text? = createMessage(event.c, false, null)
+    val handleDiscordMessage = handler<DiscordMessageReceiveEvent> { event ->
+        val message: Text? = createMessage(event.c, false, null, event.s.registryManager)
 
         event.s.playerManager.playerList.forEach { player ->
             player.sendMessage(message, false)
         }
     }
 
-    val handleMentionedDiscordMessage = handler<DiscordMCPlayerMentionEvent>(
-        condition = { true }
-    ) { event ->
+    val handleMentionedDiscordMessage = handler<DiscordMCPlayerMentionEvent>{ event ->
         val updatedMessageContent = replaceUUIDsWithMCIDs(event.c.message.contentRaw, event.s.playerManager.playerList)
 
         event.m.forEach { player ->
@@ -43,9 +38,9 @@ class DiscordMessageHandler(s: MinecraftServer) : IEventHandler {
         }
 
         val mentionMessage =
-            createMessage(event.c, true, if (event.fu) updatedMessageContent.first else event.c.message.contentRaw)
+            createMessage(event.c, true, if (event.fu) updatedMessageContent.first else event.c.message.contentRaw, event.s.registryManager)
         val generalMessage =
-            createMessage(event.c, false, if (event.fu) updatedMessageContent.first else event.c.message.contentRaw)
+            createMessage(event.c, false, if (event.fu) updatedMessageContent.first else event.c.message.contentRaw, event.s.registryManager)
 
         event.m.forEach { player ->
             player.sendMessage(mentionMessage, false)
@@ -59,8 +54,8 @@ class DiscordMessageHandler(s: MinecraftServer) : IEventHandler {
         }
     }
 
-    private fun createMessage(event: MessageReceivedEvent, isMention: Boolean, updatedContent: String?): Text? {
-        val channelId: String = logChannelID!!
+    private fun createMessage(event: MessageReceivedEvent, isMention: Boolean, updatedContent: String?, rm: DynamicRegistryManager.Immutable): Text? {
+        val channelId: String = Fabricord.logChannelID!!
         if (event.channel.id != channelId || event.author.isBot) {
             return null
         }
@@ -105,7 +100,7 @@ class DiscordMessageHandler(s: MinecraftServer) : IEventHandler {
         componentMessage = componentMessage.append(messageContent)
 
         val json = GsonComponentSerializer.gson().serialize(componentMessage)
-        return Text.Serialization.fromJson(json, registryManager)
+        return Text.Serialization.fromJson(json, rm)
     }
 
 }

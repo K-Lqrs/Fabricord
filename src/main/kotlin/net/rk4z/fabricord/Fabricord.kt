@@ -4,7 +4,6 @@ import net.fabricmc.api.DedicatedServerModInitializer
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.metadata.ModMetadata
-import net.minecraft.server.MinecraftServer
 import net.rk4z.beacon.*
 import net.rk4z.fabricord.discord.DiscordBotManager
 import net.rk4z.fabricord.discord.DiscordBotManager.botIsInitialized
@@ -25,73 +24,78 @@ import java.util.*
 import kotlin.io.path.bufferedWriter
 import kotlin.io.path.notExists
 
-@Suppress("unused", "MemberVisibilityCanBePrivate")
+@Suppress("unused")
 @EventHandler
-object Fabricord : IEventHandler, DedicatedServerModInitializer {
-    //region Constants
-    const val MOD_ID = "fabricord"
+class Fabricord : DedicatedServerModInitializer, IEventHandler {
+    companion object {
+        const val MOD_ID = "fabricord"
 
-    val logger: Logger = LoggerFactory.getLogger(this::class.java.simpleName)
+        val logger: Logger = LoggerFactory.getLogger(Fabricord::class.simpleName)
 
-    val loader: FabricLoader = FabricLoader.getInstance()
+        private val loader: FabricLoader = FabricLoader.getInstance()
 
-    private val meta: ModMetadata = loader.getModContainer(MOD_ID).get().metadata
-    val name: String = meta.name
-    val version: String = meta.version.friendlyString
+        private val meta: ModMetadata = loader.getModContainer(MOD_ID).get().metadata
+        private val name: String = meta.name
+        private val version: String = meta.version.friendlyString
 
-    val serverDir: Path = loader.gameDir.toRealPath()
-    val modDir: Path = serverDir.resolve(MOD_ID)
-    val configFile: Path = modDir.resolve("config.yml")
+        private val serverDir: Path = loader.gameDir.toRealPath()
+        val modDir: Path = serverDir.resolve(MOD_ID)
+        val configFile: Path = modDir.resolve("config.yml")
 
-    private val logContainer: MutableList<String> = mutableListOf()
-    private val yaml = Yaml()
-    private var initializeIsDone = false
+        private val logContainer: MutableList<String> = mutableListOf()
+        private val yaml = Yaml()
+        private var initializeIsDone = false
 
-    // Required
-    var botToken: String? = null
-    var logChannelID: String? = null
+        //region Configurations
+        // Required
+        var botToken: String? = null
+        var logChannelID: String? = null
 
-    // Optional
-    var enableConsoleLog: Boolean? = false
-    var consoleLogChannelID: String? = null
+        // Optional
+        var enableConsoleLog: Boolean? = false
+        var consoleLogChannelID: String? = null
 
-    var serverStartMessage: String? = null
-    var serverStopMessage: String? = null
-    var playerJoinMessage: String? = null
-    var playerLeaveMessage: String? = null
+        var serverStartMessage: String? = null
+        var serverStopMessage: String? = null
+        var playerJoinMessage: String? = null
+        var playerLeaveMessage: String? = null
 
-    var botOnlineStatus: String? = null
-    var botActivityStatus: String? = null
-    var botActivityMessage: String? = null
+        var botOnlineStatus: String? = null
+        var botActivityStatus: String? = null
+        var botActivityMessage: String? = null
 
-    var messageStyle: String? = null
-    var webHookUrl: String? = null
-    //endregion
+        var messageStyle: String? = null
+        var webHookUrl: String? = null
+        //endregion
 
-    fun addLog(log: String) {
-        val timeStamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
-        val formattedLog = "[$timeStamp] > $log"
-        logContainer.add(formattedLog)
+        fun addLog(log: String) {
+            val timeStamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
+            val formattedLog = "[$timeStamp] > $log"
+            logContainer.add(formattedLog)
+        }
     }
 
     override fun onInitializeServer() {
         EventBus.initialize()
-        ServerLifecycleEvents.SERVER_STARTING.register { s: MinecraftServer ->
-            EventBus.post(ServerInitEvent.get(s)) }
-        ServerLifecycleEvents.SERVER_STARTED.register { EventBus.post(ServerStartEvent.get()) }
+        ServerLifecycleEvents.SERVER_STARTING.register { server -> EventBus.post(ServerInitEvent.get(server)) }
+        ServerLifecycleEvents.SERVER_STARTED.register { server -> EventBus.post(ServerStartEvent.get(server)) }
         ServerLifecycleEvents.SERVER_STOPPING.register { EventBus.post(ServerShutdownEvent.get()) }
     }
 
     val onServerInit = handler<ServerInitEvent>(
-        condition = { true },
         priority = Priority.HIGHEST
     ) { e ->
         try {
             addLog("Server initializing...")
             logger.info("Initializing $name v$version")
-            DiscordBotManager.init(e.s)
-            DiscordMessageHandler(e.s)
+
+            DiscordMessageReceiveEvent
+            DiscordMCPlayerMentionEvent
+
+            DiscordMessageHandler()
             DiscordPlayerEventHandler()
+
+            DiscordBotManager.init(e.s)
             DiscordPlayerEventHandler().registerEventListeners()
             checkRequiredFilesAndDirectories()
             loadConfig()
@@ -104,7 +108,6 @@ object Fabricord : IEventHandler, DedicatedServerModInitializer {
     }
 
     val onServerStart = handler<ServerStartEvent>(
-        condition = { true },
         priority = Priority.HIGHEST
     ) {
         addLog("Server starting...")
@@ -114,6 +117,7 @@ object Fabricord : IEventHandler, DedicatedServerModInitializer {
             logger.warn("Bot token or log channel ID is missing in config file.")
             logger.warn("Maybe you are running the mod for the first time?")
             logger.warn("Please check the config file at $configFile")
+            it.s.close()
             return@handler
         } else {
             DiscordBotManager.startBot()
@@ -121,7 +125,6 @@ object Fabricord : IEventHandler, DedicatedServerModInitializer {
     }
 
     val onServerStop = handler<ServerShutdownEvent>(
-        condition = { true },
         priority = Priority.HIGHEST
     ) {
         addLog("Server stopping...")

@@ -12,10 +12,12 @@ class ServerInitEvent(
     }
 }
 
-class ServerStartEvent : Event() {
+class ServerStartEvent(
+    val s: MinecraftServer
+) : Event() {
     companion object {
         @JvmStatic
-        fun get() = ServerStartEvent()
+        fun get(s: MinecraftServer) = ServerStartEvent(s)
     }
 }
 

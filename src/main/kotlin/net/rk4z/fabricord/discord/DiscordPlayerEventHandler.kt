@@ -2,11 +2,9 @@ package net.rk4z.fabricord.discord
 
 import club.minnced.discord.webhook.WebhookClient
 import club.minnced.discord.webhook.send.WebhookMessageBuilder
-import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.fabricmc.fabric.api.networking.v1.PacketSender
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
-import net.minecraft.network.listener.ServerPlayPacketListener
 import net.minecraft.network.message.MessageType
 import net.minecraft.network.message.SignedMessage
 import net.minecraft.server.MinecraftServer
@@ -16,9 +14,7 @@ import net.rk4z.beacon.EventBus
 import net.rk4z.beacon.EventHandler
 import net.rk4z.beacon.IEventHandler
 import net.rk4z.beacon.handler
-import net.rk4z.fabricord.Fabricord.logger
-import net.rk4z.fabricord.Fabricord.messageStyle
-import net.rk4z.fabricord.Fabricord.webHookUrl
+import net.rk4z.fabricord.Fabricord
 import net.rk4z.fabricord.events.*
 
 @Suppress("unused")
@@ -36,10 +32,10 @@ class DiscordPlayerEventHandler : IEventHandler {
             EventBus.postAsync(PlayerLeaveEvent.get(player))
         })
 
-        ServerMessageEvents.CHAT_MESSAGE.register(ServerMessageEvents.ChatMessage { chatmessage: SignedMessage, player: ServerPlayerEntity, _: MessageType.Parameters? ->
-            val message = chatmessage.content.string
-            val chatMessage = String.format("%s", message)
-            EventBus.postAsync(PlayerChatEvent.get(player, chatMessage))
+        ServerMessageEvents.CHAT_MESSAGE.register(ServerMessageEvents.ChatMessage { chatMessage: SignedMessage, player: ServerPlayerEntity, _: MessageType.Parameters? ->
+            val message = chatMessage.content.string
+            val cm = String.format("%s", message)
+            EventBus.postAsync(PlayerChatEvent.get(player, cm))
         })
     }
 
@@ -85,7 +81,7 @@ class DiscordPlayerEventHandler : IEventHandler {
     }
 
     private fun handleMCMessage(player: ServerPlayerEntity, message: String) {
-        when (messageStyle) {
+        when (Fabricord.messageStyle) {
             "modern" -> modernStyle(player, message)
             "classic" -> classicStyle(player, message)
             else -> classicStyle(player, message)
@@ -93,13 +89,13 @@ class DiscordPlayerEventHandler : IEventHandler {
     }
 
     private fun modernStyle(player: ServerPlayerEntity, message: String) {
-        if (webHookUrl.isNullOrBlank()) {
-            logger.error("Webhook URL is not configured or blank.")
+        if (Fabricord.webHookUrl.isNullOrBlank()) {
+            Fabricord.logger.error("Webhook URL is not configured or blank.")
             return
         }
 
         try {
-            WebhookClient.withUrl(webHookUrl!!).use { client ->
+            WebhookClient.withUrl(Fabricord.webHookUrl!!).use { client ->
                 val builder = WebhookMessageBuilder().apply {
                     setUsername(player.name.string)
                     setAvatarUrl("https://visage.surgeplay.com/head/256/${player.uuid}")
@@ -107,12 +103,12 @@ class DiscordPlayerEventHandler : IEventHandler {
                 }
                 client.send(builder.build()).whenComplete { _, error ->
                     error?.let {
-                        logger.error("Error sending message to Discord webhook: ${error.localizedMessage}", error)
+                        Fabricord.logger.error("Error sending message to Discord webhook: ${error.localizedMessage}", error)
                     }
                 }
             }
         } catch (e: Exception) {
-            logger.error("An unexpected error occurred while sending message to Discord webhook: ${e.localizedMessage}", e)
+            Fabricord.logger.error("An unexpected error occurred while sending message to Discord webhook: ${e.localizedMessage}", e)
         }
     }
 

@@ -1,17 +1,15 @@
 package net.rk4z.fabricord.discord
 
+import net.rk4z.fabricord.Fabricord
 import net.dv8tion.jda.api.EmbedBuilder
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
-import net.rk4z.fabricord.Fabricord.logChannelID
-import net.rk4z.fabricord.Fabricord.logger
 import java.awt.Color
 
 object DiscordEmbed {
 
-    private fun sendEmbedToDiscord(color: Color, author: String? = null, imageUrl: String, channelId: String = logChannelID!!) {
+    private fun sendEmbedToDiscord(color: Color, author: String? = null, imageUrl: String, channelId: String = Fabricord.logChannelID!!) {
         if (channelId.isBlank()) {
-            logger.error("Channel ID is blank.")
+            Fabricord.logger.error("Channel ID is blank.")
             return
         }
 

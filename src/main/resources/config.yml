@@ -36,7 +36,7 @@ BotActivityMessage: ""
 BotOnlineStatus: ""
 
 # The Log Style can be changed.
-# "classic", "modern" are available.
+# "Classic", "modern" are available.
 # If blank, "classic" is automatically selected.
 MessageStyle: ""
 

@@ -11,16 +11,6 @@ import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.rk4z.beacon.EventBus
 import net.rk4z.fabricord.Fabricord
-import net.rk4z.fabricord.Fabricord.botActivityMessage
-import net.rk4z.fabricord.Fabricord.botActivityStatus
-import net.rk4z.fabricord.Fabricord.botOnlineStatus
-import net.rk4z.fabricord.Fabricord.botToken
-import net.rk4z.fabricord.Fabricord.consoleLogChannelID
-import net.rk4z.fabricord.Fabricord.enableConsoleLog
-import net.rk4z.fabricord.Fabricord.logChannelID
-import net.rk4z.fabricord.Fabricord.logger
-import net.rk4z.fabricord.Fabricord.serverStartMessage
-import net.rk4z.fabricord.Fabricord.serverStopMessage
 import net.rk4z.fabricord.events.DiscordMCPlayerMentionEvent
 import net.rk4z.fabricord.events.DiscordMessageReceiveEvent
 import java.util.*
@@ -41,7 +31,7 @@ object DiscordBotManager {
     }
 
     fun startBot() {
-        val onlineStatus = when (botOnlineStatus?.uppercase(Locale.getDefault())) {
+        val onlineStatus = when (Fabricord.botOnlineStatus?.uppercase(Locale.getDefault())) {
             "ONLINE" -> OnlineStatus.ONLINE
             "IDLE" -> OnlineStatus.IDLE
             "DO_NOT_DISTURB" -> OnlineStatus.DO_NOT_DISTURB
@@ -50,20 +40,20 @@ object DiscordBotManager {
             else -> OnlineStatus.ONLINE
         }
 
-        val activity = when (botActivityStatus?.lowercase(Locale.getDefault())) {
-            "playing" -> botActivityMessage?.let { Activity.playing(it) }
-            "watching" -> botActivityMessage?.let { Activity.watching(it) }
-            "listening" -> botActivityMessage?.let { Activity.listening(it) }
-            "competing" -> botActivityMessage?.let { Activity.competing(it) }
+        val activity = when (Fabricord.botActivityStatus?.lowercase(Locale.getDefault())) {
+            "playing" -> Fabricord.botActivityMessage?.let { Activity.playing(it) }
+            "watching" -> Fabricord.botActivityMessage?.let { Activity.watching(it) }
+            "listening" -> Fabricord.botActivityMessage?.let { Activity.listening(it) }
+            "competing" -> Fabricord.botActivityMessage?.let { Activity.competing(it) }
 
             // Similar measures have been taken here.
             null -> Activity.playing("Minecraft Server")
 
-            else -> botActivityMessage?.let { Activity.playing(it) }
+            else -> Fabricord.botActivityMessage?.let { Activity.playing(it) }
         }
 
         try {
-            jda = JDABuilder.createDefault(botToken)
+            jda = JDABuilder.createDefault(Fabricord.botToken)
                 .setAutoReconnect(true)
                 .setStatus(onlineStatus)
                 .setActivity(activity)
@@ -73,13 +63,13 @@ object DiscordBotManager {
                 .awaitReady()
 
             botIsInitialized = true
-            logger.info("Discord bot is now online")
-            serverStartMessage?.let { sendToDiscord(it) }
+            Fabricord.logger.info("Discord bot is now online")
+            Fabricord.serverStartMessage?.let { sendToDiscord(it) }
             val log = "Discord bot is now online"
             Fabricord.addLog(log)
         } catch (e: LoginException) {
-            logger.error("Failed to login to Discord with the provided token", e)
-            logger.error(e.stackTraceToString())
+            Fabricord.logger.error("Failed to login to Discord with the provided token", e)
+            Fabricord.logger.error(e.stackTraceToString())
         }
     }
 
@@ -88,14 +78,14 @@ object DiscordBotManager {
         botIsInitialized = false
         val log = "Discord bot has been shutdown"
         Fabricord.addLog(log)
-        logger.info("Discord bot has been shutdown")
-        serverStopMessage?.let { sendToDiscord(it) }
+        Fabricord.logger.info("Discord bot has been shutdown")
+        Fabricord.serverStopMessage?.let { sendToDiscord(it) }
     }
 
     private val discordListener = object : ListenerAdapter() {
         override fun onMessageReceived(event: MessageReceivedEvent) {
             val server = server ?: run {
-                logger.error("MinecraftServer is not initialized. Cannot process Discord message.")
+                Fabricord.logger.error("MinecraftServer is not initialized. Cannot process Discord message.")
                 return
             }
 
@@ -144,12 +134,12 @@ object DiscordBotManager {
     }
 
     fun sendToDiscord(message: String) {
-        logChannelID?.let { jda?.getTextChannelById(it)?.sendMessage(message)?.queue() }
+        Fabricord.logChannelID?.let { jda?.getTextChannelById(it)?.sendMessage(message)?.queue() }
     }
 
     fun sendToDiscordForConsole(message: String) {
-        if (enableConsoleLog!!) {
-            consoleLogChannelID?.let { jda?.getTextChannelById(it)?.sendMessage("```$message```")?.queue() }
+        if (Fabricord.enableConsoleLog!!) {
+            Fabricord.consoleLogChannelID?.let { jda?.getTextChannelById(it)?.sendMessage("```$message```")?.queue() }
         }
     }
 }
