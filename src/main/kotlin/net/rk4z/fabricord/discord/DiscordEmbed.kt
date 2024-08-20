@@ -3,6 +3,7 @@ package net.rk4z.fabricord.discord
 import net.rk4z.fabricord.Fabricord
 import net.dv8tion.jda.api.EmbedBuilder
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.Text
 import java.awt.Color
 
 object DiscordEmbed {
@@ -21,6 +22,7 @@ object DiscordEmbed {
         DiscordBotManager.jda?.getTextChannelById(channelId)?.sendMessageEmbeds(embed)?.queue()
     }
 
+    @JvmStatic
     fun sendPlayerJoinEmbed(player: ServerPlayerEntity) {
         val name = player.name.string
         val uuid = player.uuid.toString()
@@ -28,6 +30,7 @@ object DiscordEmbed {
         sendEmbedToDiscord(Color.GREEN, "$name joined the server", imageUrl)
     }
 
+    @JvmStatic
     fun sendPlayerLeftEmbed(player: ServerPlayerEntity) {
         val name = player.name.string
         val uuid = player.uuid.toString()
@@ -35,12 +38,14 @@ object DiscordEmbed {
         sendEmbedToDiscord(Color.RED, "$name left the server", imageUrl)
     }
 
-    fun sendPlayerDeathEmbed(player: ServerPlayerEntity, deathMessage: String) {
+    @JvmStatic
+    fun sendPlayerDeathEmbed(player: ServerPlayerEntity, deathMessage: Text) {
         val uuid = player.uuid.toString()
         val imageUrl = "https://visage.surgeplay.com/face/256/$uuid"
-        sendEmbedToDiscord(Color.BLACK, deathMessage, imageUrl)
+        sendEmbedToDiscord(Color.BLACK, deathMessage.string, imageUrl)
     }
 
+    @JvmStatic
     fun sendPlayerGrantCriterionEmbed(player: ServerPlayerEntity, criterion: String) {
         val name = player.name.string
         val uuid = player.uuid.toString()

@@ -31,18 +31,14 @@ dependencies {
 	modImplementation("net.fabricmc.fabric-api:fabric-api:$fabricVersion")
 	modImplementation("net.fabricmc:fabric-language-kotlin:$fabricLanguageKotlinVersion")
 
-	implementation("net.dv8tion:JDA:5.0.1"){
+	implementation("net.dv8tion:JDA:5.0.1") {
 		exclude("net.java.dev.jna", "jna")
 	}
-	
+
 	implementation("org.yaml:snakeyaml:2.0")
 	implementation("club.minnced:discord-webhooks:0.8.4")
 	implementation("net.kyori:adventure-text-serializer-gson:4.14.0")
 
-}
-
-fabricApi {
-	configureDataGeneration()
 }
 
 val targetJavaVersion = 21

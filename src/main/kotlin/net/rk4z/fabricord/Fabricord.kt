@@ -1,9 +1,16 @@
 package net.rk4z.fabricord
 
 import net.fabricmc.api.DedicatedServerModInitializer
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
+import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.fabricmc.loader.api.FabricLoader
 import net.rk4z.fabricord.discord.DiscordBotManager
+import net.rk4z.fabricord.discord.DiscordEmbed
+import net.rk4z.fabricord.discord.DiscordPlayerEventHandler.handleMCMessage
 import net.rk4z.fabricord.utils.Utils.copyResourceToFile
 import net.rk4z.fabricord.utils.Utils.getNullableBoolean
 import net.rk4z.fabricord.utils.Utils.getNullableString
@@ -13,6 +20,7 @@ import org.yaml.snakeyaml.Yaml
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.concurrent.Executors
 import kotlin.io.path.notExists
 
 object Fabricord : DedicatedServerModInitializer {
@@ -21,6 +29,7 @@ object Fabricord : DedicatedServerModInitializer {
 	val logger: Logger = LoggerFactory.getLogger(Fabricord::class.simpleName)
 
 	private val loader: FabricLoader = FabricLoader.getInstance()
+	val executorService = Executors.newSingleThreadExecutor()
 
 	private val serverDir: Path = loader.gameDir.toRealPath()
 	val modDir: Path = serverDir.resolve(MOD_ID)
@@ -64,26 +73,57 @@ object Fabricord : DedicatedServerModInitializer {
 		}
 		nullCheck()
 
+		registerPlayerEvents()
+		registerServerLifecycleEvents()
+
+		initializeIsDone = true
+		logger.info("Fabricord initialized successfully.")
+	}
+
+	private fun registerServerLifecycleEvents() {
 		ServerLifecycleEvents.SERVER_STARTED.register { server ->
-			try {
-				DiscordBotManager.init(server)
-				DiscordBotManager.startBot()
-			} catch (e: Exception) {
-				logger.error("Failed to start Discord bot", e)
-				server.stop(false)
+			executorService.submit {
+				try {
+					DiscordBotManager.init(server)
+					DiscordBotManager.startBot()
+				} catch (e: Exception) {
+					logger.error("Failed to start Discord bot", e)
+					server.stop(false)
+				}
 			}
 		}
 
 		ServerLifecycleEvents.SERVER_STOPPING.register { server ->
-			try {
-				DiscordBotManager.stopBot()
-			} catch (e: Exception) {
-				logger.error("Failed to stop Discord bot", e)
+			executorService.submit {
+				try {
+					DiscordBotManager.stopBot()
+					shutdownExecutor()
+				} catch (e: Exception) {
+					logger.error("Failed to stop Discord bot", e)
+				}
 			}
 		}
+	}
 
-		initializeIsDone = true
-		logger.info("Fabricord initialized successfully.")
+	private fun registerPlayerEvents() {
+		ServerMessageEvents.CHAT_MESSAGE.register(ServerMessageEvents.ChatMessage { message, sender, _ ->
+			val content = message.content.string
+			handleMCMessage(sender, content)
+		})
+
+		ServerPlayConnectionEvents.JOIN.register(ServerPlayConnectionEvents.Join { handler, _, _ ->
+			val player = handler.player
+			DiscordEmbed.sendPlayerJoinEmbed(player)
+		})
+
+		ServerPlayConnectionEvents.DISCONNECT.register(ServerPlayConnectionEvents.Disconnect { handler, _ ->
+			val player = handler.player
+			DiscordEmbed.sendPlayerLeftEmbed(player)
+		})
+	}
+
+	private fun shutdownExecutor() {
+		executorService.shutdown()
 	}
 
 	private fun checkRequiredFilesAndDirectories() {

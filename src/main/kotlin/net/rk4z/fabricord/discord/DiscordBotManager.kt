@@ -1,6 +1,5 @@
 package net.rk4z.fabricord.discord
 
-import com.google.common.eventbus.EventBus
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.OnlineStatus
@@ -11,12 +10,13 @@ import net.dv8tion.jda.api.requests.GatewayIntent
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.rk4z.fabricord.Fabricord
+import net.rk4z.fabricord.Fabricord.executorService
 import java.util.*
 import javax.security.auth.login.LoginException
 
 object DiscordBotManager {
     var jda: JDA? = null
-    var botIsInitialized: Boolean = false
+    private var botIsInitialized: Boolean = false
     var server: MinecraftServer? = null
 
     private val intents = GatewayIntent.MESSAGE_CONTENT
@@ -68,10 +68,10 @@ object DiscordBotManager {
 
     fun stopBot() {
         if (botIsInitialized) {
-            jda?.shutdown()
-            botIsInitialized = false
             Fabricord.logger.info("Discord bot is now offline")
             Fabricord.serverStopMessage?.let { sendToDiscord(it) }
+            jda?.shutdown()
+            botIsInitialized = false
         } else {
             Fabricord.logger.error("Discord bot is not initialized. Cannot stop the bot.")
         }
@@ -122,6 +122,9 @@ object DiscordBotManager {
     }
 
     fun sendToDiscord(message: String) {
-        Fabricord.logChannelID?.let { jda?.getTextChannelById(it)?.sendMessage(message)?.queue() }
+        executorService.submit {
+            Fabricord.logChannelID?.let { jda?.getTextChannelById(it)?.sendMessage(message)?.queue() }
+        }
     }
+
 }

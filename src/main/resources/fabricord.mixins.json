@@ -2,9 +2,9 @@
   "required": true,
   "package": "net.rk4z.mixin",
   "compatibilityLevel": "JAVA_21",
-  "mixins": [
-    "PlayerManagerMixin",
-    "ServerPlayNetworkHandlerMixin"
+  "server": [
+    "PlayerAdvancementTrackerMixin",
+    "ServerPlayerEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1
