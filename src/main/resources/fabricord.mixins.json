@@ -1,10 +1,11 @@
 {
-  "required": true,
-  "package": "net.rk4z.fabricord.mixin",
-  "compatibilityLevel": "JAVA_21",
-  "injectors": {
-    "defaultRequire": 1
-  },
-  "server": [
-  ]
+	"required": true,
+	"package": "net.rk4z.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"ExampleMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
 }

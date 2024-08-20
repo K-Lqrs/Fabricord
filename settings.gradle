@@ -1,17 +1,10 @@
 pluginManagement {
-    repositories {
-        maven {
-            name = 'Fabric'
-            url = 'https://maven.fabricmc.net/'
-        }
-        gradlePluginPortal()
-        mavenCentral()
-    }
-
-    plugins {
-        id("org.jetbrains.kotlin.jvm") version kotlinVersion
-        id("fabric-loom") version loomVersion
-    }
+	repositories {
+		maven {
+			name = 'Fabric'
+			url = 'https://maven.fabricmc.net/'
+		}
+		mavenCentral()
+		gradlePluginPortal()
+	}
 }
-
-rootProject.name = "Fabricord"
