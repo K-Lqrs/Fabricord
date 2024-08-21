@@ -17,35 +17,47 @@ import java.awt.Color
 
 object DiscordMessageHandler {
     fun handleDiscordMessage(event: MessageReceivedEvent, server: MinecraftServer) {
-        val message: Text? = createMessage(event, false, null, server.registryManager)
+        Fabricord.executorService.submit {
+            val message: Text = createMessage(event, false, null, server.registryManager) ?: return@submit
+            sendToAllPlayers(server, message)
+        }
+    }
 
+    fun handleMentionedDiscordMessage(event: MessageReceivedEvent, server: MinecraftServer, mentionedPlayers: List<ServerPlayerEntity>, foundUUID: Boolean) {
+        Fabricord.executorService.submit {
+            val updatedMessageContent = replaceUUIDsWithMCIDs(event.message.contentRaw, server.playerManager.playerList)
+
+            mentionedPlayers.forEach { player ->
+                player.playSound(SoundEvents.BLOCK_NOTE_BLOCK_PLING.comp_349(), 1.2f, 2.0f)
+            }
+
+            val mentionMessage: Text =
+                createMessage(event, true, if (foundUUID) updatedMessageContent.first else event.message.contentRaw, server.registryManager) ?: return@submit
+            val generalMessage: Text =
+                createMessage(event, false, if (foundUUID) updatedMessageContent.first else event.message.contentRaw, server.registryManager) ?: return@submit
+
+            mentionedPlayers.forEach { player ->
+                player.sendMessage(mentionMessage, false)
+            }
+
+            val nonMentionedPlayers = if (foundUUID) updatedMessageContent.second else mentionedPlayers
+            sendToAllPlayersExcept(server, generalMessage, nonMentionedPlayers)
+        }
+    }
+
+    private fun sendToAllPlayers(server: MinecraftServer, message: Text) {
         server.playerManager.playerList.forEach { player ->
             player.sendMessage(message, false)
         }
     }
 
-    fun handleMentionedDiscordMessage(event: MessageReceivedEvent, server: MinecraftServer, mentionedPlayers: List<ServerPlayerEntity>, foundUUID: Boolean) {
-        val updatedMessageContent = replaceUUIDsWithMCIDs(event.message.contentRaw, server.playerManager.playerList)
-
-        mentionedPlayers.forEach { player ->
-            player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-        }
-
-        val mentionMessage =
-            createMessage(event, true, if (foundUUID) updatedMessageContent.first else event.message.contentRaw, server.registryManager)
-        val generalMessage =
-            createMessage(event, false, if (foundUUID) updatedMessageContent.first else event.message.contentRaw, server.registryManager)
-
-        mentionedPlayers.forEach { player ->
-            player.sendMessage(mentionMessage, false)
-        }
-
-        val nonMentionedPlayers = if (foundUUID) updatedMessageContent.second else mentionedPlayers
+    private fun sendToAllPlayersExcept(server: MinecraftServer, message: Text, excludePlayers: List<ServerPlayerEntity>) {
         server.playerManager.playerList.forEach { player ->
-            if (player !in nonMentionedPlayers) {
-                player.sendMessage(generalMessage, false)
+            if (player !in excludePlayers) {
+                player.sendMessage(message, false)
             }
-        }    }
+        }
+    }
 
     private fun createMessage(event: MessageReceivedEvent, isMention: Boolean, updatedContent: String?, rm: DynamicRegistryManager.Immutable): Text? {
         val channelId: String = Fabricord.logChannelID!!

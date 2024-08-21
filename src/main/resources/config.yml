@@ -43,7 +43,7 @@ MessageStyle: ""
 
 # If Message_Style is "modern", you need to set the Webhook URL.
 # To get a Webhook URL -> https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks
-Webhook_URL: ""
+WebhookUrl: ""
 
 
 # The message that appears when the server starts.

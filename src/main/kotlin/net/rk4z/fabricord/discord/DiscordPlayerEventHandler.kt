@@ -7,12 +7,13 @@ import net.rk4z.fabricord.Fabricord
 
 object DiscordPlayerEventHandler {
 
-    @JvmStatic
     fun handleMCMessage(player: ServerPlayerEntity, message: String) {
-        when (Fabricord.messageStyle) {
-            "modern" -> modernStyle(player, message)
-            "classic" -> classicStyle(player, message)
-            else -> classicStyle(player, message)
+        Fabricord.executorService.submit {
+            when (Fabricord.messageStyle) {
+                "modern" -> modernStyle(player, message)
+                "classic" -> classicStyle(player, message)
+                else -> classicStyle(player, message)
+            }
         }
     }
 
@@ -36,13 +37,17 @@ object DiscordPlayerEventHandler {
                     setContent(message)
                 }
                 client.send(builder.build()).whenComplete { _, error ->
-                    error?.let {
-                        Fabricord.logger.error("Error sending message to Discord webhook: ${error.localizedMessage}", error)
-                    }
+                    handleError(error)
                 }
             }
         } catch (e: Exception) {
             Fabricord.logger.error("An unexpected error occurred while sending message to Discord webhook: ${e.localizedMessage}", e)
+        }
+    }
+
+    private fun handleError(error: Throwable?) {
+        error?.let {
+            Fabricord.logger.error("Error sending message to Discord webhook: ${it.localizedMessage}", it)
         }
     }
 }

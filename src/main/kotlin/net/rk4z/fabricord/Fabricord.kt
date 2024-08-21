@@ -1,13 +1,12 @@
 package net.rk4z.fabricord
 
 import net.fabricmc.api.DedicatedServerModInitializer
-import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.fabricmc.loader.api.FabricLoader
+import net.minecraft.text.Text
+import net.minecraft.util.ActionResult
 import net.rk4z.fabricord.discord.DiscordBotManager
 import net.rk4z.fabricord.discord.DiscordEmbed
 import net.rk4z.fabricord.discord.DiscordPlayerEventHandler.handleMCMessage
@@ -20,20 +19,21 @@ import org.yaml.snakeyaml.Yaml
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import kotlin.io.path.notExists
 
 object Fabricord : DedicatedServerModInitializer {
-	const val MOD_ID = "fabricord"
+	private const val MOD_ID = "fabricord"
 
 	val logger: Logger = LoggerFactory.getLogger(Fabricord::class.simpleName)
 
 	private val loader: FabricLoader = FabricLoader.getInstance()
-	val executorService = Executors.newSingleThreadExecutor()
+	val executorService: ExecutorService = Executors.newSingleThreadExecutor()
 
 	private val serverDir: Path = loader.gameDir.toRealPath()
-	val modDir: Path = serverDir.resolve(MOD_ID)
-	val configFile: Path = modDir.resolve("config.yml")
+	private val modDir: Path = serverDir.resolve(MOD_ID)
+	private val configFile: Path = modDir.resolve("config.yml")
 
 	private val yaml = Yaml()
 	private var initializeIsDone = false
@@ -73,14 +73,42 @@ object Fabricord : DedicatedServerModInitializer {
 		}
 		nullCheck()
 
-		registerPlayerEvents()
-		registerServerLifecycleEvents()
+		registerEvents()
 
 		initializeIsDone = true
 		logger.info("Fabricord initialized successfully.")
 	}
 
-	private fun registerServerLifecycleEvents() {
+	private fun registerEvents() {
+		ServerMessageEvents.CHAT_MESSAGE.register(ServerMessageEvents.ChatMessage { message, sender, _ ->
+			executorService.submit {
+				val content = message.content.string
+				handleMCMessage(sender, content)
+			}
+		})
+
+		ServerPlayConnectionEvents.JOIN.register(ServerPlayConnectionEvents.Join { handler, _, _ ->
+			val player = handler.player
+
+			if (!DiscordBotManager.botIsInitialized) {
+				player.networkHandler.disconnect(Text.of("Server is still starting up, please try again later."))
+				ActionResult.FAIL
+			} else {
+				ActionResult.SUCCESS
+			}
+
+			executorService.submit {
+				DiscordEmbed.sendPlayerJoinEmbed(player)
+			}
+		})
+
+		ServerPlayConnectionEvents.DISCONNECT.register(ServerPlayConnectionEvents.Disconnect { handler, _ ->
+			executorService.submit {
+				val player = handler.player
+				DiscordEmbed.sendPlayerLeftEmbed(player)
+			}
+		})
+
 		ServerLifecycleEvents.SERVER_STARTED.register { server ->
 			executorService.submit {
 				try {
@@ -93,38 +121,17 @@ object Fabricord : DedicatedServerModInitializer {
 			}
 		}
 
-		ServerLifecycleEvents.SERVER_STOPPING.register { server ->
-			executorService.submit {
-				try {
-					DiscordBotManager.stopBot()
-					shutdownExecutor()
-				} catch (e: Exception) {
-					logger.error("Failed to stop Discord bot", e)
-				}
+		ServerLifecycleEvents.SERVER_STOPPING.register { _ ->
+			try {
+				DiscordBotManager.stopBot()
+				executorService.shutdown()
+			} catch (e: Exception) {
+				logger.error("Failed to stop Discord bot", e)
 			}
 		}
 	}
 
-	private fun registerPlayerEvents() {
-		ServerMessageEvents.CHAT_MESSAGE.register(ServerMessageEvents.ChatMessage { message, sender, _ ->
-			val content = message.content.string
-			handleMCMessage(sender, content)
-		})
-
-		ServerPlayConnectionEvents.JOIN.register(ServerPlayConnectionEvents.Join { handler, _, _ ->
-			val player = handler.player
-			DiscordEmbed.sendPlayerJoinEmbed(player)
-		})
-
-		ServerPlayConnectionEvents.DISCONNECT.register(ServerPlayConnectionEvents.Disconnect { handler, _ ->
-			val player = handler.player
-			DiscordEmbed.sendPlayerLeftEmbed(player)
-		})
-	}
-
-	private fun shutdownExecutor() {
-		executorService.shutdown()
-	}
+//>------------------------------------------------------------------------------------------------------------------<\\
 
 	private fun checkRequiredFilesAndDirectories() {
 		try {

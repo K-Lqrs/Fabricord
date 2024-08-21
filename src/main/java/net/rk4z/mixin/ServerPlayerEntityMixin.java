@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class ServerPlayerEntityMixin {
 
     @Contract(pure = true)
-    @Inject(method = "onDeath", at = @At("HEAD"))
+    @Inject(method = "onDeath", at = @At("RETURN"))
     public void onPlayerDeath(DamageSource source, CallbackInfo ci) {
         ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
         Text message = player.getDamageTracker().getDeathMessage();

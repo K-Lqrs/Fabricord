@@ -22,7 +22,6 @@ object DiscordEmbed {
         DiscordBotManager.jda?.getTextChannelById(channelId)?.sendMessageEmbeds(embed)?.queue()
     }
 
-    @JvmStatic
     fun sendPlayerJoinEmbed(player: ServerPlayerEntity) {
         val name = player.name.string
         val uuid = player.uuid.toString()
@@ -30,7 +29,6 @@ object DiscordEmbed {
         sendEmbedToDiscord(Color.GREEN, "$name joined the server", imageUrl)
     }
 
-    @JvmStatic
     fun sendPlayerLeftEmbed(player: ServerPlayerEntity) {
         val name = player.name.string
         val uuid = player.uuid.toString()
