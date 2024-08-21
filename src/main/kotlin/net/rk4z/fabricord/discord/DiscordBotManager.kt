@@ -13,7 +13,7 @@ import net.dv8tion.jda.api.requests.GatewayIntent
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.rk4z.fabricord.Fabricord
-import net.rk4z.fabricord.Fabricord.executorService
+import net.rk4z.fabricord.Fabricord.Companion.executorService
 import java.awt.Color
 import java.util.*
 import javax.security.auth.login.LoginException

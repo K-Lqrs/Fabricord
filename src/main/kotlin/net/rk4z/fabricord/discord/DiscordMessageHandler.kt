@@ -105,6 +105,6 @@ object DiscordMessageHandler {
         componentMessage = componentMessage.append(messageContent)
 
         val json = GsonComponentSerializer.gson().serialize(componentMessage)
-        return Text.Serialization.fromJson(json, rm)
+        return Text.Serialization.fromJson(json)
     }
 }

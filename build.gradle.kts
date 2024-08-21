@@ -9,13 +9,11 @@ plugins {
 }
 
 group = "net.rk4z.fabricord"
-version = "4.0.0"
+version = "3.9.8"
 
 repositories {
 	mavenCentral()
 }
-
-val includeInJar: Configuration by configurations.creating
 
 dependencies {
 	val minecraftVersion: String by project
@@ -23,7 +21,6 @@ dependencies {
 	val loaderVersion: String by project
 	val fabricVersion: String by project
 	val fabricLanguageKotlinVersion: String by project
-	val beaconVersion: String by project
 
 	minecraft("com.mojang:minecraft:$minecraftVersion")
 	mappings("net.fabricmc:yarn:$mappingsVersion")
@@ -31,32 +28,27 @@ dependencies {
 	modImplementation("net.fabricmc.fabric-api:fabric-api:$fabricVersion")
 	modImplementation("net.fabricmc:fabric-language-kotlin:$fabricLanguageKotlinVersion")
 
-	implementation("net.dv8tion:JDA:5.0.1") {
+	implementation("net.dv8tion:JDA:5.0.2") {
 		exclude("net.java.dev.jna", "jna")
 	}
 
 	implementation("org.yaml:snakeyaml:2.0")
 	implementation("club.minnced:discord-webhooks:0.8.4")
 	implementation("net.kyori:adventure-text-serializer-gson:4.14.0")
-
 }
 
-val targetJavaVersion = 21
+val targetJavaVersion = 17
+
 java {
-	val javaVersion = JavaVersion.toVersion(targetJavaVersion)
-	sourceCompatibility = javaVersion
-	targetCompatibility = javaVersion
-	if (JavaVersion.current() < javaVersion) {
-		toolchain.languageVersion.set(JavaLanguageVersion.of(targetJavaVersion))
+	toolchain {
+		languageVersion.set(JavaLanguageVersion.of(targetJavaVersion))
 	}
+	withSourcesJar()
 }
 
 tasks.withType<JavaCompile> {
 	options.encoding = "UTF-8"
-
-	if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible) {
-		options.release.set(targetJavaVersion)
-	}
+	options.release.set(targetJavaVersion)
 }
 
 kotlin {
@@ -67,7 +59,7 @@ kotlin {
 
 tasks.withType<KotlinCompile> {
 	compilerOptions {
-		jvmTarget.set(JvmTarget.JVM_21)
+		jvmTarget.set(JvmTarget.JVM_17)
 	}
 }
 
@@ -80,6 +72,7 @@ tasks.named<ProcessResources>("processResources") {
 }
 
 tasks.withType<ShadowJar> {
+	isZip64 = true
 	archiveFileName.set("${project.name}-${project.version}.jar")
 	mergeServiceFiles()
 	exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")

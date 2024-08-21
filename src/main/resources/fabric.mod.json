@@ -12,12 +12,13 @@
 	},
 	"license": "MIT",
 	"icon": "assets/fabriord/icon.png",
-	"environment": "server",
+	"environment": "*",
 	"entrypoints": {
-		"server": [
+		"main": [
 			{
-				"value": "net.rk4z.fabricord.Fabricord",
-				"adapter": "kotlin"
+
+				"adapter": "kotlin",
+				"value": "net.rk4z.fabricord.Fabricord"
 			}
 		]
 	},
@@ -26,9 +27,12 @@
 	],
 	"depends": {
 		"fabricloader": ">=0.16.2",
-		"minecraft": "~1.20.6",
-		"java": ">=21",
+		"minecraft": "~1.20.4",
+		"java": ">=17",
 		"fabric-api": "*",
-		"fabric-language-kotlin": "*"
+		"fabric-language-kotlin": ">=1.12.0+kotlin.2.0.10"
+	},
+	"languageAdapters": {
+		"kotlin": "net.fabricmc.language.kotlin.KotlinAdapter"
 	}
 }

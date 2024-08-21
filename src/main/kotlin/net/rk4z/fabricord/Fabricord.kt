@@ -1,6 +1,7 @@
 package net.rk4z.fabricord
 
-import net.fabricmc.api.DedicatedServerModInitializer
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
@@ -23,45 +24,52 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import kotlin.io.path.notExists
 
-object Fabricord : DedicatedServerModInitializer {
-	private const val MOD_ID = "fabricord"
+class Fabricord : ModInitializer {
+	companion object {
+		private const val MOD_ID = "fabricord"
 
-	val logger: Logger = LoggerFactory.getLogger(Fabricord::class.simpleName)
+		val logger: Logger = LoggerFactory.getLogger(Fabricord::class.simpleName)
 
-	private val loader: FabricLoader = FabricLoader.getInstance()
-	val executorService: ExecutorService = Executors.newSingleThreadExecutor()
+		private val loader: FabricLoader = FabricLoader.getInstance()
+		val executorService: ExecutorService = Executors.newSingleThreadExecutor()
 
-	private val serverDir: Path = loader.gameDir.toRealPath()
-	private val modDir: Path = serverDir.resolve(MOD_ID)
-	private val configFile: Path = modDir.resolve("config.yml")
+		private val serverDir: Path = loader.gameDir.toRealPath()
+		private val modDir: Path = serverDir.resolve(MOD_ID)
+		private val configFile: Path = modDir.resolve("config.yml")
 
-	private val yaml = Yaml()
-	private var initializeIsDone = false
+		private val yaml = Yaml()
+		private var initializeIsDone = false
 
-	//region Configurations
-	// Required
-	var botToken: String? = null
-	var logChannelID: String? = null
+		//region Configurations
+		// Required
+		var botToken: String? = null
+		var logChannelID: String? = null
 
-	// Optional
-	var enableConsoleLog: Boolean? = false
-	var consoleLogChannelID: String? = null
+		// Optional
+		var enableConsoleLog: Boolean? = false
+		var consoleLogChannelID: String? = null
 
-	var serverStartMessage: String? = null
-	var serverStopMessage: String? = null
-	var playerJoinMessage: String? = null
-	var playerLeaveMessage: String? = null
+		var serverStartMessage: String? = null
+		var serverStopMessage: String? = null
+		var playerJoinMessage: String? = null
+		var playerLeaveMessage: String? = null
 
-	var botOnlineStatus: String? = null
-	var botActivityStatus: String? = null
-	var botActivityMessage: String? = null
+		var botOnlineStatus: String? = null
+		var botActivityStatus: String? = null
+		var botActivityMessage: String? = null
 
-	var messageStyle: String? = null
-	var webHookUrl: String? = null
-	//endregion
+		var messageStyle: String? = null
+		var webHookUrl: String? = null
+		//endregion
+	}
 
-	override fun onInitializeServer() {
+	override fun onInitialize() {
 		logger.info("Initializing Fabricord...")
+		if (loader.environmentType == EnvType.CLIENT) {
+			logger.error("Fabricord is a server-side mod and should not be installed on the client side.")
+			return
+		}
+
 		checkRequiredFilesAndDirectories()
 		loadConfig()
 
