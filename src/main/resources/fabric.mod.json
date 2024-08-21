@@ -5,7 +5,7 @@
 	"name": "Fabriord",
 	"description": "A modern message style like DiscordSRV will be reproduced as a Fabric version mod.",
 	"authors": [
-		"Ruxy!"
+		"Ruxy"
 	],
 	"contact": {
 		"sources": "https://github.com/KT-Ruxy/Fabricord"
@@ -16,7 +16,6 @@
 	"entrypoints": {
 		"main": [
 			{
-
 				"adapter": "kotlin",
 				"value": "net.rk4z.fabricord.Fabricord"
 			}
@@ -31,8 +30,5 @@
 		"java": ">=17",
 		"fabric-api": "*",
 		"fabric-language-kotlin": ">=1.12.0+kotlin.2.0.10"
-	},
-	"languageAdapters": {
-		"kotlin": "net.fabricmc.language.kotlin.KotlinAdapter"
 	}
 }

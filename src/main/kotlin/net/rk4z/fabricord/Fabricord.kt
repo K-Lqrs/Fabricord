@@ -20,8 +20,8 @@ import org.yaml.snakeyaml.Yaml
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
 import kotlin.io.path.notExists
 
 class Fabricord : ModInitializer {
@@ -31,7 +31,7 @@ class Fabricord : ModInitializer {
 		val logger: Logger = LoggerFactory.getLogger(Fabricord::class.simpleName)
 
 		private val loader: FabricLoader = FabricLoader.getInstance()
-		val executorService: ExecutorService = Executors.newSingleThreadExecutor()
+		val executorService: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
 
 		private val serverDir: Path = loader.gameDir.toRealPath()
 		private val modDir: Path = serverDir.resolve(MOD_ID)

@@ -16,6 +16,7 @@ import net.rk4z.fabricord.Fabricord
 import net.rk4z.fabricord.Fabricord.Companion.executorService
 import java.awt.Color
 import java.util.*
+import java.util.concurrent.TimeUnit
 import javax.security.auth.login.LoginException
 
 object DiscordBotManager : ListenerAdapter() {
@@ -116,7 +117,17 @@ object DiscordBotManager : ListenerAdapter() {
     }
 
     private fun handlePlayerListCommand(event: SlashCommandInteractionEvent) {
-        val server = server ?: return Fabricord.logger.error("MinecraftServer is not initialized. Cannot process Discord command.")
+        val server = server ?: run {
+            Fabricord.logger.error("MinecraftServer is not initialized. Cannot process /playerlist command.")
+            event.reply("Sorry, I can't get the player list right now.")
+                .setEphemeral(true)
+                .queue {
+                    executorService.schedule({
+                        it.deleteOriginal().queue()
+                    }, 5, TimeUnit.SECONDS)
+                }
+            return
+        }
 
         val onlinePlayers = server.playerManager.playerList
         val playerCount = onlinePlayers.size
@@ -124,13 +135,13 @@ object DiscordBotManager : ListenerAdapter() {
         val embedBuilder = EmbedBuilder()
             .setTitle("Online Players")
             .setColor(Color.GREEN)
-            .setDescription("現在オンラインのプレイヤーは $playerCount 人です。\n")
+            .setDescription("There are currently $playerCount players online.\n")
 
         if (playerCount > 0) {
             val playerList = onlinePlayers.joinToString(separator = "\n") { player -> player.name.string }
             embedBuilder.setDescription(embedBuilder.descriptionBuilder.append(playerList).toString())
         } else {
-            embedBuilder.setDescription("現在オンラインのプレイヤーはいません。")
+            embedBuilder.setDescription("There are currently no players online.")
         }
 
         event.replyEmbeds(embedBuilder.build()).queue()

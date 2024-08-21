@@ -1,4 +1,4 @@
-package net.rk4z.mixin;
+package net.rk4z.fabricord.mixin;
 
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.network.ServerPlayerEntity;

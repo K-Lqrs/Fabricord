@@ -1,11 +1,9 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
 	id("org.jetbrains.kotlin.jvm")
 	id("fabric-loom")
-	id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 group = "net.rk4z.fabricord"
@@ -14,6 +12,8 @@ version = "3.9.8"
 repositories {
 	mavenCentral()
 }
+
+val includeInJar: Configuration by configurations.creating
 
 dependencies {
 	val minecraftVersion: String by project
@@ -35,6 +35,13 @@ dependencies {
 	implementation("org.yaml:snakeyaml:2.0")
 	implementation("club.minnced:discord-webhooks:0.8.4")
 	implementation("net.kyori:adventure-text-serializer-gson:4.14.0")
+
+	includeInJar("net.dv8tion:JDA:5.0.2") {
+		exclude("net.java.dev.jna", "jna")
+	}
+	includeInJar("org.yaml:snakeyaml:2.0")
+	includeInJar("club.minnced:discord-webhooks:0.8.4")
+	includeInJar("net.kyori:adventure-text-serializer-gson:4.14.0")
 }
 
 val targetJavaVersion = 17
@@ -71,13 +78,17 @@ tasks.named<ProcessResources>("processResources") {
 	}
 }
 
-tasks.withType<ShadowJar> {
-	isZip64 = true
-	archiveFileName.set("${project.name}-${project.version}.jar")
-	mergeServiceFiles()
-	exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
+tasks.withType<Jar> {
 	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+	archiveFileName.set("${project.name}-${project.version}.jar")
+	archiveClassifier = ""
+
 	from("LICENSE") {
 		rename { "${it}_${project.name}" }
 	}
+
+	from({
+		configurations["includeInJar"].map { project.zipTree(it) }
+	})
 }
