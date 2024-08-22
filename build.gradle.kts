@@ -80,6 +80,10 @@ tasks.named("remapSourcesJar") {
 	dependsOn(tasks.named("jar"))
 }
 
+tasks.named("remapJar") {
+	dependsOn(tasks.named("sourcesJar"))
+}
+
 tasks.withType<Jar> {
 	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
