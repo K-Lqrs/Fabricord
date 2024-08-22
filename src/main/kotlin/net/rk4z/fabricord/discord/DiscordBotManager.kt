@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.entities.Activity
+import net.dv8tion.jda.api.entities.Webhook
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
@@ -21,10 +22,11 @@ import javax.security.auth.login.LoginException
 
 object DiscordBotManager : ListenerAdapter() {
     var jda: JDA? = null
-    private var server: MinecraftServer? = null
-
+    var webHook: Webhook? = null
     var botIsInitialized: Boolean = false
+
     private val intents = GatewayIntent.MESSAGE_CONTENT
+    private var server: MinecraftServer? = null
 
     fun init(s: MinecraftServer) {
         server = s
@@ -54,6 +56,14 @@ object DiscordBotManager : ListenerAdapter() {
                 botIsInitialized = true
                 Fabricord.logger.info("Discord bot is now online")
                 Fabricord.serverStartMessage?.let { sendToDiscord(it) }
+
+                if (Fabricord.messageStyle == "modern") {
+                    if (!Fabricord.webHookId.isNullOrBlank()) {
+                        webHook = jda?.retrieveWebhookById(Fabricord.webHookId!!)?.complete()
+                    } else {
+                        Fabricord.logger.error("The message style is set to 'modern' but the webhook URL is not configured.")
+                    }
+                }
             } catch (e: LoginException) {
                 Fabricord.logger.error("Failed to login to Discord with the provided token", e)
             } catch (e: Exception) {

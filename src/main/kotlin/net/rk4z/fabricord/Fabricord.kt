@@ -7,7 +7,6 @@ import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.text.Text
-import net.minecraft.util.ActionResult
 import net.rk4z.fabricord.discord.DiscordBotManager
 import net.rk4z.fabricord.discord.DiscordEmbed
 import net.rk4z.fabricord.discord.DiscordPlayerEventHandler.handleMCMessage
@@ -59,7 +58,7 @@ class Fabricord : ModInitializer {
 		var botActivityMessage: String? = null
 
 		var messageStyle: String? = null
-		var webHookUrl: String? = null
+		var webHookId: String? = null
 		//endregion
 	}
 
@@ -100,9 +99,7 @@ class Fabricord : ModInitializer {
 
 			if (!DiscordBotManager.botIsInitialized) {
 				player.networkHandler.disconnect(Text.of("Server is still starting up, please try again later."))
-				ActionResult.FAIL
-			} else {
-				ActionResult.SUCCESS
+				return@Join
 			}
 
 			executorService.submit {
@@ -132,7 +129,7 @@ class Fabricord : ModInitializer {
 		ServerLifecycleEvents.SERVER_STOPPING.register { _ ->
 			try {
 				DiscordBotManager.stopBot()
-				executorService.shutdown()
+				executorService.shutdownNow()
 			} catch (e: Exception) {
 				logger.error("Failed to stop Discord bot", e)
 			}
@@ -190,13 +187,19 @@ class Fabricord : ModInitializer {
 				botActivityMessage = config.getNullableString("BotActivityMessage")
 
 				messageStyle = config.getNullableString("MessageStyle")
-				webHookUrl = config.getNullableString("WebHookUrl")
+				webHookId = extractWebhookIdFromUrl(config.getNullableString("WebhookUrl"))
 			}
 		} catch (e: IOException) {
 			logger.error("Failed to load config file", e)
 		} catch (e: Exception) {
 			logger.error("An unexpected error occurred while loading config:", e)
 		}
+	}
+
+	private fun extractWebhookIdFromUrl(url: String?): String? {
+		val regex = Regex("https://discord.com/api/webhooks/([0-9]+)/[a-zA-Z0-9_-]+")
+		val matchResult = url?.let { regex.find(it) }
+		return matchResult?.groupValues?.get(1)
 	}
 
 	private fun nullCheck() {

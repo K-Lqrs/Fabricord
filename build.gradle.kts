@@ -33,14 +33,12 @@ dependencies {
 	}
 
 	implementation("org.yaml:snakeyaml:2.0")
-	implementation("club.minnced:discord-webhooks:0.8.4")
 	implementation("net.kyori:adventure-text-serializer-gson:4.14.0")
 
 	includeInJar("net.dv8tion:JDA:5.0.2") {
 		exclude("net.java.dev.jna", "jna")
 	}
 	includeInJar("org.yaml:snakeyaml:2.0")
-	includeInJar("club.minnced:discord-webhooks:0.8.4")
 	includeInJar("net.kyori:adventure-text-serializer-gson:4.14.0")
 }
 
