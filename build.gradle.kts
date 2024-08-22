@@ -76,8 +76,8 @@ tasks.named<ProcessResources>("processResources") {
 	}
 }
 
-tasks.named<Jar>("remapSourcesJar") {
-	dependsOn(tasks.named<Jar>("jar"))
+tasks.named("remapSourcesJar") {
+	dependsOn(tasks.named("jar"))
 }
 
 tasks.withType<Jar> {
