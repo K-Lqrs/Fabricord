@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "net.rk4z.fabricord"
-version = "3.9.8"
+version = "4.0.0"
 
 repositories {
 	mavenCentral()
@@ -42,7 +42,7 @@ dependencies {
 	includeInJar("net.kyori:adventure-text-serializer-gson:4.14.0")
 }
 
-val targetJavaVersion = 17
+val targetJavaVersion = 21
 
 java {
 	toolchain {
@@ -64,7 +64,7 @@ kotlin {
 
 tasks.withType<KotlinCompile> {
 	compilerOptions {
-		jvmTarget.set(JvmTarget.JVM_17)
+		jvmTarget.set(JvmTarget.JVM_21)
 	}
 }
 

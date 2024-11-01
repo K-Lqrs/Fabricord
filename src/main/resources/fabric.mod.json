@@ -4,17 +4,17 @@
 	"version": "${version}",
 	"name": "Fabriord",
 	"description": "A modern message style like DiscordSRV will be reproduced as a Fabric version mod.",
-	"authors": [
-		"Ruxy"
+	"contributors": [
+		"Lars"
 	],
 	"contact": {
-		"sources": "https://github.com/KT-Ruxy/Fabricord"
+		"sources": "https://github.com/K-Lqrs/Fabricord"
 	},
-	"license": "MIT",
+	"license": "Apache-2.0",
 	"icon": "assets/fabriord/icon.png",
-	"environment": "*",
+	"environment": "server",
 	"entrypoints": {
-		"main": [
+		"server": [
 			{
 				"adapter": "kotlin",
 				"value": "net.rk4z.fabricord.Fabricord"
@@ -25,9 +25,9 @@
 		"fabricord.mixins.json"
 	],
 	"depends": {
-		"fabricloader": ">=0.16.2",
-		"minecraft": "~1.20.4",
-		"java": ">=17",
+		"fabricloader": ">=0.16.9",
+		"minecraft": "~1.21.3",
+		"java": ">=21",
 		"fabric-api": "*",
 		"fabric-language-kotlin": ">=1.12.0+kotlin.2.0.10"
 	}

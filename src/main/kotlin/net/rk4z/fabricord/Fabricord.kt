@@ -1,5 +1,6 @@
 package net.rk4z.fabricord
 
+import net.fabricmc.api.DedicatedServerModInitializer
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
@@ -23,7 +24,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import kotlin.io.path.notExists
 
-class Fabricord : ModInitializer {
+class Fabricord : DedicatedServerModInitializer {
 	companion object {
 		private const val MOD_ID = "fabricord"
 
@@ -62,13 +63,8 @@ class Fabricord : ModInitializer {
 		//endregion
 	}
 
-	override fun onInitialize() {
+	override fun onInitializeServer() {
 		logger.info("Initializing Fabricord...")
-		if (loader.environmentType == EnvType.CLIENT) {
-			logger.error("Fabricord is a server-side mod and should not be installed on the client side.")
-			return
-		}
-
 		checkRequiredFilesAndDirectories()
 		loadConfig()
 
@@ -220,6 +216,12 @@ class Fabricord : ModInitializer {
 		}
 		if (serverStopMessage.isNullOrBlank()) {
 			serverStopMessage = ":octagonal_sign: **Server has stopped!**"
+		}
+		if (playerJoinMessage.isNullOrBlank()) {
+			playerJoinMessage = "%player% joined the server"
+		}
+		if (playerLeaveMessage.isNullOrBlank()) {
+			playerLeaveMessage = "%player% left the server"
 		}
 	}
 

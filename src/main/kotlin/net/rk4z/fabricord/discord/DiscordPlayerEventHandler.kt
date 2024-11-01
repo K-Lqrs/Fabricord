@@ -5,7 +5,6 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.rk4z.fabricord.Fabricord
 
 object DiscordPlayerEventHandler {
-
     fun handleMCMessage(player: ServerPlayerEntity, message: String) {
         Fabricord.executorService.submit {
             when (Fabricord.messageStyle) {

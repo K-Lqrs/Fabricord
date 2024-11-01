@@ -30,10 +30,12 @@ BotActivityStatus: ""
 # If blank, "Minecraft" is automatically selected.
 BotActivityMessage: ""
 
+
 # The bot's online status can be changed.
 # "ONLINE", "IDLE" and "DO_NOT_DISTURB" are available.
 # If blank, "ONLINE" is automatically selected.
 BotOnlineStatus: ""
+
 
 # The Log Style can be changed.
 # "Classic", "modern" are available.
@@ -57,11 +59,15 @@ ServerStopMessage: ""
 
 
 # The message that appears when a player joins the server.
+# You can use the "% player%" placeholder.
+# It will be replaced with the player's name.
 # If blank, the message will use the default message.
 PlayerJoinMessage: ""
 
 
 # The message that appears when a player leaves the server.
+# You can use the "% player%" placeholder.
+# It will be replaced with the player's name.
 # If blank, the message will use the default message.
 PlayerLeaveMessage: ""
 

@@ -9,6 +9,7 @@ import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import net.minecraft.registry.DynamicRegistryManager
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
 import net.minecraft.text.Text
 import net.rk4z.fabricord.Fabricord
@@ -28,7 +29,7 @@ object DiscordMessageHandler {
             val updatedMessageContent = replaceUUIDsWithMCIDs(event.message.contentRaw, server.playerManager.playerList)
 
             mentionedPlayers.forEach { player ->
-                player.playSound(SoundEvents.BLOCK_NOTE_BLOCK_PLING.comp_349(), 1.2f, 2.0f)
+                player.playSoundToPlayer(SoundEvents.BLOCK_NOTE_BLOCK_PLING.comp_349(), SoundCategory.MASTER, 2.0f, 2.0f)
             }
 
             val mentionMessage: Text =
@@ -66,7 +67,7 @@ object DiscordMessageHandler {
         }
 
         val member = event.member
-        val memberName = member?.user?.name ?: "Unknown Name"
+        val memberName = member?.user?.globalName ?: "Unknown Name"
         val memberId = member?.user?.id ?: "00000000000000000000"
         val idSuggest = "<@$memberId>"
         val highestRole = member?.roles?.maxByOrNull { it.position }
@@ -105,6 +106,6 @@ object DiscordMessageHandler {
         componentMessage = componentMessage.append(messageContent)
 
         val json = GsonComponentSerializer.gson().serialize(componentMessage)
-        return Text.Serialization.fromJson(json)
+        return Text.Serialization.fromJson(json, rm)
     }
 }

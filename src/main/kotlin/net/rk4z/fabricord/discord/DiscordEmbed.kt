@@ -4,10 +4,11 @@ import net.rk4z.fabricord.Fabricord
 import net.dv8tion.jda.api.EmbedBuilder
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
+import net.rk4z.fabricord.Fabricord.Companion.playerJoinMessage
+import net.rk4z.fabricord.Fabricord.Companion.playerLeaveMessage
 import java.awt.Color
 
 object DiscordEmbed {
-
     private fun sendEmbedToDiscord(color: Color, author: String? = null, imageUrl: String, channelId: String = Fabricord.logChannelID!!) {
         if (channelId.isBlank()) {
             Fabricord.logger.error("Channel ID is blank.")
@@ -26,14 +27,16 @@ object DiscordEmbed {
         val name = player.name.string
         val uuid = player.uuid.toString()
         val imageUrl = "https://visage.surgeplay.com/face/256/$uuid"
-        sendEmbedToDiscord(Color.GREEN, "$name joined the server", imageUrl)
+        val message = playerJoinMessage!!.replace("%player%", name)
+        sendEmbedToDiscord(Color.GREEN, message, imageUrl)
     }
 
     fun sendPlayerLeftEmbed(player: ServerPlayerEntity) {
         val name = player.name.string
         val uuid = player.uuid.toString()
         val imageUrl = "https://visage.surgeplay.com/face/256/$uuid"
-        sendEmbedToDiscord(Color.RED, "$name left the server", imageUrl)
+        val message = playerLeaveMessage!!.replace("%player%", name)
+        sendEmbedToDiscord(Color.RED, message, imageUrl)
     }
 
     @JvmStatic

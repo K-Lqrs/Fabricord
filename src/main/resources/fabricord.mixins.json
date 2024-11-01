@@ -1,13 +1,12 @@
 {
   "required": true,
   "package": "net.rk4z.fabricord.mixin",
-  "compatibilityLevel": "JAVA_17",
+  "compatibilityLevel": "JAVA_21",
   "server": [
     "PlayerAdvancementTrackerMixin",
     "ServerPlayerEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1
-  },
-  "refmap": "Fabricord-refmap.json"
+  }
 }
