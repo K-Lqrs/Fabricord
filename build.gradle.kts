@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "net.rk4z.fabricord"
-version = "4.0.0"
+version = "4.0.1"
 
 repositories {
 	mavenCentral()
