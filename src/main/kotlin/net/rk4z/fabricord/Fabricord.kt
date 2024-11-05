@@ -1,8 +1,6 @@
 package net.rk4z.fabricord
 
 import net.fabricmc.api.DedicatedServerModInitializer
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents

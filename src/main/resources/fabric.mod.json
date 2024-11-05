@@ -1,8 +1,8 @@
 {
 	"schemaVersion": 1,
-	"id": "fabriord",
+	"id": "fabricord",
 	"version": "${version}",
-	"name": "Fabriord",
+	"name": "Fabricord",
 	"description": "A modern message style like DiscordSRV will be reproduced as a Fabric version mod.",
 	"contributors": [
 		"Lars"
@@ -26,7 +26,7 @@
 	],
 	"depends": {
 		"fabricloader": ">=0.16.9",
-		"minecraft": "~1.21.3",
+		"minecraft": "~1.21",
 		"java": ">=21",
 		"fabric-api": "*",
 		"fabric-language-kotlin": ">=1.12.0+kotlin.2.0.10"
