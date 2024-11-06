@@ -11,7 +11,7 @@
 		"sources": "https://github.com/K-Lqrs/Fabricord"
 	},
 	"license": "Apache-2.0",
-	"icon": "assets/fabriord/icon.png",
+	"icon": "assets/fabricord/icon.png",
 	"environment": "server",
 	"entrypoints": {
 		"server": [

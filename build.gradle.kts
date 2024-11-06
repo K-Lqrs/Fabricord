@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "net.rk4z.fabricord"
-version = "4.0.1"
+version = "4.0.2"
 
 repositories {
 	mavenCentral()
@@ -95,6 +95,8 @@ tasks.withType<Jar> {
 	}
 
 	from({
-		configurations["includeInJar"].map { project.zipTree(it) }
+		(configurations["includeInJar"])
+			.filter { it.exists() && !it.name.startsWith("kotlin") }
+			.map { if (it.isDirectory) it else project.zipTree(it) }
 	})
 }
