@@ -40,6 +40,10 @@ MessageStyle: ""
 WebhookUrl: ""
 
 AllowedMentions:
+  # Whether to allow mentions to be sent from Minecraft to Discord.
+  # If false, all mentions will not be sent.
+  AllowMention: true
+
   # Whether to allow @everyone to be sent from Minecraft to Discord.
   # If false, @everyone will not be sent.
   AllowEveryone: false
