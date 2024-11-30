@@ -9,20 +9,26 @@ import net.minecraft.text.Text
 import net.rk4z.fabricord.discord.DiscordBotManager
 import net.rk4z.fabricord.discord.DiscordEmbed
 import net.rk4z.fabricord.discord.DiscordPlayerEventHandler.handleMCMessage
-import net.rk4z.fabricord.utils.Utils.copyResourceToFile
-import net.rk4z.fabricord.utils.Utils.getNullableBoolean
-import net.rk4z.fabricord.utils.Utils.getNullableString
+import net.rk4z.s1.swiftbase.fabric.DedicatedServerModEntry
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.yaml.snakeyaml.Yaml
-import java.io.IOException
-import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
-import kotlin.io.path.notExists
 
-class Fabricord : DedicatedServerModInitializer {
+class Fabricord : DedicatedServerModEntry(
+	"fabricord",
+	"net.rk4z.fabricord",
+	false,
+	configFile = "config.yml",
+	availableLang = listOf("ja", "en"),
+	langDir = "lang",
+	logger = LoggerFactory.getLogger(Fabricord::class.simpleName),
+	enableUpdateChecker = true,
+	modrinthID = "xU8Bn98V",
+) {
+	//TODO: 言語の実装、起動時の呼び出しの実装
 	companion object {
 		private const val MOD_ID = "fabricord"
 
@@ -33,7 +39,6 @@ class Fabricord : DedicatedServerModInitializer {
 
 		private val serverDir: Path = loader.gameDir.toRealPath()
 		private val modDir: Path = serverDir.resolve(MOD_ID)
-		private val configFile: Path = modDir.resolve("config.yml")
 
 		private val yaml = Yaml()
 		private var initializeIsDone = false
@@ -57,14 +62,18 @@ class Fabricord : DedicatedServerModInitializer {
 		var botActivityMessage: String? = null
 
 		var messageStyle: String? = null
-		var allowMentions: Boolean? = true
+		var allowEveryone: Boolean? = false
+		var allowHere: Boolean? = false
+		var allowRoleMention: Boolean? = false
+		var allowedRoles: List<String>? = null
+		var allowUserMention: Boolean? = false
+		var allowedUsers: List<String>? = null
 		var webHookId: String? = null
 		//endregion
 	}
 
 	override fun onInitializeServer() {
 		logger.info("Initializing Fabricord...")
-		checkRequiredFilesAndDirectories()
 		loadConfig()
 
 		if (requiredNullCheck()) {
@@ -133,63 +142,35 @@ class Fabricord : DedicatedServerModInitializer {
 
 //>------------------------------------------------------------------------------------------------------------------<\\
 
-	private fun checkRequiredFilesAndDirectories() {
-		try {
-			if (!Files.exists(modDir)) {
-				logger.info("Creating config directory at $modDir")
-				Files.createDirectories(modDir)
-			}
-			if (configFile.notExists()) {
-				copyResourceToFile("config.yml", configFile)
-			}
-		} catch (e: SecurityException) {
-			logger.error("Failed to create/check required files or directories due to security restrictions", e)
-		} catch (e: IOException) {
-			logger.error("Failed to create/check required files or directories due to an I/O error", e)
-		} catch (e: Exception) {
-			logger.error("An unexpected error occurred while creating/checking required files or directories", e)
-		}
-	}
-
 	private fun loadConfig() {
-		try {
-			logger.info("Loading config file...")
+		// Required
+		botToken = lc("BotToken")
+		logChannelID = lc("LogChannelID")
 
-			if (Files.notExists(configFile)) {
-				logger.error("Config file not found at $configFile")
-				return
-			}
+		// this feature is not supported in the current version
+		enableConsoleLog = lc("EnableConsoleLog")
+		consoleLogChannelID = lc("ConsoleLogChannelID")
 
-			Files.newInputStream(configFile).use { inputStream ->
-				val config: Map<String, Any> = yaml.load(inputStream)
+		// Optional
+		serverStartMessage = lc("ServerStartMessage")
+		serverStopMessage = lc("ServerStopMessage")
+		playerJoinMessage = lc("PlayerJoinMessage")
+		playerLeaveMessage = lc("PlayerLeaveMessage")
 
-				// Required
-				botToken = config.getNullableString("BotToken")
-				logChannelID = config.getNullableString("LogChannelID")
+		botOnlineStatus = lc("BotOnlineStatus")
+		botActivityStatus = lc("BotActivityStatus")
+		botActivityMessage = lc("BotActivityMessage")
 
-				// this feature is not supported in the current version
-				enableConsoleLog = config.getNullableBoolean("EnableConsoleLog")
-				consoleLogChannelID = config.getNullableString("ConsoleLogChannelID")
+		messageStyle = lc("MessageStyle")
 
-				// Optional
-				serverStartMessage = config.getNullableString("ServerStartMessage")
-				serverStopMessage = config.getNullableString("ServerStopMessage")
-				playerJoinMessage = config.getNullableString("PlayerJoinMessage")
-				playerLeaveMessage = config.getNullableString("PlayerLeaveMessage")
+		allowEveryone = lc("AllowedMentions.AllowEveryone")
+		allowHere = lc("AllowedMentions.AllowHere")
+		allowRoleMention = lc("AllowedMentions.AllowRole")
+		allowedRoles = lc("AllowedMentions.AllowedRoles")
+		allowUserMention = lc("AllowedMentions.AllowUser")
+		allowedUsers = lc("AllowedMentions.AllowedUsers")
 
-				botOnlineStatus = config.getNullableString("BotOnlineStatus")
-				botActivityStatus = config.getNullableString("BotActivityStatus")
-				botActivityMessage = config.getNullableString("BotActivityMessage")
-
-				messageStyle = config.getNullableString("MessageStyle")
-				allowMentions = config.getNullableBoolean("AllowMentions")
-				webHookId = extractWebhookIdFromUrl(config.getNullableString("WebhookUrl"))
-			}
-		} catch (e: IOException) {
-			logger.error("Failed to load config file", e)
-		} catch (e: Exception) {
-			logger.error("An unexpected error occurred while loading config:", e)
-		}
+		webHookId = extractWebhookIdFromUrl(lc("WebhookUrl"))
 	}
 
 	private fun extractWebhookIdFromUrl(url: String?): String? {

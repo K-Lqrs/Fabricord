@@ -3,7 +3,7 @@
 	"id": "fabricord",
 	"version": "${version}",
 	"name": "Fabricord",
-	"description": "A modern message style like DiscordSRV will be reproduced as a Fabric version mod.",
+	"description": "${description}",
 	"contributors": [
 		"Lars"
 	],

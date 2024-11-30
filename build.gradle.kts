@@ -7,7 +7,8 @@ plugins {
 }
 
 group = "net.rk4z.fabricord"
-version = "4.0.2"
+version = "4.1.0"
+description = "A modern message style like DiscordSRV will be reproduced as a Fabric version mod."
 
 repositories {
 	mavenCentral()
@@ -28,18 +29,20 @@ dependencies {
 	modImplementation("net.fabricmc.fabric-api:fabric-api:$fabricVersion")
 	modImplementation("net.fabricmc:fabric-language-kotlin:$fabricLanguageKotlinVersion")
 
-	implementation("net.dv8tion:JDA:5.0.2") {
+	implementation("net.dv8tion:JDA:5.2.1") {
 		exclude("net.java.dev.jna", "jna")
 	}
 
-	implementation("org.yaml:snakeyaml:2.0")
-	implementation("net.kyori:adventure-text-serializer-gson:4.14.0")
+	implementation("org.yaml:snakeyaml:2.3")
+	implementation("net.kyori:adventure-text-serializer-gson:4.17.0")
+	implementation("net.rk4z.s1:swiftbase-core:2.0.7")
+	implementation("net.rk4z.s1:swiftbase-fabric:2.0.1")
 
-	includeInJar("net.dv8tion:JDA:5.0.2") {
+	includeInJar("net.dv8tion:JDA:5.2.1") {
 		exclude("net.java.dev.jna", "jna")
 	}
-	includeInJar("org.yaml:snakeyaml:2.0")
-	includeInJar("net.kyori:adventure-text-serializer-gson:4.14.0")
+	includeInJar("org.yaml:snakeyaml:2.3")
+	includeInJar("net.kyori:adventure-text-serializer-gson:4.17.0")
 }
 
 val targetJavaVersion = 21
@@ -70,9 +73,13 @@ tasks.withType<KotlinCompile> {
 
 tasks.named<ProcessResources>("processResources") {
 	inputs.property("version", project.version)
+	inputs.property("description", project.description)
 
 	filesMatching("fabric.mod.json") {
-		expand(mapOf("version" to project.version))
+		expand(mapOf(
+			"version" to project.version,
+			"description" to project.description
+		))
 	}
 }
 

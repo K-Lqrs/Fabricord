@@ -39,8 +39,38 @@ MessageStyle: ""
 # To get a Webhook URL -> https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks
 WebhookUrl: ""
 
-# Whether to allow pings like @everyone to be sent from Minecraft to Discord.
-AllowMentions: false
+AllowedMentions:
+  # Whether to allow @everyone to be sent from Minecraft to Discord.
+  # If false, @everyone will not be sent.
+  AllowEveryone: false
+
+  # Whether to allow @here to be sent from Minecraft to Discord.
+  # If false, @here will not be sent.
+  AllowHere: false
+
+  # Whether to allow @role to be sent from Minecraft to Discord.
+  # If false, @role will not be sent.
+  AllowRole: false
+
+  AllowedRoles:
+    # The role ID that can be sent from Minecraft to Discord.
+    # Blank + AllowRole: false = No role can be mentioned.
+    # Not Blank + AllowRole: false = It also can't be mentioned.
+    # Blank + AllowRole: true = All roles can be mentioned.
+    # Not Blank + AllowRole: true = Only the specified role can be mentioned.
+    - ""
+
+  # Whether to allow @user to be sent from Minecraft to Discord.
+  # If false, @user will not be sent.
+  AllowUser: false
+
+  AllowedUsers:
+      # The user ID that can be sent from Minecraft to Discord.
+      # Blank + AllowUser: false = No user can be mentioned.
+      # Not Blank + AllowUser: false = It also can't be mentioned.
+      # Blank + AllowUser: true = All users can be mentioned.
+      # Not Blank + AllowUser: true = Only the specified user can be mentioned.
+      - ""
 
 # The message that appears when the server starts.
 # If blank, the message will use the default message.
