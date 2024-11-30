@@ -177,7 +177,13 @@ object DiscordBotManager : ListenerAdapter() {
 
     fun sendToDiscord(message: String) {
         executorService.submit {
-            Fabricord.logChannelID?.let { jda?.getTextChannelById(it)?.sendMessage(message)?.queue() }
+            Fabricord.logChannelID?.let { 
+                val messageAction = jda?.getTextChannelById(it)?.sendMessage(message)
+                if (Fabricord.allowMentions == false) {
+                    messageAction?.setAllowedMentions(emptySet())
+                }
+                messageAction?.queue()
+            }
         }
     }
 }

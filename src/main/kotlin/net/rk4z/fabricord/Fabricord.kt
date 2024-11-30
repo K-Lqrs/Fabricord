@@ -57,6 +57,7 @@ class Fabricord : DedicatedServerModInitializer {
 		var botActivityMessage: String? = null
 
 		var messageStyle: String? = null
+		var allowMentions: Boolean? = true
 		var webHookId: String? = null
 		//endregion
 	}
@@ -181,6 +182,7 @@ class Fabricord : DedicatedServerModInitializer {
 				botActivityMessage = config.getNullableString("BotActivityMessage")
 
 				messageStyle = config.getNullableString("MessageStyle")
+				allowMentions = config.getNullableBoolean("AllowMentions")
 				webHookId = extractWebhookIdFromUrl(config.getNullableString("WebhookUrl"))
 			}
 		} catch (e: IOException) {
