@@ -32,9 +32,14 @@ object DiscordPlayerEventHandler {
 
             val data = MessageCreateBuilder()
                 .setContent(message)
-                .build()
+                
 
-            webHookClient!!.sendMessage(data)
+            if (Fabricord.allowMentions == false) {
+                data.setAllowedMentions(emptySet())
+            }
+
+        
+            webHookClient!!.sendMessage(data.build())
                 .setUsername(player.name.string)
                 .setAvatarUrl("https://visage.surgeplay.com/face/256/${player.uuid}")
                 .queue()
