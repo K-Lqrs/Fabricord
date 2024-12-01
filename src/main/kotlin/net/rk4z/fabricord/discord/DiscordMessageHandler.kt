@@ -14,18 +14,19 @@ import net.minecraft.sound.SoundEvents
 import net.minecraft.text.Text
 import net.rk4z.fabricord.Fabricord
 import net.rk4z.fabricord.utils.Utils.replaceUUIDsWithMCIDs
+import net.rk4z.s1.swiftbase.core.CB
 import java.awt.Color
 
 object DiscordMessageHandler {
     fun handleDiscordMessage(event: MessageReceivedEvent, server: MinecraftServer) {
-        Fabricord.executorService.submit {
-            val message: Text = createMessage(event, false, null, server.registryManager) ?: return@submit
+        CB.executor.executeAsync {
+            val message: Text = createMessage(event, false, null, server.registryManager) ?: return@executeAsync
             sendToAllPlayers(server, message)
         }
     }
 
     fun handleMentionedDiscordMessage(event: MessageReceivedEvent, server: MinecraftServer, mentionedPlayers: List<ServerPlayerEntity>, foundUUID: Boolean) {
-        Fabricord.executorService.submit {
+        CB.executor.executeAsync {
             val updatedMessageContent = replaceUUIDsWithMCIDs(event.message.contentRaw, server.playerManager.playerList)
 
             mentionedPlayers.forEach { player ->
@@ -33,9 +34,9 @@ object DiscordMessageHandler {
             }
 
             val mentionMessage: Text =
-                createMessage(event, true, if (foundUUID) updatedMessageContent.first else event.message.contentRaw, server.registryManager) ?: return@submit
+                createMessage(event, true, if (foundUUID) updatedMessageContent.first else event.message.contentRaw, server.registryManager) ?: return@executeAsync
             val generalMessage: Text =
-                createMessage(event, false, if (foundUUID) updatedMessageContent.first else event.message.contentRaw, server.registryManager) ?: return@submit
+                createMessage(event, false, if (foundUUID) updatedMessageContent.first else event.message.contentRaw, server.registryManager) ?: return@executeAsync
 
             mentionedPlayers.forEach { player ->
                 player.sendMessage(mentionMessage, false)

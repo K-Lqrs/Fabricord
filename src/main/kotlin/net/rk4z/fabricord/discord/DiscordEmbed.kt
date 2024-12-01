@@ -6,12 +6,13 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.rk4z.fabricord.Fabricord.Companion.playerJoinMessage
 import net.rk4z.fabricord.Fabricord.Companion.playerLeaveMessage
+import net.rk4z.s1.swiftbase.core.Logger
 import java.awt.Color
 
 object DiscordEmbed {
     private fun sendEmbedToDiscord(color: Color, author: String? = null, imageUrl: String, channelId: String = Fabricord.logChannelID!!) {
         if (channelId.isBlank()) {
-            Fabricord.logger.error("Channel ID is blank.")
+            Logger.error("Channel ID is blank.")
             return
         }
 

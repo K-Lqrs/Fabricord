@@ -1,12 +1,15 @@
 package net.rk4z.fabricord.discord
 
+import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
 import net.minecraft.server.network.ServerPlayerEntity
 import net.rk4z.fabricord.Fabricord
+import net.rk4z.s1.swiftbase.core.CB
+import net.rk4z.s1.swiftbase.core.Logger
 
 object DiscordPlayerEventHandler {
     fun handleMCMessage(player: ServerPlayerEntity, message: String) {
-        Fabricord.executorService.submit {
+        CB.executor.executeAsync {
             when (Fabricord.messageStyle) {
                 "modern" -> modernStyle(player, message)
                 "classic" -> classicStyle(player, message)
@@ -23,7 +26,7 @@ object DiscordPlayerEventHandler {
 
     private fun modernStyle(player: ServerPlayerEntity, message: String) {
         if (Fabricord.webHookId.isNullOrBlank()) {
-            Fabricord.logger.error("Webhook URL is not configured or blank.")
+            Logger.error("Webhook URL is not configured or blank.")
             return
         }
 
@@ -32,20 +35,33 @@ object DiscordPlayerEventHandler {
 
             val data = MessageCreateBuilder()
                 .setContent(message)
-                
 
-            if (Fabricord.allowMentions == false) {
+            val allowedMentions = mutableSetOf<Message.MentionType>().apply {
+                if (Fabricord.allowMention == true) {
+                    if (Fabricord.allowEveryone == true) add(Message.MentionType.EVERYONE)
+                    if (Fabricord.allowHere == true) add(Message.MentionType.HERE)
+                    if (Fabricord.allowRoleMention == true) {
+                        add(Message.MentionType.ROLE)
+                    }
+                    if (Fabricord.allowUserMention == true) {
+                        add(Message.MentionType.USER)
+                    }
+                }
+            }
+
+            if (allowedMentions.isNotEmpty()) {
+                data.setAllowedMentions(allowedMentions)
+            } else {
                 data.setAllowedMentions(emptySet())
             }
 
-        
             webHookClient!!.sendMessage(data.build())
                 .setUsername(player.name.string)
                 .setAvatarUrl("https://visage.surgeplay.com/face/256/${player.uuid}")
                 .queue()
 
         } catch (e: Exception) {
-            Fabricord.logger.error("An unexpected error occurred while sending message to Discord webhook: ${e.localizedMessage}", e)
+            Logger.error("An unexpected error occurred while sending message to Discord webhook: ${e.localizedMessage}", e)
         }
     }
 }

@@ -57,20 +57,24 @@ object DiscordBotManager : ListenerAdapter() {
                 jda?.updateCommands()
 
                 botIsInitialized = true
-                Logger.info("Discord bot is now online")
+                // Discord bot is now online
+                Logger.info(LMB.getSysMessage(System.Log.BOT_ONLINE))
                 Fabricord.serverStartMessage?.let { sendToDiscord(it) }
 
                 if (Fabricord.messageStyle == "modern") {
                     if (!Fabricord.webHookId.isNullOrBlank()) {
                         webHook = jda?.retrieveWebhookById(Fabricord.webHookId!!)?.complete()
                     } else {
-                        Logger.error("The message style is set to 'modern' but the webhook URL is not configured.")
+                        // The message style is set to 'modern' but the webhook URL is not configured.
+                        Logger.error(LMB.getSysMessage(System.Log.WEBHOOK_NOT_CONFIGURED))
                     }
                 }
             } catch (e: LoginException) {
-                Logger.error("Failed to login to Discord with the provided token", e)
+                //"Failed to login to Discord with the provided token"
+                Logger.error(LMB.getSysMessage(System.Log.FAILED_TO_LOGIN), e)
             } catch (e: Exception) {
-                Logger.error("An unexpected error occurred during Discord bot startup", e)
+                // "An unexpected error occurred during Discord bot startup"
+                Logger.error(LMB.getSysMessage(System.Log.FAILED_TO_START_BOT), e)
             }
         }
     }
@@ -78,11 +82,13 @@ object DiscordBotManager : ListenerAdapter() {
     fun stopBot() {
         if (botIsInitialized) {
             Fabricord.serverStopMessage?.let { sendToDiscord(it) }
-            Logger.info("Discord bot is now offline")
+            //Discord bot is now offline
+            Logger.info(LMB.getSysMessage(System.Log.BOT_OFFLINE))
             jda?.shutdown()
             botIsInitialized = false
         } else {
-            Logger.error("Discord bot is not initialized. Cannot stop the bot.")
+            // Discord bot is not initialized. Cannot stop the bot.
+            Logger.error(LMB.getSysMessage(System.Log.BOT_NOT_INITIALIZED))
         }
     }
 

@@ -21,6 +21,19 @@ open class System : FabricMessageKey {
         object FAILED_TO_START : Log()
         object FAILED_TO_STOP : Log()
 
+        //TODO
+        object FAILED_TO_LOGIN : Log()
+        //TODO
+        object FAILED_TO_START_BOT : Log()
+        //TODO
+        object WEBHOOK_NOT_CONFIGURED : Log()
+        //TODO
+        object BOT_ONLINE : Log()
+        //TODO
+        object BOT_OFFLINE : Log()
+        //TODO
+        object BOT_NOT_INITIALIZED : Log()
+
         object CHECKING_UPDATE : Log()
         object ALL_VERSION_COUNT : Log()
         object NEW_VERSION_COUNT : Log()
