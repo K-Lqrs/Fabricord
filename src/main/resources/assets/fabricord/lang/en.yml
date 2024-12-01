@@ -6,13 +6,14 @@ system:
     enabling: "Enabling %s v%s..."
     disabling: "Disabling %s v%s..."
     initialized: "%s initialized successfully."
+    not_initialized: "MinecraftServer is not initialized. Cannot process /playerlist command."
     missingrequiredparams:
       - "Bot token or log channel ID is missing in config file."
       - "Maybe you are running the mod for the first time?"
       - "Please check the config file at %s"
     stillstartingup: "Server is still starting up, please try again later."
-    failedstart: "Failed to start the bot: %s"
-    failedstop: "Failed to stop the bot: %s"
+    failed_to_start: "Failed to start the bot: %s"
+    failed_to_stop: "Failed to stop the bot: %s"
     checking_update: "Checking for updates..."
     all_version_count: "There are %s available versions."
     new_version_count: "There are %s newer versions than the current one."
@@ -26,6 +27,3 @@ system:
       unknown: "Unknown"
       unknown_error: "An unknown error has occurred."
       error: "Error"
-
-
-main:

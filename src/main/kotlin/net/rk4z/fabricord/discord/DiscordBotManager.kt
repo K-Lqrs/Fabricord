@@ -15,7 +15,9 @@ import net.dv8tion.jda.api.requests.GatewayIntent
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.rk4z.fabricord.Fabricord
+import net.rk4z.fabricord.utils.System
 import net.rk4z.s1.swiftbase.core.CB
+import net.rk4z.s1.swiftbase.core.LMB
 import net.rk4z.s1.swiftbase.core.Logger
 import java.awt.Color
 import java.util.*
@@ -114,7 +116,7 @@ object DiscordBotManager : ListenerAdapter() {
 
     private val discordListener = object : ListenerAdapter() {
         override fun onMessageReceived(event: MessageReceivedEvent) {
-            val server = server ?: return Logger.error("MinecraftServer is not initialized. Cannot process Discord message.")
+            val server = server ?: return Logger.error(LMB.getSysMessage(System.Log.NOT_INITIALIZED))
 
             CB.executor.executeAsync {
                 val mentionedPlayers = findMentionedPlayers(event.message.contentRaw, server.playerManager.playerList)
@@ -128,9 +130,19 @@ object DiscordBotManager : ListenerAdapter() {
     }
 
     private fun handlePlayerListCommand(event: SlashCommandInteractionEvent) {
+        var lang: String = event.guildLocale.locale
+        if (lang == "unknown") {
+            // Default fallback
+            lang = "en"
+        }
+        Fabricord.get()?.availableLang?.let {
+            if (lang !in it) {
+                lang = "en"
+            }
+        }
         val server = server ?: run {
-            Logger.error("MinecraftServer is not initialized. Cannot process /playerlist command.")
-            event.reply("Sorry, I can't get the player list right now.")
+            Logger.error(LMB.getSysMessage(System.Log.NOT_INITIALIZED))
+            event.reply(LMB.getSysMessageByLangCode(System.Command.Online_Players.CANT_GET_PLAYER_LIST, lang))
                 .setEphemeral(true)
                 .queue {
                     CB.executor.executeAsyncLater({
@@ -143,16 +155,17 @@ object DiscordBotManager : ListenerAdapter() {
         val onlinePlayers = server.playerManager.playerList
         val playerCount = onlinePlayers.size
 
+        // Discord API doesn't provide user language.
         val embedBuilder = EmbedBuilder()
-            .setTitle("Online Players")
+            .setTitle(LMB.getSysMessageByLangCode(System.Command.Online_Players.TITLE, lang))
             .setColor(Color.GREEN)
-            .setDescription("There are currently $playerCount players online.\n")
+            .setDescription(LMB.getSysMessageByLangCode(System.Command.Online_Players.DESCRIPTION, lang, playerCount))
 
         if (playerCount > 0) {
             val playerList = onlinePlayers.joinToString(separator = "\n") { player -> player.name.string }
             embedBuilder.setDescription(embedBuilder.descriptionBuilder.append(playerList).toString())
         } else {
-            embedBuilder.setDescription("There are currently no players online.")
+            embedBuilder.setDescription(LMB.getSysMessageByLangCode(System.Command.Online_Players.NO_PLAYER, lang))
         }
 
         event.replyEmbeds(embedBuilder.build()).queue()
@@ -178,45 +191,33 @@ object DiscordBotManager : ListenerAdapter() {
 
     fun sendToDiscord(message: String) {
         CB.executor.executeAsync {
-            Fabricord.logChannelID?.let { logChannelID ->
-                val messageAction = jda?.getTextChannelById(logChannelID)?.sendMessage(message)
-                if (Fabricord.allowMention == true) {
-                    val allowedMentions = mutableSetOf<Message.MentionType>()
+            try {
+                val logChannelID = Fabricord.logChannelID ?: return@executeAsync
+                val channel = jda?.getTextChannelById(logChannelID) ?: return@executeAsync
 
-                    if (Fabricord.allowEveryone == true) {
-                        allowedMentions.add(Message.MentionType.EVERYONE)
-                    }
+                val messageAction = channel.sendMessage(message)
 
-                    if (Fabricord.allowHere == true) {
-                        allowedMentions.add(Message.MentionType.HERE)
-                    }
-
-                    if (Fabricord.allowRoleMention == true) {
-                        allowedMentions.add(Message.MentionType.ROLE)
-
-                        if (!Fabricord.allowedRoles.isNullOrEmpty()) {
-                            messageAction?.mentionRoles(Fabricord.allowedRoles!!)
-                        } else {
-                            messageAction?.mentionRoles(emptyList()) // 空リストを指定して全ロール許可
+                val allowedMentions = mutableSetOf<Message.MentionType>().apply {
+                    if (Fabricord.allowMention == true) {
+                        if (Fabricord.allowEveryone == true) add(Message.MentionType.EVERYONE)
+                        if (Fabricord.allowHere == true) add(Message.MentionType.HERE)
+                        if (Fabricord.allowRoleMention == true) {
+                            add(Message.MentionType.ROLE)
+                            Fabricord.allowedRoles?.let { messageAction.mentionRoles(it) } ?: messageAction.mentionRoles(emptyList())
+                        }
+                        if (Fabricord.allowUserMention == true) {
+                            add(Message.MentionType.USER)
+                            Fabricord.allowedUsers?.let { messageAction.mentionUsers(it) } ?: messageAction.mentionUsers(emptyList())
                         }
                     }
-
-                    if (Fabricord.allowUserMention == true) {
-                        allowedMentions.add(Message.MentionType.USER)
-
-                        if (!Fabricord.allowedUsers.isNullOrEmpty()) {
-                            messageAction?.mentionUsers(Fabricord.allowedUsers!!)
-                        } else {
-                            messageAction?.mentionUsers(emptyList()) // 空リストを指定して全ユーザー許可
-                        }
-                    }
-
-                    messageAction?.setAllowedMentions(allowedMentions)
-                } else {
-                    messageAction?.setAllowedMentions(emptySet())
                 }
-                messageAction?.queue()
+
+                messageAction.setAllowedMentions(allowedMentions)
+                messageAction.queue()
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
+
 }

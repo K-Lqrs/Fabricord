@@ -9,6 +9,7 @@ open class System : FabricMessageKey {
         object ENABLING : Log()
         object DISABLING : Log()
         object INITIALIZED : Log()
+        object NOT_INITIALIZED : Log()
 
         open class MissingRequiredParam : Log() {
             object ITEM_0 : MissingRequiredParam()
@@ -16,9 +17,9 @@ open class System : FabricMessageKey {
             object ITEM_2 : MissingRequiredParam()
         }
 
-        object STILLSTARTINGUP : Log()
-        object FAILEDSTART : Log()
-        object FAILEDSTOP : Log()
+        object STILL_STARTING_UP : Log()
+        object FAILED_TO_START : Log()
+        object FAILED_TO_STOP : Log()
 
         object CHECKING_UPDATE : Log()
         object ALL_VERSION_COUNT : Log()
@@ -33,6 +34,15 @@ open class System : FabricMessageKey {
             object UNKNOWN : Other()
             object UNKNOWN_ERROR : Other()
             object ERROR : Other()
+        }
+    }
+
+    open class Command : System() {
+        open class Online_Players : Command() {
+            object TITLE : Online_Players()
+            object DESCRIPTION : Online_Players()
+            object NO_PLAYER : Online_Players()
+            object CANT_GET_PLAYER_LIST : Online_Players()
         }
     }
 }

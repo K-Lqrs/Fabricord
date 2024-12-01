@@ -56,6 +56,10 @@ class Fabricord : DedicatedServerModEntry(
 
 		var webHookId: String? = null
 		//endregion
+
+		fun get(): Fabricord? {
+			return get<Fabricord>()
+		}
 	}
 
 	val name: String = description.name
@@ -120,7 +124,7 @@ class Fabricord : DedicatedServerModEntry(
 			val player = handler.player
 
 			if (!DiscordBotManager.botIsInitialized) {
-				player.networkHandler.disconnect(Text.of(LMB.getSysMessage(System.Log.STILLSTARTINGUP)))
+				player.networkHandler.disconnect(Text.of(LMB.getSysMessage(System.Log.STILL_STARTING_UP)))
 				return@Join
 			}
 
@@ -142,7 +146,7 @@ class Fabricord : DedicatedServerModEntry(
 					DiscordBotManager.init(server)
 					DiscordBotManager.startBot()
 				} catch (e: Exception) {
-					logger.error(LMB.getSysMessage(System.Log.FAILEDSTART, e))
+					logger.error(LMB.getSysMessage(System.Log.FAILED_TO_START, e))
 					server.stop(false)
 				}
 			}
@@ -152,7 +156,7 @@ class Fabricord : DedicatedServerModEntry(
 			try {
 				DiscordBotManager.stopBot()
 			} catch (e: Exception) {
-				logger.error(LMB.getSysMessage(System.Log.FAILEDSTOP, e))
+				logger.error(LMB.getSysMessage(System.Log.FAILED_TO_STOP, e))
 			}
 		}
 	}

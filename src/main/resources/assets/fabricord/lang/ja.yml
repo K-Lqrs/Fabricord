@@ -5,6 +5,15 @@ system:
     loading: "%s v%s をロード中..."
     enabling: "%s v%s を起動中..."
     disabling: "%s v%s を停止中..."
+    initialized: "%s が正常に初期化されました。"
+    not_initialized: "MinecraftServer が初期化されていないため、/playerlist コマンドを処理できません。"
+    missingrequiredparams:
+      - "設定ファイルにボットトークンまたはログチャンネルIDがありません。"
+      - "MODを初めて起動しましたか？"
+      - "設定ファイルを確認してください：%s"
+    stillstartingup: "サーバーがまだ起動中です。後でもう一度お試しください。"
+    failed_to_start: "ボットの起動に失敗しました：%s"
+    failed_to_stop: "ボットの停止に失敗しました：%s"
     checking_update: "アップデートを確認中..."
     all_version_count: "利用可能なバージョンが%s個あります。"
     new_version_count: "現在のバージョンより新しいバージョンが%s個あります。"
@@ -18,3 +27,10 @@ system:
       unknown: "不明"
       unknown_error: "不明なエラーが発生しました。"
       error: "エラー"
+
+  command:
+    online_players:
+      title: "オンラインのプレイヤー"
+      description: "現在 %s 人がオンラインです。"
+      no_player: "オンラインのプレイヤーはいません。"
+      cant_get_player_list: "プレイヤーリストを取得できませんでした。"
