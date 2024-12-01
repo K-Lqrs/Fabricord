@@ -61,7 +61,7 @@ AllowedMentions:
     # Blank + AllowRole: false = No role can be mentioned.
     # Not Blank + AllowRole: false = It also can't be mentioned.
     # Blank + AllowRole: true = All roles can be mentioned.
-    # Not Blank + AllowRole: true = Only the specified role can be mentioned.
+    # Not Blank + AllowRole: true = Only the specified role (Discord Role) can be mentioned.
     - ""
 
   # Whether to allow @user to be sent from Minecraft to Discord.
@@ -73,7 +73,7 @@ AllowedMentions:
       # Blank + AllowUser: false = No user can be mentioned.
       # Not Blank + AllowUser: false = It also can't be mentioned.
       # Blank + AllowUser: true = All users can be mentioned.
-      # Not Blank + AllowUser: true = Only the specified user can be mentioned.
+      # Not Blank + AllowUser: true = Only the specified user (Discord User) can be mentioned.
       - ""
 
 # The message that appears when the server starts.

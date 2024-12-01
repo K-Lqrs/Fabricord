@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.entities.Activity
+import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.Webhook
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
@@ -14,10 +15,10 @@ import net.dv8tion.jda.api.requests.GatewayIntent
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.rk4z.fabricord.Fabricord
-import net.rk4z.fabricord.Fabricord.Companion.executorService
+import net.rk4z.s1.swiftbase.core.CB
+import net.rk4z.s1.swiftbase.core.Logger
 import java.awt.Color
 import java.util.*
-import java.util.concurrent.TimeUnit
 import javax.security.auth.login.LoginException
 
 object DiscordBotManager : ListenerAdapter() {
@@ -33,7 +34,7 @@ object DiscordBotManager : ListenerAdapter() {
     }
 
     fun startBot() {
-        executorService.submit {
+        CB.executor.execute {
             val onlineStatus = getOnlineStatus()
             val activity = getBotActivity()
 
@@ -54,20 +55,20 @@ object DiscordBotManager : ListenerAdapter() {
                 jda?.updateCommands()
 
                 botIsInitialized = true
-                Fabricord.logger.info("Discord bot is now online")
+                Logger.info("Discord bot is now online")
                 Fabricord.serverStartMessage?.let { sendToDiscord(it) }
 
                 if (Fabricord.messageStyle == "modern") {
                     if (!Fabricord.webHookId.isNullOrBlank()) {
                         webHook = jda?.retrieveWebhookById(Fabricord.webHookId!!)?.complete()
                     } else {
-                        Fabricord.logger.error("The message style is set to 'modern' but the webhook URL is not configured.")
+                        Logger.error("The message style is set to 'modern' but the webhook URL is not configured.")
                     }
                 }
             } catch (e: LoginException) {
-                Fabricord.logger.error("Failed to login to Discord with the provided token", e)
+                Logger.error("Failed to login to Discord with the provided token", e)
             } catch (e: Exception) {
-                Fabricord.logger.error("An unexpected error occurred during Discord bot startup", e)
+                Logger.error("An unexpected error occurred during Discord bot startup", e)
             }
         }
     }
@@ -75,11 +76,11 @@ object DiscordBotManager : ListenerAdapter() {
     fun stopBot() {
         if (botIsInitialized) {
             Fabricord.serverStopMessage?.let { sendToDiscord(it) }
-            Fabricord.logger.info("Discord bot is now offline")
+            Logger.info("Discord bot is now offline")
             jda?.shutdown()
             botIsInitialized = false
         } else {
-            Fabricord.logger.error("Discord bot is not initialized. Cannot stop the bot.")
+            Logger.error("Discord bot is not initialized. Cannot stop the bot.")
         }
     }
 
@@ -113,9 +114,9 @@ object DiscordBotManager : ListenerAdapter() {
 
     private val discordListener = object : ListenerAdapter() {
         override fun onMessageReceived(event: MessageReceivedEvent) {
-            val server = server ?: return Fabricord.logger.error("MinecraftServer is not initialized. Cannot process Discord message.")
+            val server = server ?: return Logger.error("MinecraftServer is not initialized. Cannot process Discord message.")
 
-            executorService.submit {
+            CB.executor.executeAsync {
                 val mentionedPlayers = findMentionedPlayers(event.message.contentRaw, server.playerManager.playerList)
                 if (mentionedPlayers.isNotEmpty()) {
                     DiscordMessageHandler.handleMentionedDiscordMessage(event, server, mentionedPlayers, false)
@@ -128,13 +129,13 @@ object DiscordBotManager : ListenerAdapter() {
 
     private fun handlePlayerListCommand(event: SlashCommandInteractionEvent) {
         val server = server ?: run {
-            Fabricord.logger.error("MinecraftServer is not initialized. Cannot process /playerlist command.")
+            Logger.error("MinecraftServer is not initialized. Cannot process /playerlist command.")
             event.reply("Sorry, I can't get the player list right now.")
                 .setEphemeral(true)
                 .queue {
-                    executorService.schedule({
+                    CB.executor.executeAsyncLater({
                         it.deleteOriginal().queue()
-                    }, 5, TimeUnit.SECONDS)
+                    }, 5000)
                 }
             return
         }
@@ -176,10 +177,42 @@ object DiscordBotManager : ListenerAdapter() {
     }
 
     fun sendToDiscord(message: String) {
-        executorService.submit {
-            Fabricord.logChannelID?.let { 
-                val messageAction = jda?.getTextChannelById(it)?.sendMessage(message)
-                if (Fabricord.allowMentions == false) {
+        CB.executor.executeAsync {
+            Fabricord.logChannelID?.let { logChannelID ->
+                val messageAction = jda?.getTextChannelById(logChannelID)?.sendMessage(message)
+                if (Fabricord.allowMention == true) {
+                    val allowedMentions = mutableSetOf<Message.MentionType>()
+
+                    if (Fabricord.allowEveryone == true) {
+                        allowedMentions.add(Message.MentionType.EVERYONE)
+                    }
+
+                    if (Fabricord.allowHere == true) {
+                        allowedMentions.add(Message.MentionType.HERE)
+                    }
+
+                    if (Fabricord.allowRoleMention == true) {
+                        allowedMentions.add(Message.MentionType.ROLE)
+
+                        if (!Fabricord.allowedRoles.isNullOrEmpty()) {
+                            messageAction?.mentionRoles(Fabricord.allowedRoles!!)
+                        } else {
+                            messageAction?.mentionRoles(emptyList()) // 空リストを指定して全ロール許可
+                        }
+                    }
+
+                    if (Fabricord.allowUserMention == true) {
+                        allowedMentions.add(Message.MentionType.USER)
+
+                        if (!Fabricord.allowedUsers.isNullOrEmpty()) {
+                            messageAction?.mentionUsers(Fabricord.allowedUsers!!)
+                        } else {
+                            messageAction?.mentionUsers(emptyList()) // 空リストを指定して全ユーザー許可
+                        }
+                    }
+
+                    messageAction?.setAllowedMentions(allowedMentions)
+                } else {
                     messageAction?.setAllowedMentions(emptySet())
                 }
                 messageAction?.queue()

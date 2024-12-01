@@ -1,0 +1,20 @@
+langVersion: 1.0
+
+system:
+  log:
+    loading: "%s v%s をロード中..."
+    enabling: "%s v%s を起動中..."
+    disabling: "%s v%s を停止中..."
+    checking_update: "アップデートを確認中..."
+    all_version_count: "利用可能なバージョンが%s個あります。"
+    new_version_count: "現在のバージョンより新しいバージョンが%s個あります。"
+    latest_version_found: "新しいバージョン (%s) が利用可能です！あなたはバージョン%sを使用しています。"
+    view_latest_ver: "最新版はこちらから：%s"
+    you_are_using_latest: "最新バージョンのBulletinBoardを使用しています。"
+    failed_to_check_update: "更新のチェックに失敗しました：%s"
+    error_while_checking_update: "更新のチェック中にエラーが発生しました：%s"
+    language_file_not_found: "%sの言語ファイルが見つかりません！"
+    other:
+      unknown: "不明"
+      unknown_error: "不明なエラーが発生しました。"
+      error: "エラー"

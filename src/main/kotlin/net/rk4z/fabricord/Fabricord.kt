@@ -1,26 +1,23 @@
 package net.rk4z.fabricord
 
-import net.fabricmc.api.DedicatedServerModInitializer
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
-import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.text.Text
 import net.rk4z.fabricord.discord.DiscordBotManager
 import net.rk4z.fabricord.discord.DiscordEmbed
 import net.rk4z.fabricord.discord.DiscordPlayerEventHandler.handleMCMessage
+import net.rk4z.fabricord.utils.System
+import net.rk4z.s1.swiftbase.core.CB
+import net.rk4z.s1.swiftbase.core.LMB
+import net.rk4z.s1.swiftbase.core.Logger
 import net.rk4z.s1.swiftbase.fabric.DedicatedServerModEntry
-import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.yaml.snakeyaml.Yaml
-import java.nio.file.Path
-import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledExecutorService
 
 class Fabricord : DedicatedServerModEntry(
-	"fabricord",
-	"net.rk4z.fabricord",
-	false,
+	id= "fabricord",
+	packageName = "net.rk4z.fabricord",
+	isDebug = false,
 	configFile = "config.yml",
 	availableLang = listOf("ja", "en"),
 	langDir = "lang",
@@ -28,21 +25,7 @@ class Fabricord : DedicatedServerModEntry(
 	enableUpdateChecker = true,
 	modrinthID = "xU8Bn98V",
 ) {
-	//TODO: 言語の実装、起動時の呼び出しの実装
 	companion object {
-		private const val MOD_ID = "fabricord"
-
-		val logger: Logger = LoggerFactory.getLogger(Fabricord::class.simpleName)
-
-		private val loader: FabricLoader = FabricLoader.getInstance()
-		val executorService: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
-
-		private val serverDir: Path = loader.gameDir.toRealPath()
-		private val modDir: Path = serverDir.resolve(MOD_ID)
-
-		private val yaml = Yaml()
-		private var initializeIsDone = false
-
 		//region Configurations
 		// Required
 		var botToken: String? = null
@@ -62,37 +45,72 @@ class Fabricord : DedicatedServerModEntry(
 		var botActivityMessage: String? = null
 
 		var messageStyle: String? = null
+
+		var allowMention: Boolean? = false
 		var allowEveryone: Boolean? = false
 		var allowHere: Boolean? = false
 		var allowRoleMention: Boolean? = false
 		var allowedRoles: List<String>? = null
 		var allowUserMention: Boolean? = false
 		var allowedUsers: List<String>? = null
+
 		var webHookId: String? = null
 		//endregion
 	}
 
-	override fun onInitializeServer() {
-		logger.info("Initializing Fabricord...")
+	val name: String = description.name
+	val version: String = description.version.friendlyString
+
+	override fun onInstanceInitialized() {
+		CB.apply {
+			onCheckUpdate = {
+				Logger.info(LMB.getSysMessage(System.Log.CHECKING_UPDATE))
+			}
+
+			onAllVersionsRetrieved = { versionCount ->
+				Logger.info(LMB.getSysMessage(System.Log.ALL_VERSION_COUNT, versionCount.toString()))
+			}
+
+			onNewVersionFound = { latestVersion, newerVersionCount ->
+				Logger.info(LMB.getSysMessage(System.Log.NEW_VERSION_COUNT, newerVersionCount.toString()))
+				Logger.info(LMB.getSysMessage(System.Log.LATEST_VERSION_FOUND, latestVersion, version))
+				Logger.info(LMB.getSysMessage(System.Log.VIEW_LATEST_VER, MODRINTH_DOWNLOAD_URL))
+			}
+
+			onNoNewVersionFound = {
+				Logger.info(LMB.getSysMessage(System.Log.YOU_ARE_USING_LATEST))
+			}
+
+			onUpdateCheckFailed = { responseCode ->
+				Logger.warn(LMB.getSysMessage(System.Log.FAILED_TO_CHECK_UPDATE, responseCode.toString()))
+			}
+
+			onUpdateCheckError = { e ->
+				Logger.error(LMB.getSysMessage(System.Log.ERROR_WHILE_CHECKING_UPDATE, e.message ?: LMB.getSysMessage(System.Log.Other.UNKNOWN_ERROR)))
+			}
+		}
+	}
+
+	override fun onDirectoriesAndFilesInitialized() {
+		Logger.info(LMB.getSysMessage(System.Log.LOADING, name, version))
 		loadConfig()
 
 		if (requiredNullCheck()) {
-			logger.error("Bot token or log channel ID is missing in config file.")
-			logger.error("Maybe you are running the mod for the first time?")
-			logger.error("Please check the config file at $configFile")
+			Logger.error(LMB.getSysMessage(System.Log.MissingRequiredParam.ITEM_0))
+			Logger.error(LMB.getSysMessage(System.Log.MissingRequiredParam.ITEM_1))
+			Logger.error(LMB.getSysMessage(System.Log.MissingRequiredParam.ITEM_2, "$configFile"))
 			return
 		}
 		nullCheck()
 
 		registerEvents()
 
-		initializeIsDone = true
-		logger.info("Fabricord initialized successfully.")
+		Logger.info(LMB.getSysMessage(System.Log.INITIALIZED, name))
 	}
 
 	private fun registerEvents() {
 		ServerMessageEvents.CHAT_MESSAGE.register(ServerMessageEvents.ChatMessage { message, sender, _ ->
-			executorService.submit {
+			CB.executor.executeAsync {
 				val content = message.content.string
 				handleMCMessage(sender, content)
 			}
@@ -102,29 +120,29 @@ class Fabricord : DedicatedServerModEntry(
 			val player = handler.player
 
 			if (!DiscordBotManager.botIsInitialized) {
-				player.networkHandler.disconnect(Text.of("Server is still starting up, please try again later."))
+				player.networkHandler.disconnect(Text.of(LMB.getSysMessage(System.Log.STILLSTARTINGUP)))
 				return@Join
 			}
 
-			executorService.submit {
+			CB.executor.executeAsync {
 				DiscordEmbed.sendPlayerJoinEmbed(player)
 			}
 		})
 
 		ServerPlayConnectionEvents.DISCONNECT.register(ServerPlayConnectionEvents.Disconnect { handler, _ ->
-			executorService.submit {
+			CB.executor.executeAsync {
 				val player = handler.player
 				DiscordEmbed.sendPlayerLeftEmbed(player)
 			}
 		})
 
 		ServerLifecycleEvents.SERVER_STARTED.register { server ->
-			executorService.submit {
+			CB.executor.executeAsync {
 				try {
 					DiscordBotManager.init(server)
 					DiscordBotManager.startBot()
 				} catch (e: Exception) {
-					logger.error("Failed to start Discord bot", e)
+					logger.error(LMB.getSysMessage(System.Log.FAILEDSTART, e))
 					server.stop(false)
 				}
 			}
@@ -133,9 +151,8 @@ class Fabricord : DedicatedServerModEntry(
 		ServerLifecycleEvents.SERVER_STOPPING.register { _ ->
 			try {
 				DiscordBotManager.stopBot()
-				executorService.shutdownNow()
 			} catch (e: Exception) {
-				logger.error("Failed to stop Discord bot", e)
+				logger.error(LMB.getSysMessage(System.Log.FAILEDSTOP, e))
 			}
 		}
 	}
@@ -163,6 +180,7 @@ class Fabricord : DedicatedServerModEntry(
 
 		messageStyle = lc("MessageStyle")
 
+		allowMention = lc("AllowedMentions.AllowMention")
 		allowEveryone = lc("AllowedMentions.AllowEveryone")
 		allowHere = lc("AllowedMentions.AllowHere")
 		allowRoleMention = lc("AllowedMentions.AllowRole")
