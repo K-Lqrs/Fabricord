@@ -2,7 +2,7 @@
 # You can bridge Discord and Minecraft chat!
 
 # Click here for various links↓.
-# GitHub -> https://github.com/KT-Ruxy/Fabricord
+# GitHub -> https://github.com/K-Lqrs/Fabricord
 # Modrinth -> https://modrinth.com/mod/fabricord
 
 # BotToken for use with Discord.
@@ -33,6 +33,7 @@ BotOnlineStatus: ""
 # The Log Style can be changed.
 # "Classic", "modern" are available.
 # If blank, "classic" is automatically selected.
+# What's the difference? -> https://modrinth.com/mod/fabricord/gallery
 MessageStyle: ""
 
 # If Message_Style is "modern", you need to set the Webhook URL.

@@ -18,7 +18,7 @@ class Fabricord : DedicatedServerModEntry(
 	id= "fabricord",
 	packageName = "net.rk4z.fabricord",
 	isDebug = true,
-	configFile = "config.yml",
+	configFile = "assets/fabricord/config/en.yml",
 	availableLang = listOf("ja", "en"),
 	langDir = "lang",
 	logger = LoggerFactory.getLogger(Fabricord::class.simpleName),

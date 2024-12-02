@@ -1,0 +1,104 @@
+# Modをダウンロードしていただきありがとうございます
+# このModは、Fabricサーバー上でDiscordとの相互ちゃっと連携を行うことができます
+
+# 各種リンクはこちらから↓
+# GitHub -> https://github.com/K-Lqrs/Fabricord
+# Modrinth -> https://modrinth.com/mod/fabricord
+
+# Discord Botの起動に必要なTokenを入力してください
+# BotTokenはどうやって入手しますか？ -> https://discord.com/developers/applications
+BotToken: ""
+
+# Minecraftのログを送信するチャンネルを指定します
+# 空欄の場合、Minecraftサーバーの一般チャットをDiscordに送信しません
+# チャンネルIDはどうやって入手しますか？ -> https://support.discord.com/hc/ja/articles/206346498-Where-can-I-find-my-User-Server-Message-ID
+LogChannelID: ""
+
+# >----- アドバンスセッティング -----< #
+
+# Botのアクティビティを変更することができます
+# "PLAYING", "STREAMING", "LISTENING", "WATCHING" が利用可能です
+# 空欄の場合、"PLAYING" が自動的に選択されます
+BotActivityStatus: ""
+
+# Botのアクティビティテキストを変更することができます
+# 空欄の場合、"Minecraft" が自動的に選択されます
+BotActivityMessage: ""
+
+# Botのオンラインステータスを変更することができます
+# "ONLINE", "IDLE", "DO_NOT_DISTURB" が利用可能です
+# 空欄の場合、"ONLINE" が自動的に選択されます
+BotOnlineStatus: ""
+
+# ログスタイルを変更することができます
+# "Classic", "modern" が利用可能です
+# 空欄の場合、"classic" が自動的に選択されます
+# 違いは何ですか？ -> https://modrinth.com/mod/fabricord/gallery
+MessageStyle: ""
+
+# Message_Style を "modern" に設定した場合、Webhook URL を設定する必要があります
+# WebhookURLはどの様にして入手しますか？ -> https://support.discord.com/hc/ja/articles/228383668-Intro-to-Webhooks
+WebhookUrl: ""
+
+
+# TODO
+# このModは、Minecraftでの「@everyone」のようなフォーマットをそのまま送信するため、
+# 通常は誰でもメンションが可能になってしまいます。（Discordの権限にかかわらず！）
+# そのため、このセクションでは、どのメンションタイプを有効化するかを制御できます。
+AllowedMentions:
+  # MinecraftからDiscordにメンションを送信するかどうか
+  # falseの場合、すべてのメンションは送信されません
+  AllowMention: true
+
+  # Whether to allow @everyone to be sent from Minecraft to Discord.
+  # If false, @everyone will not be sent.
+  AllowEveryone: false
+
+  # Whether to allow @here to be sent from Minecraft to Discord.
+  # If false, @here will not be sent.
+  AllowHere: false
+
+  # Whether to allow @role to be sent from Minecraft to Discord.
+  # If false, @role will not be sent.
+  AllowRole: false
+
+  AllowedRoles:
+    # The role ID that can be sent from Minecraft to Discord.
+    # Blank + AllowRole: false = No role can be mentioned.
+    # Not Blank + AllowRole: false = It also can't be mentioned.
+    # Blank + AllowRole: true = All roles can be mentioned.
+    # Not Blank + AllowRole: true = Only the specified role (Discord Role) can be mentioned.
+    - ""
+
+  # Whether to allow @user to be sent from Minecraft to Discord.
+  # If false, @user will not be sent.
+  AllowUser: false
+
+  AllowedUsers:
+    # The user ID that can be sent from Minecraft to Discord.
+    # Blank + AllowUser: false = No user can be mentioned.
+    # Not Blank + AllowUser: false = It also can't be mentioned.
+    # Blank + AllowUser: true = All users can be mentioned.
+    # Not Blank + AllowUser: true = Only the specified user (Discord User) can be mentioned.
+    - ""
+
+# The message that appears when the server starts.
+# If blank, the message will use the default message.
+ServerStartMessage: ""
+
+# The message that appears when the server stops.
+# If blank, the message will use the default message.
+ServerStopMessage: ""
+
+# The message that appears when a player joins the server.
+# You can use the "% player%" placeholder.
+# It will be replaced with the player's name.
+# If blank, the message will use the default message.
+PlayerJoinMessage: ""
+
+# The message that appears when a player leaves the server.
+# You can use the "% player%" placeholder.
+# It will be replaced with the player's name.
+# If blank, the message will use the default message.
+PlayerLeaveMessage: ""
+# >-----------------------------< #

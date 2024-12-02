@@ -7,24 +7,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 object Utils {
-    fun Map<String, Any>.getNullableString(key: String): String? =
-        this[key]?.toString()?.takeIf { it.isNotBlank() }
-
-    fun Map<String, Any>.getNullableBoolean(key: String): Boolean? =
-        this[key]?.toString()?.takeIf { it.isNotBlank() }?.toBooleanStrictOrNull()
-
-    fun copyResourceToFile(resourcePath: String, outputPath: Path) {
-        val fullPath = "/$resourcePath"
-        val inputStream: InputStream? = javaClass.getResourceAsStream(fullPath)
-        if (inputStream == null) {
-            Fabricord.logger.error("Resource $fullPath not found in Jar")
-            return
-        }
-        Files.copy(inputStream, outputPath)
-        Fabricord.logger.info("Copied resource $fullPath to $outputPath")
-    }
-
-
     fun replaceUUIDsWithMCIDs(message: String, players: List<ServerPlayerEntity>): Pair<String, List<ServerPlayerEntity>> {
         var updatedMessage = message
         val mentionedPlayers = mutableListOf<ServerPlayerEntity>()
