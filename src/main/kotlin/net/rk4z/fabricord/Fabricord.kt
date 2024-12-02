@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory
 class Fabricord : DedicatedServerModEntry(
 	id= "fabricord",
 	packageName = "net.rk4z.fabricord",
-	isDebug = false,
+	isDebug = true,
 	configFile = "config.yml",
 	availableLang = listOf("ja", "en"),
 	langDir = "lang",
@@ -110,6 +110,14 @@ class Fabricord : DedicatedServerModEntry(
 		registerEvents()
 
 		Logger.info(LMB.getSysMessage(System.Log.INITIALIZED, name))
+	}
+
+	override fun onInitialized() {
+		if (isDebug) {
+			availableLang?.forEach { t ->
+				LMB.findMissingKeys(t)
+			}
+		}
 	}
 
 	private fun registerEvents() {
