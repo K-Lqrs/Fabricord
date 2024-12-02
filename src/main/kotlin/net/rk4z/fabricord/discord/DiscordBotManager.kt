@@ -57,7 +57,6 @@ object DiscordBotManager : ListenerAdapter() {
                 jda?.updateCommands()
 
                 botIsInitialized = true
-                // Discord bot is now online
                 Logger.info(LMB.getSysMessage(System.Log.BOT_ONLINE))
                 Fabricord.serverStartMessage?.let { sendToDiscord(it) }
 
@@ -65,15 +64,12 @@ object DiscordBotManager : ListenerAdapter() {
                     if (!Fabricord.webHookId.isNullOrBlank()) {
                         webHook = jda?.retrieveWebhookById(Fabricord.webHookId!!)?.complete()
                     } else {
-                        // The message style is set to 'modern' but the webhook URL is not configured.
                         Logger.error(LMB.getSysMessage(System.Log.WEBHOOK_NOT_CONFIGURED))
                     }
                 }
             } catch (e: LoginException) {
-                //"Failed to login to Discord with the provided token"
                 Logger.error(LMB.getSysMessage(System.Log.FAILED_TO_LOGIN), e)
             } catch (e: Exception) {
-                // "An unexpected error occurred during Discord bot startup"
                 Logger.error(LMB.getSysMessage(System.Log.FAILED_TO_START_BOT), e)
             }
         }
@@ -87,7 +83,6 @@ object DiscordBotManager : ListenerAdapter() {
             jda?.shutdown()
             botIsInitialized = false
         } else {
-            // Discord bot is not initialized. Cannot stop the bot.
             Logger.error(LMB.getSysMessage(System.Log.BOT_NOT_INITIALIZED))
         }
     }
