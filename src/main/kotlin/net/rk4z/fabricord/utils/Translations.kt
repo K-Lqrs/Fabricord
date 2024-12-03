@@ -1,8 +1,9 @@
+@file:Suppress("MISSING_DEPENDENCY_SUPERCLASS_IN_TYPE_ARGUMENT", "ClassName", "unused")
+
 package net.rk4z.fabricord.utils
 
 import net.rk4z.s1.swiftbase.fabric.FabricMessageKey
 
-@Suppress("MISSING_DEPENDENCY_SUPERCLASS_IN_TYPE_ARGUMENT", "ClassName", "unused")
 open class System : FabricMessageKey {
     open class Log : System() {
         object LOADING : Log()
@@ -21,18 +22,13 @@ open class System : FabricMessageKey {
         object FAILED_TO_START : Log()
         object FAILED_TO_STOP : Log()
 
-        //TODO
         object FAILED_TO_LOGIN : Log()
-        //TODO
         object FAILED_TO_START_BOT : Log()
-        //TODO
         object WEBHOOK_NOT_CONFIGURED : Log()
-        //TODO
         object BOT_ONLINE : Log()
-        //TODO
         object BOT_OFFLINE : Log()
-        //TODO
         object BOT_NOT_INITIALIZED : Log()
+        object GUILD_NOT_FOUND : Log()
 
         object CHECKING_UPDATE : Log()
         object ALL_VERSION_COUNT : Log()
@@ -44,6 +40,7 @@ open class System : FabricMessageKey {
         object ERROR_WHILE_CHECKING_UPDATE : Log()
 
         open class Other : Log() {
+            object DATE_PARSE_ERROR : Other()
             object UNKNOWN : Other()
             object UNKNOWN_ERROR : Other()
             object ERROR : Other()
@@ -57,5 +54,16 @@ open class System : FabricMessageKey {
             object NO_PLAYER : Online_Players()
             object CANT_GET_PLAYER_LIST : Online_Players()
         }
+
+        open class Ban : Command() {
+            object CANT_GET_SERVER : Ban()
+            object SUCCESS : Ban()
+        }
+
+        object NO_PLAYER_FOUND : Command()
     }
+}
+
+open class Main : FabricMessageKey {
+    object NOT_LINKED : Main()
 }

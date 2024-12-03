@@ -1,5 +1,6 @@
 package net.rk4z.fabricord
 
+import net.dv8tion.jda.api.entities.Guild
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
@@ -7,11 +8,13 @@ import net.minecraft.text.Text
 import net.rk4z.fabricord.discord.DiscordBotManager
 import net.rk4z.fabricord.discord.DiscordEmbed
 import net.rk4z.fabricord.discord.DiscordPlayerEventHandler.handleMCMessage
+import net.rk4z.fabricord.utils.Main
 import net.rk4z.fabricord.utils.System
 import net.rk4z.s1.swiftbase.core.CB
 import net.rk4z.s1.swiftbase.core.LMB
 import net.rk4z.s1.swiftbase.core.Logger
 import net.rk4z.s1.swiftbase.fabric.DedicatedServerModEntry
+import net.rk4z.s1.swiftbase.fabric.adapt
 import org.slf4j.LoggerFactory
 
 class Fabricord : DedicatedServerModEntry(
@@ -28,6 +31,7 @@ class Fabricord : DedicatedServerModEntry(
 	companion object {
 		//region Configurations
 		// Required
+		var guildId: String? = null
 		var botToken: String? = null
 		var logChannelID: String? = null
 
@@ -46,6 +50,7 @@ class Fabricord : DedicatedServerModEntry(
 
 		var messageStyle: String? = null
 
+		var forceLink: Boolean? = false
 		var allowMention: Boolean? = false
 		var allowEveryone: Boolean? = false
 		var allowHere: Boolean? = false
@@ -136,6 +141,13 @@ class Fabricord : DedicatedServerModEntry(
 				return@Join
 			}
 
+			val p = player.adapt()
+
+			if (!(player.isLinkedWithDiscord())) {
+				player.networkHandler.disconnect(p.getMessage(Main.NOT_LINKED))
+				return@Join
+			}
+
 			CB.executor.executeAsync {
 				DiscordEmbed.sendPlayerJoinEmbed(player)
 			}
@@ -192,6 +204,7 @@ class Fabricord : DedicatedServerModEntry(
 
 		messageStyle = lc("MessageStyle")
 
+		forceLink = lc("ForceLink")
 		allowMention = lc("AllowedMentions.AllowMention")
 		allowEveryone = lc("AllowedMentions.AllowEveryone")
 		allowHere = lc("AllowedMentions.AllowHere")

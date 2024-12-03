@@ -30,18 +30,20 @@ BotActivityMessage: ""
 # 空欄の場合、"ONLINE" が自動的に選択されます
 BotOnlineStatus: ""
 
-# ログスタイルを変更することができます
+# ログスタイルを変更できます
 # "Classic", "modern" が利用可能です
 # 空欄の場合、"classic" が自動的に選択されます
-# 違いは何ですか？ -> https://modrinth.com/mod/fabricord/gallery
+# これらの違いは何ですか？ -> https://modrinth.com/mod/fabricord/gallery
 MessageStyle: ""
 
 # Message_Style を "modern" に設定した場合、Webhook URL を設定する必要があります
-# WebhookURLはどの様にして入手しますか？ -> https://support.discord.com/hc/ja/articles/228383668-Intro-to-Webhooks
+# WebhookURLはどうやって入手しますか？ -> https://support.discord.com/hc/ja/articles/228383668-Intro-to-Webhooks
 WebhookUrl: ""
 
+# DiscordとMinecraftのアカウントのリンクを強制し、メンションを制御するかどうかを設定します
+# trueに設定すると、"AllowedMentions" の設定は無視されます
+ForceLink: false
 
-# TODO
 # このModは、Minecraftでの「@everyone」のようなフォーマットをそのまま送信するため、
 # 通常は誰でもメンションが可能になってしまいます。（Discordの権限にかかわらず！）
 # そのため、このセクションでは、どのメンションタイプを有効化するかを制御できます。

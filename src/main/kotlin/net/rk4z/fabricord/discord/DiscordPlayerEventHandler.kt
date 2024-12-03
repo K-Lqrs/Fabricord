@@ -4,7 +4,11 @@ import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
 import net.minecraft.server.network.ServerPlayerEntity
 import net.rk4z.fabricord.Fabricord
+import net.rk4z.fabricord.getDiscordID
+import net.rk4z.fabricord.isLinkedWithDiscord
+import net.rk4z.fabricord.utils.System
 import net.rk4z.s1.swiftbase.core.CB
+import net.rk4z.s1.swiftbase.core.LMB
 import net.rk4z.s1.swiftbase.core.Logger
 
 object DiscordPlayerEventHandler {
@@ -26,7 +30,7 @@ object DiscordPlayerEventHandler {
 
     private fun modernStyle(player: ServerPlayerEntity, message: String) {
         if (Fabricord.webHookId.isNullOrBlank()) {
-            Logger.error("Webhook URL is not configured or blank.")
+            Logger.error(LMB.getSysMessage(System.Log.WEBHOOK_NOT_CONFIGURED))
             return
         }
 
@@ -37,14 +41,14 @@ object DiscordPlayerEventHandler {
                 .setContent(message)
 
             val allowedMentions = mutableSetOf<Message.MentionType>().apply {
-                if (Fabricord.allowMention == true) {
-                    if (Fabricord.allowEveryone == true) add(Message.MentionType.EVERYONE)
-                    if (Fabricord.allowHere == true) add(Message.MentionType.HERE)
-                    if (Fabricord.allowRoleMention == true) {
-                        add(Message.MentionType.ROLE)
-                    }
-                    if (Fabricord.allowUserMention == true) {
-                        add(Message.MentionType.USER)
+                if (Fabricord.forceLink == true) {
+                    val playerDiscord = player.getDiscordID()
+                } else {
+                    if (Fabricord.allowMention == true) {
+                        if (Fabricord.allowEveryone == true) add(Message.MentionType.EVERYONE)
+                        if (Fabricord.allowHere == true) add(Message.MentionType.HERE)
+                        if (Fabricord.allowRoleMention == true) add(Message.MentionType.ROLE)
+                        if (Fabricord.allowUserMention == true) add(Message.MentionType.USER)
                     }
                 }
             }

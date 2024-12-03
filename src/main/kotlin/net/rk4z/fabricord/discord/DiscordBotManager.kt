@@ -1,35 +1,42 @@
 package net.rk4z.fabricord.discord
 
+import com.mojang.authlib.GameProfile
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.entities.Activity
+import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.Webhook
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.Commands
+import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import net.dv8tion.jda.api.requests.GatewayIntent
+import net.minecraft.server.BannedPlayerEntry
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.Text
 import net.rk4z.fabricord.Fabricord
 import net.rk4z.fabricord.utils.System
 import net.rk4z.s1.swiftbase.core.CB
 import net.rk4z.s1.swiftbase.core.LMB
 import net.rk4z.s1.swiftbase.core.Logger
 import java.awt.Color
+import java.text.SimpleDateFormat
 import java.util.*
 import javax.security.auth.login.LoginException
 
 object DiscordBotManager : ListenerAdapter() {
-    var jda: JDA? = null
-    var webHook: Webhook? = null
-    var botIsInitialized: Boolean = false
-
-    private val intents = GatewayIntent.MESSAGE_CONTENT
-    private var server: MinecraftServer? = null
+    internal lateinit var guild: Guild
+    internal var jda: JDA? = null
+    internal var webHook: Webhook? = null
+    internal var botIsInitialized = false
+    internal var server: MinecraftServer? = null
+    internal val intents = GatewayIntent.MESSAGE_CONTENT
 
     fun init(s: MinecraftServer) {
         server = s
@@ -37,16 +44,13 @@ object DiscordBotManager : ListenerAdapter() {
 
     fun startBot() {
         CB.executor.execute {
-            val onlineStatus = getOnlineStatus()
-            val activity = getBotActivity()
-
             try {
                 jda = JDABuilder.createDefault(Fabricord.botToken)
                     .setAutoReconnect(true)
-                    .setStatus(onlineStatus)
-                    .setActivity(activity)
+                    .setStatus(getOnlineStatus())
+                    .setActivity(getBotActivity())
                     .enableIntents(intents)
-                    .addEventListeners(discordListener, this)
+                    .addEventListeners(this)
                     .build()
                     .awaitReady()
 
@@ -54,10 +58,11 @@ object DiscordBotManager : ListenerAdapter() {
                     Commands.slash("playerlist", "Get a list of online players")
                 )?.queue()
 
-                jda?.updateCommands()
-
+                guild = jda?.getGuildById(Fabricord.guildId!!) ?: throw IllegalStateException("Guild not found")
                 botIsInitialized = true
-                Logger.info(LMB.getSysMessage(System.Log.BOT_ONLINE))
+
+                Logger.info("Discord bot is now online.")
+
                 Fabricord.serverStartMessage?.let { sendToDiscord(it) }
 
                 if (Fabricord.messageStyle == "modern") {
@@ -67,6 +72,7 @@ object DiscordBotManager : ListenerAdapter() {
                         Logger.error(LMB.getSysMessage(System.Log.WEBHOOK_NOT_CONFIGURED))
                     }
                 }
+
             } catch (e: LoginException) {
                 Logger.error(LMB.getSysMessage(System.Log.FAILED_TO_LOGIN), e)
             } catch (e: Exception) {
@@ -78,36 +84,13 @@ object DiscordBotManager : ListenerAdapter() {
     fun stopBot() {
         if (botIsInitialized) {
             Fabricord.serverStopMessage?.let { sendToDiscord(it) }
-            //Discord bot is now offline
-            Logger.info(LMB.getSysMessage(System.Log.BOT_OFFLINE))
             jda?.shutdown()
             botIsInitialized = false
+            Logger.info("Discord bot is now offline.")
         } else {
-            Logger.error(LMB.getSysMessage(System.Log.BOT_NOT_INITIALIZED))
+            Logger.error("Discord bot is not initialized.")
         }
     }
-
-    private fun getOnlineStatus(): OnlineStatus {
-        return when (Fabricord.botOnlineStatus?.uppercase(Locale.getDefault())) {
-            "ONLINE" -> OnlineStatus.ONLINE
-            "IDLE" -> OnlineStatus.IDLE
-            "DO_NOT_DISTURB" -> OnlineStatus.DO_NOT_DISTURB
-            "INVISIBLE" -> OnlineStatus.INVISIBLE
-            else -> OnlineStatus.ONLINE
-        }
-    }
-
-    private fun getBotActivity(): Activity {
-        return when (Fabricord.botActivityStatus?.lowercase(Locale.getDefault())) {
-            "playing" -> Activity.playing(Fabricord.botActivityMessage ?: "Minecraft Server")
-            "watching" -> Activity.watching(Fabricord.botActivityMessage ?: "Minecraft Server")
-            "listening" -> Activity.listening(Fabricord.botActivityMessage ?: "Minecraft Server")
-            "competing" -> Activity.competing(Fabricord.botActivityMessage ?: "Minecraft Server")
-            else -> Activity.playing("Minecraft Server")
-        }
-    }
-
-//>------------------------------------------------------------------------------------------------------------------<\\
 
     override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
         when (event.name) {
@@ -115,79 +98,25 @@ object DiscordBotManager : ListenerAdapter() {
         }
     }
 
-    private val discordListener = object : ListenerAdapter() {
-        override fun onMessageReceived(event: MessageReceivedEvent) {
-            val server = server ?: return Logger.error(LMB.getSysMessage(System.Log.NOT_INITIALIZED))
-
-            CB.executor.executeAsync {
-                val mentionedPlayers = findMentionedPlayers(event.message.contentRaw, server.playerManager.playerList)
-                if (mentionedPlayers.isNotEmpty()) {
-                    DiscordMessageHandler.handleMentionedDiscordMessage(event, server, mentionedPlayers, false)
-                } else {
-                    DiscordMessageHandler.handleDiscordMessage(event, server)
-                }
-            }
-        }
-    }
-
     private fun handlePlayerListCommand(event: SlashCommandInteractionEvent) {
-        var lang: String = event.guildLocale.locale
-        if (lang == "unknown") {
-            // Default fallback
-            lang = "en"
-        }
-        Fabricord.get()?.availableLang?.let {
-            if (lang !in it) {
-                lang = "en"
-            }
-        }
-        val server = server ?: run {
-            Logger.error(LMB.getSysMessage(System.Log.NOT_INITIALIZED))
-            event.reply(LMB.getSysMessageByLangCode(System.Command.Online_Players.CANT_GET_PLAYER_LIST, lang))
-                .setEphemeral(true)
-                .queue {
-                    CB.executor.executeAsyncLater({
-                        it.deleteOriginal().queue()
-                    }, 5000)
-                }
-            return
-        }
-
+        val server = getServerOrReply(event) ?: return
         val onlinePlayers = server.playerManager.playerList
-        val playerCount = onlinePlayers.size
-
-        // Discord API doesn't provide user language.
-        val embedBuilder = EmbedBuilder()
-            .setTitle(LMB.getSysMessageByLangCode(System.Command.Online_Players.TITLE, lang))
+        val embed = EmbedBuilder()
+            .setTitle("Online Players (${onlinePlayers.size})")
+            .setDescription(
+                if (onlinePlayers.isEmpty()) "No players online."
+                else onlinePlayers.joinToString("\n") { it.name.string }
+            )
             .setColor(Color.GREEN)
-            .setDescription(LMB.getSysMessageByLangCode(System.Command.Online_Players.DESCRIPTION, lang, playerCount))
-
-        if (playerCount > 0) {
-            val playerList = onlinePlayers.joinToString(separator = "\n") { player -> player.name.string }
-            embedBuilder.setDescription(embedBuilder.descriptionBuilder.append(playerList).toString())
-        } else {
-            embedBuilder.setDescription(LMB.getSysMessageByLangCode(System.Command.Online_Players.NO_PLAYER, lang))
-        }
-
-        event.replyEmbeds(embedBuilder.build()).queue()
+            .build()
+        event.replyEmbeds(embed).queue()
     }
 
-    private fun findMentionedPlayers(messageContent: String, players: List<ServerPlayerEntity>): List<ServerPlayerEntity> {
-        val mentionedPlayers = mutableListOf<ServerPlayerEntity>()
-        val mcidPattern = Regex("@([a-zA-Z0-9_]+)")
-        val uuidPattern = Regex("@\\{([0-9a-fA-F-]+)}")
-
-        mcidPattern.findAll(messageContent).forEach { match ->
-            val mcid = match.groupValues[1]
-            players.find { it.name.string == mcid }?.let { mentionedPlayers.add(it) }
+    private fun getServerOrReply(event: SlashCommandInteractionEvent): MinecraftServer? {
+        return server ?: run {
+            event.reply(LMB.getSysMessage(System.Log.NOT_INITIALIZED)).setEphemeral(true).queue()
+            null
         }
-
-        uuidPattern.findAll(messageContent).forEach { match ->
-            val uuidStr = match.groupValues[1]
-            players.find { it.uuid.toString() == uuidStr }?.let { mentionedPlayers.add(it) }
-        }
-
-        return mentionedPlayers
     }
 
     fun sendToDiscord(message: String) {
@@ -221,4 +150,19 @@ object DiscordBotManager : ListenerAdapter() {
         }
     }
 
+    private fun getOnlineStatus(): OnlineStatus = when (Fabricord.botOnlineStatus?.uppercase()) {
+        "ONLINE" -> OnlineStatus.ONLINE
+        "IDLE" -> OnlineStatus.IDLE
+        "DO_NOT_DISTURB" -> OnlineStatus.DO_NOT_DISTURB
+        "INVISIBLE" -> OnlineStatus.INVISIBLE
+        else -> OnlineStatus.ONLINE
+    }
+
+    private fun getBotActivity(): Activity = when (Fabricord.botActivityStatus?.lowercase()) {
+        "playing" -> Activity.playing(Fabricord.botActivityMessage ?: "Minecraft Server")
+        "watching" -> Activity.watching(Fabricord.botActivityMessage ?: "Minecraft Server")
+        "listening" -> Activity.listening(Fabricord.botActivityMessage ?: "Minecraft Server")
+        "competing" -> Activity.competing(Fabricord.botActivityMessage ?: "Minecraft Server")
+        else -> Activity.playing("Minecraft Server")
+    }
 }

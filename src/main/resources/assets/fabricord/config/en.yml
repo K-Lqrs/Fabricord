@@ -40,6 +40,14 @@ MessageStyle: ""
 # To get a Webhook URL -> https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks
 WebhookUrl: ""
 
+# This mod sends the format of "@everyone" in Minecraft as it is, so
+# Normally, anyone can mention it. (Regardless of Discord permissions!)
+# Therefore, in this section, you can control which mention types are enabled.
+
+# Whether to enforce the linking of Discord and Minecraft accounts and thereby control mentions.
+# If you set to true, "AllowedMentions" settings will be ignored.
+ForceLink: false
+
 AllowedMentions:
   # Whether to allow mentions to be sent from Minecraft to Discord.
   # If false, all mentions will not be sent.
