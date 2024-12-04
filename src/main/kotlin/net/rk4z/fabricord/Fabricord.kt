@@ -1,6 +1,5 @@
 package net.rk4z.fabricord
 
-import net.dv8tion.jda.api.entities.Guild
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
@@ -10,6 +9,8 @@ import net.rk4z.fabricord.discord.DiscordEmbed
 import net.rk4z.fabricord.discord.DiscordPlayerEventHandler.handleMCMessage
 import net.rk4z.fabricord.utils.Main
 import net.rk4z.fabricord.utils.System
+import net.rk4z.fabricord.utils.Utils.generateLinkCode
+import net.rk4z.fabricord.utils.toShortUUID
 import net.rk4z.s1.swiftbase.core.CB
 import net.rk4z.s1.swiftbase.core.LMB
 import net.rk4z.s1.swiftbase.core.Logger
@@ -136,15 +137,29 @@ class Fabricord : DedicatedServerModEntry(
 		ServerPlayConnectionEvents.JOIN.register(ServerPlayConnectionEvents.Join { handler, _, _ ->
 			val player = handler.player
 
+			if (!(player.isPlayerDataExists())) {
+				//ShortUUIDStringを挿入
+				val lang = player.adapt().getLanguage()
+				DataManager.insertPlayerData(player.uuid.toShortUUID().toShortString(), player.name.string, lang)
+			}
+
 			if (!DiscordBotManager.botIsInitialized) {
-				player.networkHandler.disconnect(Text.of(LMB.getSysMessage(System.Log.STILL_STARTING_UP)))
+				player.networkHandler.disconnect(Text.of(LMB.getSysMessage(System.Log.Bot.STILL_STARTING_UP)))
 				return@Join
 			}
 
-			val p = player.adapt()
+			if (!player.isLinkedWithDiscord()) {
+				val p = player.adapt()
+				val linkCode = generateLinkCode(player.uuid.toShortUUID())
+				val botName = DiscordBotManager.jda?.selfUser?.globalName ?: name
+				val kickMessage =
+					Text.literal(p.getMessage(Main.NOT_LINKED.ITEM_0).literalString)
+						.append("\n")
+						.append(p.getMessage(Main.NOT_LINKED.ITEM_1, botName))
+						.append("\n")
+						.append(p.getMessage(Main.NOT_LINKED.ITEM_2, linkCode))
 
-			if (!(player.isLinkedWithDiscord())) {
-				player.networkHandler.disconnect(p.getMessage(Main.NOT_LINKED))
+				player.networkHandler.disconnect(kickMessage)
 				return@Join
 			}
 
@@ -166,7 +181,7 @@ class Fabricord : DedicatedServerModEntry(
 					DiscordBotManager.init(server)
 					DiscordBotManager.startBot()
 				} catch (e: Exception) {
-					logger.error(LMB.getSysMessage(System.Log.FAILED_TO_START, e))
+					logger.error(LMB.getSysMessage(System.Log.Bot.FAILED_TO_START, e))
 					server.stop(false)
 				}
 			}
@@ -176,7 +191,7 @@ class Fabricord : DedicatedServerModEntry(
 			try {
 				DiscordBotManager.stopBot()
 			} catch (e: Exception) {
-				logger.error(LMB.getSysMessage(System.Log.FAILED_TO_STOP, e))
+				logger.error(LMB.getSysMessage(System.Log.Bot.FAILED_TO_STOP, e))
 			}
 		}
 	}

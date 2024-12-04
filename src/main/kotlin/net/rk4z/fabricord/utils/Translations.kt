@@ -1,4 +1,4 @@
-@file:Suppress("MISSING_DEPENDENCY_SUPERCLASS_IN_TYPE_ARGUMENT", "ClassName", "unused")
+@file:Suppress("ClassName", "unused")
 
 package net.rk4z.fabricord.utils
 
@@ -9,8 +9,9 @@ open class System : FabricMessageKey {
         object LOADING : Log()
         object ENABLING : Log()
         object DISABLING : Log()
+
         object INITIALIZED : Log()
-        object NOT_INITIALIZED : Log()
+        object SERVER_NOT_INITIALIZED : Log()
 
         open class MissingRequiredParam : Log() {
             object ITEM_0 : MissingRequiredParam()
@@ -18,17 +19,19 @@ open class System : FabricMessageKey {
             object ITEM_2 : MissingRequiredParam()
         }
 
-        object STILL_STARTING_UP : Log()
-        object FAILED_TO_START : Log()
-        object FAILED_TO_STOP : Log()
+        open class Bot : Log() {
+            object STILL_STARTING_UP : Log()
+            object FAILED_TO_START : Log()
+            object FAILED_TO_STOP : Log()
 
-        object FAILED_TO_LOGIN : Log()
-        object FAILED_TO_START_BOT : Log()
-        object WEBHOOK_NOT_CONFIGURED : Log()
-        object BOT_ONLINE : Log()
-        object BOT_OFFLINE : Log()
-        object BOT_NOT_INITIALIZED : Log()
-        object GUILD_NOT_FOUND : Log()
+            object FAILED_TO_LOGIN : Log()
+            object FAILED_TO_START_BOT : Log()
+            object WEBHOOK_NOT_CONFIGURED : Log()
+            object BOT_ONLINE : Log()
+            object BOT_OFFLINE : Log()
+            object BOT_NOT_INITIALIZED : Log()
+            object GUILD_NOT_FOUND : Log()
+        }
 
         object CHECKING_UPDATE : Log()
         object ALL_VERSION_COUNT : Log()
@@ -40,7 +43,6 @@ open class System : FabricMessageKey {
         object ERROR_WHILE_CHECKING_UPDATE : Log()
 
         open class Other : Log() {
-            object DATE_PARSE_ERROR : Other()
             object UNKNOWN : Other()
             object UNKNOWN_ERROR : Other()
             object ERROR : Other()
@@ -55,15 +57,17 @@ open class System : FabricMessageKey {
             object CANT_GET_PLAYER_LIST : Online_Players()
         }
 
-        open class Ban : Command() {
-            object CANT_GET_SERVER : Ban()
-            object SUCCESS : Ban()
+        open class Link : Command() {
+            object SUCCESS : Link()
+            object INVALID_CODE : Link()
         }
-
-        object NO_PLAYER_FOUND : Command()
     }
 }
 
 open class Main : FabricMessageKey {
-    object NOT_LINKED : Main()
+    open class NOT_LINKED : Main() {
+        object ITEM_0 : NOT_LINKED()
+        object ITEM_1 : NOT_LINKED()
+        object ITEM_2 : NOT_LINKED()
+    }
 }

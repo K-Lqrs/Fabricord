@@ -5,20 +5,6 @@ system:
     loading: "Loading %s v%s..."
     enabling: "Enabling %s v%s..."
     disabling: "Disabling %s v%s..."
-    bot_online: "Discord bot is now online"
-    initialized: "%s initialized successfully."
-    not_initialized: "MinecraftServer is not initialized. Cannot process /playerlist command."
-    bot_not_initialized: "Discord bot is not initialized. Cannot stop the bot."
-    missingrequiredparams:
-      - "Bot token or log channel ID is missing in config file."
-      - "Maybe you are running the mod for the first time?"
-      - "Please check the config file at %s"
-    stillstartingup: "Server is still starting up, please try again later."
-    failed_to_start: "Failed to start the bot: %s"
-    failed_to_stop: "Failed to stop the bot: %s"
-    failed_to_login: "Failed to login to Discord with the provided token"
-    failed_to_start_bot: "An unexpected error occurred during Discord bot startup"
-    webhook_not_configured: "The message style is set to 'modern' but the webhook URL is not configured."
     checking_update: "Checking for updates..."
     all_version_count: "There are %s available versions."
     new_version_count: "There are %s newer versions than the current one."
@@ -32,3 +18,10 @@ system:
       unknown: "Unknown"
       unknown_error: "An unknown error has occurred."
       error: "Error"
+
+  command:
+    online_players:
+      title: "Online Players"
+      description: "There are %s players online."
+      no_player: "There are no players online."
+      cant_get_player_list: "Failed to get player list."

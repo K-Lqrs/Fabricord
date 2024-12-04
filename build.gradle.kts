@@ -35,7 +35,8 @@ dependencies {
 
 	implementation("org.yaml:snakeyaml:2.3")
 	implementation("net.kyori:adventure-text-serializer-gson:4.17.0")
-	implementation("net.rk4z.s1:swiftbase-core:2.0.8")
+	implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
+	implementation("net.rk4z.s1:swiftbase-core:2.0.9")
 	implementation("net.rk4z.s1:swiftbase-fabric:2.0.2")
 
 	includeInJar("net.dv8tion:JDA:5.2.1") {

@@ -5,15 +5,29 @@ system:
     loading: "%s v%s をロード中..."
     enabling: "%s v%s を起動中..."
     disabling: "%s v%s を停止中..."
-    initialized: "%s が正常に初期化されました。"
-    not_initialized: "MinecraftServer が初期化されていないため、/playerlist コマンドを処理できません。"
-    missingrequiredparams:
+
+    initialized: "%s は正常に起動されました"
+    server_not_initialized: "MinecraftServer が初期化されていないため、/playerlist コマンドを処理できません。"
+
+    missing_required_param:
       - "設定ファイルにボットトークンまたはログチャンネルIDがありません。"
       - "MODを初めて起動しましたか？"
       - "設定ファイルを確認してください：%s"
-    stillstartingup: "サーバーがまだ起動中です。後でもう一度お試しください。"
-    failed_to_start: "ボットの起動に失敗しました：%s"
-    failed_to_stop: "ボットの停止に失敗しました：%s"
+
+    bot:
+      still_starting_up: "サーバーがまだ起動中です。後でもう一度お試しください。"
+      failed_to_start: "ボットの起動に失敗しました：%s"
+      failed_to_stop: "ボットの停止に失敗しました：%s"
+
+      failed_to_login: "提供されたBotTokenを使用してDiscordBotにログインすることができませんでした"
+      failed_to_start_bot: "DiscordBotの起動中にエラーが発生しました"
+      webhook_not_configured: "'Message Style'が'Modern'に設定されていますが、WebhookURLが設定されていません。"
+
+      bot_online: "DiscordBotは正常に起動されました"
+      bot_offline: "DiscordBotは正常に停止されました"
+      bot_not_initialized: "DiscordBotが起動されていないため、停止処理を完了できません"
+      guild_not_found: "提供されたサーバーIDが無効であるか、対象サーバーにBotが参加していないため、ギルドを見つけられません"
+
     checking_update: "アップデートを確認中..."
     all_version_count: "利用可能なバージョンが%s個あります。"
     new_version_count: "現在のバージョンより新しいバージョンが%s個あります。"
@@ -28,9 +42,16 @@ system:
       unknown_error: "不明なエラーが発生しました。"
       error: "エラー"
 
-  command:
+
+  main:
     online_players:
-      title: "オンラインのプレイヤー"
-      description: "現在 %s 人がオンラインです。"
-      no_player: "オンラインのプレイヤーはいません。"
-      cant_get_player_list: "プレイヤーリストを取得できませんでした。"
+      title: "オンラインプレイヤー"
+      description: "現在、%s人のプレイヤーがオンラインです。"
+      no_player: "オンラインプレイヤーはいません。"
+      cant_get_player_list: "プレイヤーリストの取得に失敗しました。"
+
+main:
+  notlinked:
+    - "このサーバーに参加するにはDiscordアカウントと連携する必要があります。"
+    - "以下のリンクコードを、%s の'/link'コマンドから送信してください"
+    - "リンクコード: %s"
