@@ -24,22 +24,26 @@ dependencies {
 
 	minecraft("com.mojang:minecraft:$minecraftVersion")
 	mappings("net.fabricmc:yarn:$mappingsVersion")
+
 	modImplementation("net.fabricmc:fabric-loader:$loaderVersion")
 	modImplementation("net.fabricmc.fabric-api:fabric-api:$fabricVersion")
 	modImplementation("net.fabricmc:fabric-language-kotlin:$fabricLanguageKotlinVersion")
 
-	implementation("net.dv8tion:JDA:5.0.2") {
+	implementation("net.dv8tion:JDA:5.2.1") {
 		exclude("net.java.dev.jna", "jna")
 	}
 
-	implementation("org.yaml:snakeyaml:2.0")
-	implementation("net.kyori:adventure-text-serializer-gson:4.14.0")
+	implementation("org.yaml:snakeyaml:2.3")
+	implementation("net.kyori:adventure-text-serializer-gson:4.17.0")
+	implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
 
-	includeInJar("net.dv8tion:JDA:5.0.2") {
+	// TODO: Is loom provide this?
+	includeInJar("net.dv8tion:JDA:5.2.1") {
 		exclude("net.java.dev.jna", "jna")
 	}
 	includeInJar("org.yaml:snakeyaml:2.0")
-	includeInJar("net.kyori:adventure-text-serializer-gson:4.14.0")
+	includeInJar("net.kyori:adventure-text-serializer-gson:4.17.0")
+	includeInJar("com.github.ben-manes.caffeine:caffeine:3.1.8")
 }
 
 val targetJavaVersion = 21
