@@ -26,7 +26,7 @@ object DiscordBotManager : ListenerAdapter() {
     var botIsInitialized: Boolean = false
 
     private val intents = GatewayIntent.MESSAGE_CONTENT
-    private var server: MinecraftServer? = null
+    internal var server: MinecraftServer? = null
 
     fun init(s: MinecraftServer) {
         server = s
@@ -182,6 +182,17 @@ object DiscordBotManager : ListenerAdapter() {
                 if (Fabricord.allowMentions == false) {
                     messageAction?.setAllowedMentions(emptySet())
                 }
+                messageAction?.queue()
+            }
+        }
+    }
+
+    fun sendToDiscordConsole(message: String) {
+        executorService.submit {
+            Fabricord.consoleLogChannelID?.let {
+                val messageAction = jda?.getTextChannelById(it)?.sendMessage(message)
+                // Always disable mentions for console messages
+                messageAction?.setAllowedMentions(emptySet())
                 messageAction?.queue()
             }
         }

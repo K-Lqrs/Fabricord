@@ -16,10 +16,13 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.yaml.snakeyaml.Yaml
 import java.io.IOException
+import java.io.OutputStream
+import java.io.PrintStream
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
 import kotlin.io.path.notExists
 
 class Fabricord : DedicatedServerModInitializer {
@@ -127,6 +130,77 @@ class Fabricord : DedicatedServerModInitializer {
 				executorService.shutdownNow()
 			} catch (e: Exception) {
 				logger.error("Failed to stop Discord bot", e)
+			}
+		}
+	}
+
+	//TODO: Implement this feature
+	object ConsoleListener {
+		private var lastMessage: String? = null
+		private val errorBuffer = StringBuilder()
+		private var hasNewError = false
+
+		private val executorService = Executors.newSingleThreadScheduledExecutor()
+
+		fun register() {
+			val customOut = createInterceptedStream("STDOUT")
+			val customErr = createInterceptedStream("STDERR")
+
+			System.setOut(customOut)
+			System.setErr(customErr)
+
+			executorService.scheduleAtFixedRate(::flushErrors, 2, 2, TimeUnit.SECONDS)
+		}
+
+		private fun createInterceptedStream(type: String): PrintStream {
+			return object : PrintStream(object : OutputStream() {
+				private val buffer = StringBuilder()
+
+				override fun write(b: Int) {
+					val ch = b.toChar()
+					buffer.append(ch)
+
+					if (ch == '\n') {
+						val message = buffer.toString().trim()
+						buffer.setLength(0)
+
+						if (message.isNotBlank()) {
+							processConsoleMessage(message, type)
+						}
+					}
+				}
+			}, true) {
+				override fun println(s: String?) {
+					s?.let {
+						processConsoleMessage(it, type)
+					}
+					super.println(s)
+				}
+			}
+		}
+
+		private fun processConsoleMessage(message: String, type: String) {
+			if (message.isBlank() || message == lastMessage) return
+
+			lastMessage = message
+
+			if (type == "STDERR") {
+				synchronized(errorBuffer) {
+					errorBuffer.append("🔴 ").append(message).append("\n")
+					hasNewError = true
+				}
+			} else {
+				DiscordBotManager.sendToDiscordConsole("```$message```")
+			}
+		}
+
+		private fun flushErrors() {
+			synchronized(errorBuffer) {
+				if (hasNewError) {
+					DiscordBotManager.sendToDiscordConsole("```$errorBuffer```")
+					errorBuffer.setLength(0)
+					hasNewError = false
+				}
 			}
 		}
 	}
