@@ -79,6 +79,7 @@ class Fabricord : DedicatedServerModInitializer {
 		nullCheck()
 
 		registerEvents()
+		ConsoleListener.register()
 
 		initializeIsDone = true
 		logger.info("Fabricord initialized successfully.")
@@ -134,11 +135,10 @@ class Fabricord : DedicatedServerModInitializer {
 		}
 	}
 
-	//TODO: Implement this feature
 	object ConsoleListener {
-		private var lastMessage: String? = null
-		private val errorBuffer = StringBuilder()
-		private var hasNewError = false
+		private val buffer = StringBuilder()
+		private var lastFlushTime = System.currentTimeMillis()
+		private var lastMessageType: String? = null
 
 		private val executorService = Executors.newSingleThreadScheduledExecutor()
 
@@ -149,63 +149,70 @@ class Fabricord : DedicatedServerModInitializer {
 			System.setOut(customOut)
 			System.setErr(customErr)
 
-			executorService.scheduleAtFixedRate(::flushErrors, 2, 2, TimeUnit.SECONDS)
+			executorService.scheduleAtFixedRate(::flushLogsIfNeeded, 100, 100, TimeUnit.MILLISECONDS)
 		}
 
 		private fun createInterceptedStream(type: String): PrintStream {
-			return object : PrintStream(object : OutputStream() {
-				private val buffer = StringBuilder()
+			return PrintStream(object : OutputStream() {
+				private val localBuffer = StringBuilder()
 
 				override fun write(b: Int) {
 					val ch = b.toChar()
-					buffer.append(ch)
+					localBuffer.append(ch)
 
 					if (ch == '\n') {
-						val message = buffer.toString().trim()
-						buffer.setLength(0)
+						val message = localBuffer.toString().trim()
+						localBuffer.setLength(0)
 
 						if (message.isNotBlank()) {
 							processConsoleMessage(message, type)
 						}
 					}
 				}
-			}, true) {
-				override fun println(s: String?) {
-					s?.let {
-						processConsoleMessage(it, type)
-					}
-					super.println(s)
-				}
-			}
+			}, true)
 		}
 
 		private fun processConsoleMessage(message: String, type: String) {
-			if (message.isBlank() || message == lastMessage) return
-
-			lastMessage = message
-
-			if (type == "STDERR") {
-				synchronized(errorBuffer) {
-					errorBuffer.append("🔴 ").append(message).append("\n")
-					hasNewError = true
+			synchronized(buffer) {
+				if (lastMessageType != null && lastMessageType != type) {
+					// STDOUTとSTDERRが切り替わったら、バッファをフラッシュ
+					flushLogs()
 				}
-			} else {
-				DiscordBotManager.sendToDiscordConsole("```$message```")
+
+				buffer.append(message).append("\n")
+				lastMessageType = type
+				lastFlushTime = System.currentTimeMillis()
 			}
 		}
 
-		private fun flushErrors() {
-			synchronized(errorBuffer) {
-				if (hasNewError) {
-					DiscordBotManager.sendToDiscordConsole("```$errorBuffer```")
-					errorBuffer.setLength(0)
-					hasNewError = false
+		private fun flushLogsIfNeeded() {
+			synchronized(buffer) {
+				if (buffer.isNotEmpty() && System.currentTimeMillis() - lastFlushTime > 300) {
+					flushLogs()
+				}
+			}
+		}
+
+		private fun flushLogs() {
+			synchronized(buffer) {
+				if (buffer.isNotEmpty()) {
+					val message = buffer.toString().trim()
+					buffer.setLength(0)
+
+					if (lastMessageType == "STDERR") {
+						DiscordBotManager.sendToDiscordConsole("```ansi\n[31m$message[0m\n```") // 赤色
+					} else {
+						DiscordBotManager.sendToDiscordConsole("```$message```")
+					}
+
+					lastMessageType = null
 				}
 			}
 		}
 	}
 
-//>------------------------------------------------------------------------------------------------------------------<\\
+
+	//>------------------------------------------------------------------------------------------------------------------<\\
 
 	private fun checkRequiredFilesAndDirectories() {
 		try {
