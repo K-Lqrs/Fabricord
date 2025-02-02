@@ -6,11 +6,12 @@ plugins {
 	id("fabric-loom")
 }
 
-group = "net.rk4z.fabricord"
-version = "4.0.2"
+group = "net.ririfa.fabricord"
+version = "4.1.0-alpha"
 
 repositories {
 	mavenCentral()
+	maven("https://repo.ririfa.net/maven2/")
 }
 
 val includeInJar: Configuration by configurations.creating
@@ -29,13 +30,14 @@ dependencies {
 	modImplementation("net.fabricmc.fabric-api:fabric-api:$fabricVersion")
 	modImplementation("net.fabricmc:fabric-language-kotlin:$fabricLanguageKotlinVersion")
 
-	implementation("net.dv8tion:JDA:5.2.1") {
+	modApi("net.dv8tion:JDA:5.2.1") {
 		exclude("net.java.dev.jna", "jna")
 	}
 
-	implementation("org.yaml:snakeyaml:2.3")
-	implementation("net.kyori:adventure-text-serializer-gson:4.17.0")
-	implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
+	modApi("org.yaml:snakeyaml:2.3")
+	modApi("net.kyori:adventure-text-serializer-gson:4.17.0")
+	modApi("com.github.ben-manes.caffeine:caffeine:3.1.8")
+	modApi("net.ririfa:langman:1.1.0")
 
 	// TODO: Is loom provide this?
 	includeInJar("net.dv8tion:JDA:5.2.1") {

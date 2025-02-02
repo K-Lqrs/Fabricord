@@ -1,11 +1,11 @@
-package net.rk4z.fabricord.discord
+package net.ririfa.fabricord.discord
 
-import net.rk4z.fabricord.Fabricord
+import net.ririfa.fabricord.Fabricord
 import net.dv8tion.jda.api.EmbedBuilder
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
-import net.rk4z.fabricord.Fabricord.Companion.playerJoinMessage
-import net.rk4z.fabricord.Fabricord.Companion.playerLeaveMessage
+import net.ririfa.fabricord.Fabricord.Companion.playerJoinMessage
+import net.ririfa.fabricord.Fabricord.Companion.playerLeaveMessage
 import java.awt.Color
 
 object DiscordEmbed {

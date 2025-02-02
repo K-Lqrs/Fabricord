@@ -17,7 +17,7 @@
 		"server": [
 			{
 				"adapter": "kotlin",
-				"value": "net.rk4z.fabricord.Fabricord"
+				"value": "net.ririfa.fabricord.Fabricord"
 			}
 		]
 	},

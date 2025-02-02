@@ -1,8 +1,8 @@
-package net.rk4z.fabricord.discord
+package net.ririfa.fabricord.discord
 
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
 import net.minecraft.server.network.ServerPlayerEntity
-import net.rk4z.fabricord.Fabricord
+import net.ririfa.fabricord.Fabricord
 
 object DiscordPlayerEventHandler {
     fun handleMCMessage(player: ServerPlayerEntity, message: String) {

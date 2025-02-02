@@ -1,0 +1,9 @@
+system:
+  initializing: "Initializing Fabricord..."
+
+  missingrequiredprop:
+    - "Bot token or log channel ID is missing in config file."
+    - "Maybe you are running the mod for the first time?"
+    - "Please check the config file at %s"
+
+  initialized: "Fabricord initialized successfully."

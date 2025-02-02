@@ -1,7 +1,7 @@
-package net.rk4z.fabricord.utils
+package net.ririfa.fabricord.utils
 
 import net.minecraft.server.network.ServerPlayerEntity
-import net.rk4z.fabricord.Fabricord
+import net.ririfa.fabricord.Fabricord
 import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.Path

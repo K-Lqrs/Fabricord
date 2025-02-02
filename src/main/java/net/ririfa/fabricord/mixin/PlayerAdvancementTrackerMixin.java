@@ -1,8 +1,8 @@
-package net.rk4z.fabricord.mixin;
+package net.ririfa.fabricord.mixin;
 
 import net.minecraft.advancement.*;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.rk4z.fabricord.discord.DiscordEmbed;
+import net.ririfa.fabricord.discord.DiscordEmbed;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

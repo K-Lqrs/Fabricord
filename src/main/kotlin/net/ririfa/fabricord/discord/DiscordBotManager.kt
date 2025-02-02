@@ -1,4 +1,4 @@
-package net.rk4z.fabricord.discord
+package net.ririfa.fabricord.discord
 
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.JDA
@@ -13,8 +13,8 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
-import net.rk4z.fabricord.Fabricord
-import net.rk4z.fabricord.Fabricord.Companion.executorService
+import net.ririfa.fabricord.Fabricord
+import net.ririfa.fabricord.Fabricord.Companion.executorService
 import java.awt.Color
 import java.util.*
 import java.util.concurrent.TimeUnit
