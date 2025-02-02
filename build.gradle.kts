@@ -36,8 +36,9 @@ dependencies {
 
 	modApi("org.yaml:snakeyaml:2.3")
 	modApi("net.kyori:adventure-text-serializer-gson:4.17.0")
-	modApi("com.github.ben-manes.caffeine:caffeine:3.1.8")
-	modApi("net.ririfa:langman:1.1.0")
+	modApi("net.ririfa:langman:1.2.1-beta.1")
+	modCompileOnly("org.apache.logging.log4j:log4j-api:+")
+	modCompileOnly("org.apache.logging.log4j:log4j-core:+")
 
 	// TODO: Is loom provide this?
 	includeInJar("net.dv8tion:JDA:5.2.1") {

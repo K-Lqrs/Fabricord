@@ -1,1 +1,30 @@
+system:
+  initializing: "Fabricordの初期化中..."
 
+  missingRequiredProp:
+    - "Bot tokenまたはlog channel IDがconfigファイルにありません。"
+    - "modを初めて起動しましたか？"
+    - "configファイルを%sで確認してください。"
+
+  initialized: "Fabricordは正常に初期化されました。"
+
+  creatingConfigDir: "configディレクトリを%sで作成中"
+  failedToCreateConfigDirBySec: "セキュリティ制限により、必要なファイルやディレクトリの作成/チェックに失敗しました"
+  failedToCreateConfigDirByIO: "I/Oエラーにより、必要なファイルやディレクトリの作成/チェックに失敗しました"
+  failedToCreateConfigDirByUnknown: "必要なファイルやディレクトリの作成/チェック中に予期せぬエラーが発生しました"
+
+  loadingConfig: "configファイルを読み込んでいます..."
+  configFileNotFound: "Configファイルが見つかりませんでした: %s"
+  failedToLoadConfigByIO: "I/Oエラーにより、configファイルの読み込みに失敗しました"
+  failedToLoadConfigByUnknown: "configファイルの読み込み中に予期せぬエラーが発生しました"
+
+  discord:
+    botNowOnline: "Botがオンラインになりました。"
+    botNowOffline: "Botがオフラインになりました。"
+
+    webHookUrlNotConfigured: "メッセージスタイルが'modern'に設定されていますが、Webhook URLが設定されていません。"
+
+    failedToStartBotByLoginExc: "提供されたトークンを使用してのBotの起動に失敗しました"
+    failedToStartBotByUnknown: "Botの起動中に予期せぬエラーが発生しました"
+
+    discordBotIsNotInitialized: "Discord Botが起動されていないため、停止できません。"

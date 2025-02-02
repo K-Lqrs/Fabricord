@@ -1,9 +1,19 @@
 system:
   initializing: "Initializing Fabricord..."
 
-  missingrequiredprop:
+  missingRequiredProp:
     - "Bot token or log channel ID is missing in config file."
     - "Maybe you are running the mod for the first time?"
     - "Please check the config file at %s"
 
   initialized: "Fabricord initialized successfully."
+
+  creatingConfigDir: "Creating config directory at %s"
+  failedToCreateConfigDirBySec: "Failed to create/check required files or directories due to security restrictions"
+  failedToCreateConfigDirByIO: "Failed to create/check required files or directories due to an I/O error"
+  failedToCreateConfigDirByUnknown: "An unexpected error occurred while creating/checking required files or directories"
+
+  loadingConfig: "Loading config file..."
+  configFileNotFound: "Config file not found at %s"
+  failedToLoadConfigByIO: "Failed to load config file due to an I/O error"
+  failedToLoadConfigByUnknown: "An unexpected error occurred while loading the config file"

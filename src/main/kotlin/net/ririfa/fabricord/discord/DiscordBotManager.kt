@@ -13,10 +13,17 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.Text
 import net.ririfa.fabricord.Fabricord
+import net.ririfa.fabricord.Fabricord.Companion.consoleLogChannelID
 import net.ririfa.fabricord.Fabricord.Companion.executorService
+import net.ririfa.fabricord.translation.FabricordMessageKey
+import net.ririfa.fabricord.translation.FabricordMessageProvider
+import net.ririfa.langman.LangMan
 import java.awt.Color
 import java.util.*
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import javax.security.auth.login.LoginException
 
@@ -24,9 +31,18 @@ object DiscordBotManager : ListenerAdapter() {
     var jda: JDA? = null
     var webHook: Webhook? = null
     var botIsInitialized: Boolean = false
+    private val logQueue = ConcurrentLinkedQueue<String>()
+    private val logScheduler = Executors.newSingleThreadScheduledExecutor()
+    private val lm = Fabricord.instance.langMan
 
     private val intents = GatewayIntent.MESSAGE_CONTENT
     internal var server: MinecraftServer? = null
+
+    init {
+        logScheduler.scheduleAtFixedRate({
+            flushLogQueue()
+        }, 0, 1500, TimeUnit.MILLISECONDS)
+    }
 
     fun init(s: MinecraftServer) {
         server = s
@@ -54,20 +70,20 @@ object DiscordBotManager : ListenerAdapter() {
                 jda?.updateCommands()
 
                 botIsInitialized = true
-                Fabricord.logger.info("Discord bot is now online")
+                Fabricord.logger.info(lm.getSysMessage(FabricordMessageKey.System.Discord.BotNowOnline))
                 Fabricord.serverStartMessage?.let { sendToDiscord(it) }
 
                 if (Fabricord.messageStyle == "modern") {
                     if (!Fabricord.webHookId.isNullOrBlank()) {
                         webHook = jda?.retrieveWebhookById(Fabricord.webHookId!!)?.complete()
                     } else {
-                        Fabricord.logger.error("The message style is set to 'modern' but the webhook URL is not configured.")
+                        Fabricord.logger.error(lm.getSysMessage(FabricordMessageKey.System.Discord.WebHookUrlNotConfigured))
                     }
                 }
             } catch (e: LoginException) {
-                Fabricord.logger.error("Failed to login to Discord with the provided token", e)
+                Fabricord.logger.error(lm.getSysMessage(FabricordMessageKey.System.Discord.FailedToStartBotByLoginExc), e)
             } catch (e: Exception) {
-                Fabricord.logger.error("An unexpected error occurred during Discord bot startup", e)
+                Fabricord.logger.error(lm.getSysMessage(FabricordMessageKey.System.Discord.FailedToStartBotByUnknown), e)
             }
         }
     }
@@ -75,11 +91,12 @@ object DiscordBotManager : ListenerAdapter() {
     fun stopBot() {
         if (botIsInitialized) {
             Fabricord.serverStopMessage?.let { sendToDiscord(it) }
-            Fabricord.logger.info("Discord bot is now offline")
+            Fabricord.logger.info(lm.getSysMessage(FabricordMessageKey.System.Discord.BotNowOffline))
             jda?.shutdown()
             botIsInitialized = false
+            logScheduler.shutdownNow()
         } else {
-            Fabricord.logger.error("Discord bot is not initialized. Cannot stop the bot.")
+            Fabricord.logger.error(lm.getSysMessage(FabricordMessageKey.System.Discord.DiscordBotIsNotInitialized))
         }
     }
 
@@ -175,6 +192,23 @@ object DiscordBotManager : ListenerAdapter() {
         return mentionedPlayers
     }
 
+    private fun flushLogQueue() {
+        if (logQueue.isEmpty()) return
+
+        val messages = mutableListOf<String>()
+        while (true) {
+            val msg = logQueue.poll() ?: break
+            messages.add(msg)
+        }
+        val combinedMessage = messages.joinToString("\n")
+
+        consoleLogChannelID?.let { channelId ->
+            jda?.getTextChannelById(channelId)?.sendMessage(combinedMessage)
+                ?.setAllowedMentions(emptySet())
+                ?.queue()
+        }
+    }
+
     fun sendToDiscord(message: String) {
         executorService.submit {
             Fabricord.logChannelID?.let { 
@@ -188,13 +222,6 @@ object DiscordBotManager : ListenerAdapter() {
     }
 
     fun sendToDiscordConsole(message: String) {
-        executorService.submit {
-            Fabricord.consoleLogChannelID?.let {
-                val messageAction = jda?.getTextChannelById(it)?.sendMessage(message)
-                // Always disable mentions for console messages
-                messageAction?.setAllowedMentions(emptySet())
-                messageAction?.queue()
-            }
-        }
+        logQueue.add(message)
     }
 }

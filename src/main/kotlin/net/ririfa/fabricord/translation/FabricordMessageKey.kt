@@ -15,9 +15,31 @@ open class FabricordMessageKey : MessageKey<FabricordMessageProvider, Text> {
 
 		object Initialized : System()
 
-		object ServerStart : System()
-		object ServerStop : System()
-		object PlayerJoin : System()
-		object PlayerLeave : System()
+		object BotNotInitialized : System()
+
+		object FailedToStartBot : System()
+		object FailedToStopBot : System()
+
+		object CreatingConfigDir : System()
+		object FailedToCreateConfigDirBySec : System()
+		object FailedToCreateConfigDirByIO : System()
+		object FailedToCreateConfigDirByUnknown : System()
+
+		object LoadingConfig : System()
+		object ConfigFileNotFound : System()
+		object FailedToLoadConfigByIO : System()
+		object FailedToLoadConfigByUnknown : System()
+
+		open class Discord {
+			object BotNowOnline : System()
+			object BotNowOffline : System()
+
+			object WebHookUrlNotConfigured : System()
+
+			object FailedToStartBotByLoginExc : System()
+			object FailedToStartBotByUnknown : System()
+
+			object DiscordBotIsNotInitialized : System()
+		}
 	}
 }
