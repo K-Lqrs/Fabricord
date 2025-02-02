@@ -1,9 +1,9 @@
-package net.rk4z.fabricord.mixin;
+package net.ririfa.fabricord.mixin;
 
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-import net.rk4z.fabricord.discord.DiscordEmbed;
+import net.ririfa.fabricord.discord.DiscordEmbed;
 import org.jetbrains.annotations.Contract;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

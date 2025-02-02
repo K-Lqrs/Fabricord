@@ -1,4 +1,4 @@
-package net.rk4z.fabricord.discord
+package net.ririfa.fabricord.discord
 
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.kyori.adventure.text.Component
@@ -12,8 +12,8 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
 import net.minecraft.text.Text
-import net.rk4z.fabricord.Fabricord
-import net.rk4z.fabricord.utils.Utils.replaceUUIDsWithMCIDs
+import net.ririfa.fabricord.Fabricord
+import net.ririfa.fabricord.utils.Utils.replaceUUIDsWithMCIDs
 import java.awt.Color
 
 object DiscordMessageHandler {

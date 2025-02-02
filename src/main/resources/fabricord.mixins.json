@@ -1,6 +1,6 @@
 {
   "required": true,
-  "package": "net.rk4z.fabricord.mixin",
+  "package": "net.ririfa.fabricord.mixin",
   "compatibilityLevel": "JAVA_21",
   "server": [
     "PlayerAdvancementTrackerMixin",

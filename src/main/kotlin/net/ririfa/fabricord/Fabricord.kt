@@ -1,4 +1,4 @@
-package net.rk4z.fabricord
+package net.ririfa.fabricord
 
 import net.fabricmc.api.DedicatedServerModInitializer
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
@@ -6,29 +6,29 @@ import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.text.Text
-import net.rk4z.fabricord.discord.DiscordBotManager
-import net.rk4z.fabricord.discord.DiscordEmbed
-import net.rk4z.fabricord.discord.DiscordPlayerEventHandler.handleMCMessage
-import net.rk4z.fabricord.utils.Utils.copyResourceToFile
-import net.rk4z.fabricord.utils.Utils.getNullableBoolean
-import net.rk4z.fabricord.utils.Utils.getNullableString
+import net.ririfa.langman.LangMan
+import net.ririfa.fabricord.discord.DiscordBotManager
+import net.ririfa.fabricord.discord.DiscordEmbed
+import net.ririfa.fabricord.discord.DiscordPlayerEventHandler.handleMCMessage
+import net.ririfa.fabricord.translation.FabricordMessageKey
+import net.ririfa.fabricord.utils.Utils.copyResourceToFile
+import net.ririfa.fabricord.utils.Utils.getNullableBoolean
+import net.ririfa.fabricord.utils.Utils.getNullableString
+import net.ririfa.langman.InitType
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.yaml.snakeyaml.Yaml
+import java.io.File
 import java.io.IOException
-import java.io.OutputStream
-import java.io.PrintStream
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
-import java.util.concurrent.TimeUnit
 import kotlin.io.path.notExists
 
 class Fabricord : DedicatedServerModInitializer {
 	companion object {
 		private const val MOD_ID = "fabricord"
-
 		val logger: Logger = LoggerFactory.getLogger(Fabricord::class.simpleName)
 
 		private val loader: FabricLoader = FabricLoader.getInstance()
@@ -37,6 +37,8 @@ class Fabricord : DedicatedServerModInitializer {
 		private val serverDir: Path = loader.gameDir.toRealPath()
 		private val modDir: Path = serverDir.resolve(MOD_ID)
 		private val configFile: Path = modDir.resolve("config.yml")
+		private val langDir: File = serverDir.resolve("lang").toFile()
+		private val availableLang = listOf("en", "ja")
 
 		private val yaml = Yaml()
 		private var initializeIsDone = false
@@ -66,23 +68,29 @@ class Fabricord : DedicatedServerModInitializer {
 	}
 
 	override fun onInitializeServer() {
-		logger.info("Initializing Fabricord...")
+		val lm = LangMan.createNew(
+			{ Text.of(it) },
+			FabricordMessageKey::class
+		)
+
+		lm.init(InitType.YAML, langDir, availableLang)
+
+		logger.info(lm.getSysMessage(FabricordMessageKey.System.Initializing))
 		checkRequiredFilesAndDirectories()
 		loadConfig()
 
 		if (requiredNullCheck()) {
-			logger.error("Bot token or log channel ID is missing in config file.")
-			logger.error("Maybe you are running the mod for the first time?")
-			logger.error("Please check the config file at $configFile")
+			logger.error(lm.getSysMessage(FabricordMessageKey.System.MissingRequiredProp.ITEM1))
+			logger.error(lm.getSysMessage(FabricordMessageKey.System.MissingRequiredProp.ITEM2))
+			logger.error(lm.getSysMessage(FabricordMessageKey.System.MissingRequiredProp.ITEM3, configFile))
 			return
 		}
 		nullCheck()
 
 		registerEvents()
-		ConsoleListener.register()
 
 		initializeIsDone = true
-		logger.info("Fabricord initialized successfully.")
+		logger.info(lm.getSysMessage(FabricordMessageKey.System.Initialized))
 	}
 
 	private fun registerEvents() {
@@ -134,83 +142,6 @@ class Fabricord : DedicatedServerModInitializer {
 			}
 		}
 	}
-
-	object ConsoleListener {
-		private val buffer = StringBuilder()
-		private var lastFlushTime = System.currentTimeMillis()
-		private var lastMessageType: String? = null
-
-		private val executorService = Executors.newSingleThreadScheduledExecutor()
-
-		fun register() {
-			val customOut = createInterceptedStream("STDOUT")
-			val customErr = createInterceptedStream("STDERR")
-
-			System.setOut(customOut)
-			System.setErr(customErr)
-
-			executorService.scheduleAtFixedRate(::flushLogsIfNeeded, 100, 100, TimeUnit.MILLISECONDS)
-		}
-
-		private fun createInterceptedStream(type: String): PrintStream {
-			return PrintStream(object : OutputStream() {
-				private val localBuffer = StringBuilder()
-
-				override fun write(b: Int) {
-					val ch = b.toChar()
-					localBuffer.append(ch)
-
-					if (ch == '\n') {
-						val message = localBuffer.toString().trim()
-						localBuffer.setLength(0)
-
-						if (message.isNotBlank()) {
-							processConsoleMessage(message, type)
-						}
-					}
-				}
-			}, true)
-		}
-
-		private fun processConsoleMessage(message: String, type: String) {
-			synchronized(buffer) {
-				if (lastMessageType != null && lastMessageType != type) {
-					// STDOUTとSTDERRが切り替わったら、バッファをフラッシュ
-					flushLogs()
-				}
-
-				buffer.append(message).append("\n")
-				lastMessageType = type
-				lastFlushTime = System.currentTimeMillis()
-			}
-		}
-
-		private fun flushLogsIfNeeded() {
-			synchronized(buffer) {
-				if (buffer.isNotEmpty() && System.currentTimeMillis() - lastFlushTime > 300) {
-					flushLogs()
-				}
-			}
-		}
-
-		private fun flushLogs() {
-			synchronized(buffer) {
-				if (buffer.isNotEmpty()) {
-					val message = buffer.toString().trim()
-					buffer.setLength(0)
-
-					if (lastMessageType == "STDERR") {
-						DiscordBotManager.sendToDiscordConsole("```ansi\n[31m$message[0m\n```") // 赤色
-					} else {
-						DiscordBotManager.sendToDiscordConsole("```$message```")
-					}
-
-					lastMessageType = null
-				}
-			}
-		}
-	}
-
 
 	//>------------------------------------------------------------------------------------------------------------------<\\
 
