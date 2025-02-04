@@ -45,7 +45,7 @@ dependencies {
 	}
 	includeInJar("org.yaml:snakeyaml:2.0")
 	includeInJar("net.kyori:adventure-text-serializer-gson:4.17.0")
-	includeInJar("net.ririfa:langman:1.2.1-beta.3")
+	includeInJar("net.ririfa:langman:1.2.2")
 }
 
 val targetJavaVersion = 21
