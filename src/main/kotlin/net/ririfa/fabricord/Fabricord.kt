@@ -1,14 +1,19 @@
 package net.ririfa.fabricord
 
+import com.mojang.brigadier.arguments.StringArgumentType.greedyString
 import net.fabricmc.api.DedicatedServerModInitializer
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.fabricmc.loader.api.FabricLoader
+import net.minecraft.server.command.CommandManager.argument
+import net.minecraft.server.command.CommandManager.literal
 import net.minecraft.text.Text
 import net.ririfa.langman.LangMan
 import net.ririfa.fabricord.discord.DiscordBotManager
 import net.ririfa.fabricord.discord.DiscordEmbed
+import net.ririfa.fabricord.discord.DiscordPlayerEventHandler
 import net.ririfa.fabricord.discord.DiscordPlayerEventHandler.handleMCMessage
 import net.ririfa.fabricord.translation.FabricordMessageKey
 import net.ririfa.fabricord.translation.FabricordMessageProvider
@@ -27,13 +32,9 @@ import org.slf4j.LoggerFactory
 import org.yaml.snakeyaml.Yaml
 import java.io.File
 import java.io.IOException
-import java.nio.file.FileSystems
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
-import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledExecutorService
-import java.util.concurrent.TimeUnit
+import java.nio.file.*
+import java.util.UUID
+import java.util.concurrent.*
 import kotlin.io.path.notExists
 
 class Fabricord : DedicatedServerModInitializer {
@@ -45,15 +46,19 @@ class Fabricord : DedicatedServerModInitializer {
 
 		private val loader: FabricLoader = FabricLoader.getInstance()
 		val executorService: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
+		internal lateinit var ca: ConsoleTrackerAppender
 
 		private val serverDir: Path = loader.gameDir.toRealPath()
 		private val modDir: Path = serverDir.resolve(MOD_ID)
 		private val configFile: Path = modDir.resolve("config.yml")
-		private val langDir: File = serverDir.resolve("lang").toFile()
+		private val langDir: File = modDir.resolve("lang").toFile()
 		private val availableLang = listOf("en", "ja")
+
+		val grpFile: Path = modDir.resolve("groups.json")
 
 		private val yaml = Yaml()
 		private var initializeIsDone = false
+		private val localChatToggled = mutableMapOf<UUID, Boolean>()
 
 		//region Configurations
 		// Required
@@ -82,6 +87,7 @@ class Fabricord : DedicatedServerModInitializer {
 	lateinit var langMan: LangMan<FabricordMessageProvider, Text>
 
 	override fun onInitializeServer() {
+		instance = this
 		if (!langDir.exists()) {
 			langDir.mkdirs()
 		}
@@ -95,7 +101,12 @@ class Fabricord : DedicatedServerModInitializer {
 
 		langMan.init(InitType.YAML, langDir, availableLang)
 
+		langMan.messages.forEach { (key, value) ->
+			logger.info("Loaded message: $key: $value")
+		}
+
 		logger.info(langMan.getSysMessage(FabricordMessageKey.System.Initializing))
+		DiscordPlayerEventHandler.init()
 		checkRequiredFilesAndDirectories()
 		loadConfig()
 
@@ -111,19 +122,18 @@ class Fabricord : DedicatedServerModInitializer {
 
 		initializeIsDone = true
 		logger.info(langMan.getSysMessage(FabricordMessageKey.System.Initialized))
-
-		instance = this
 	}
 
 	private fun registerEvents() {
-		val appender = ConsoleTrackerAppender("FabricordConsoleTracker")
+		ca = ConsoleTrackerAppender("FabricordConsoleTracker")
 		val rootLogger = LogManager.getRootLogger() as org.apache.logging.log4j.core.Logger
-		rootLogger.addAppender(appender)
+		rootLogger.addAppender(ca)
 		ServerMessageEvents.CHAT_MESSAGE.register(ServerMessageEvents.ChatMessage { message, sender, _ ->
-			executorService.submit {
-				val content = message.content.string
-				handleMCMessage(sender, content)
-			}
+			val uuid = sender.uuid
+			if (uuid in localChatToggled) return@ChatMessage
+
+			val content = message.content.string
+			handleMCMessage(sender, content)
 		})
 
 		ServerPlayConnectionEvents.JOIN.register(ServerPlayConnectionEvents.Join { handler, _, _ ->
@@ -131,7 +141,7 @@ class Fabricord : DedicatedServerModInitializer {
 
 			if (!DiscordBotManager.botIsInitialized) {
 				player.networkHandler.disconnect(
-					player.adapt().getMessage(FabricordMessageKey.System.BotNotInitialized)
+					player.adapt().getMessage(FabricordMessageKey.System.Discord.BotNotInitialized)
 				)
 				return@Join
 			}
@@ -152,9 +162,8 @@ class Fabricord : DedicatedServerModInitializer {
 			executorService.submit {
 				try {
 					DiscordBotManager.init(server)
-					DiscordBotManager.startBot()
 				} catch (e: Exception) {
-					logger.error(langMan.getSysMessage(FabricordMessageKey.System.FailedToStartBot), e)
+					logger.error(langMan.getSysMessage(FabricordMessageKey.System.Discord.FailedToStartBot), e)
 					server.stop(false)
 				}
 			}
@@ -167,11 +176,43 @@ class Fabricord : DedicatedServerModInitializer {
 				if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
 					executorService.shutdownNow()
 				}
+
+				rootLogger.removeAppender(ca)
+				ca.stop()
 			} catch (e: Exception) {
-				logger.error(langMan.getSysMessage(FabricordMessageKey.System.FailedToStopBot), e)
+				logger.error(langMan.getSysMessage(FabricordMessageKey.System.Discord.FailedToStopBot), e)
 			}
 		}
 
+		CommandRegistrationCallback.EVENT.register { dispatcher, registryAccess, environment ->
+			dispatcher.register(
+				literal("lc")
+					.executes { context ->
+						val player = context.source.player ?: return@executes 0
+						val uuid = player.uuid
+						val current = localChatToggled.getOrDefault(uuid, false)
+						val newState = !current
+						localChatToggled[uuid] = newState
+						player.sendMessage(
+							player.adapt().getMessage(FabricordMessageKey.System.SwitchedLocalChatState, newState),
+							false
+						)
+						return@executes 1
+					}
+					.then(
+						argument("message", greedyString())
+							.executes { context ->
+								val player = context.source.player ?: return@executes 0
+								val message = context.getArgument("message", String::class.java)
+								val textToSend = Text.literal("${player.name.string}: $message")
+								player.server.playerManager.broadcast(textToSend, false)
+								return@executes 1
+							}
+					)
+			)
+
+
+		}
 	}
 
 	internal class ConsoleTrackerAppender(name: String) : AbstractAppender(name, null, PatternLayout.createDefaultLayout(), false, emptyArray()) {
@@ -190,20 +231,28 @@ class Fabricord : DedicatedServerModInitializer {
 			}
 
 			val formattedMessage = when (level) {
-				Level.INFO, Level.WARN -> """
-            ```"$safeMessage"```
-        """.trimIndent()
+				Level.INFO, Level.WARN ->
+
+					//
+					"""
+            ```
+            $safeMessage
+            ```
+            """.trimIndent()
+				//
 
 				Level.ERROR -> {
 					val errorMessage = safeMessage
 						.lineSequence()
 						.joinToString("\n") { "- $it" }
 
+					//
 					"""
             ```diff
             $errorMessage
             ```
             """.trimIndent()
+					//
 				}
 
 				else -> return

@@ -28,12 +28,15 @@ import java.util.concurrent.TimeUnit
 import javax.security.auth.login.LoginException
 
 object DiscordBotManager : ListenerAdapter() {
+    @JvmField
     var jda: JDA? = null
+    @JvmField
     var webHook: Webhook? = null
+    @JvmField
     var botIsInitialized: Boolean = false
     private val logQueue = ConcurrentLinkedQueue<String>()
     private val logScheduler = Executors.newSingleThreadScheduledExecutor()
-    private val lm = Fabricord.instance.langMan
+    lateinit var lm: LangMan<FabricordMessageProvider, Text>
 
     private val intents = GatewayIntent.MESSAGE_CONTENT
     internal var server: MinecraftServer? = null
@@ -41,14 +44,16 @@ object DiscordBotManager : ListenerAdapter() {
     init {
         logScheduler.scheduleAtFixedRate({
             flushLogQueue()
-        }, 0, 1500, TimeUnit.MILLISECONDS)
+        }, 0, 1750, TimeUnit.MILLISECONDS)
     }
 
     fun init(s: MinecraftServer) {
         server = s
+        lm = Fabricord.instance.langMan
+        startBot()
     }
 
-    fun startBot() {
+    private fun startBot() {
         executorService.submit {
             val onlineStatus = getOnlineStatus()
             val activity = getBotActivity()
@@ -70,7 +75,7 @@ object DiscordBotManager : ListenerAdapter() {
                 jda?.updateCommands()
 
                 botIsInitialized = true
-                Fabricord.logger.info(lm.getSysMessage(FabricordMessageKey.System.Discord.BotNowOnline))
+                Fabricord.logger.info(lm.getSysMessage(FabricordMessageKey.System.Discord.BotNowOnline, jda?.selfUser?.name ?: "Bot"))
                 Fabricord.serverStartMessage?.let { sendToDiscord(it) }
 
                 if (Fabricord.messageStyle == "modern") {
@@ -130,23 +135,40 @@ object DiscordBotManager : ListenerAdapter() {
 
     private val discordListener = object : ListenerAdapter() {
         override fun onMessageReceived(event: MessageReceivedEvent) {
-            val server = server ?: return Fabricord.logger.error("MinecraftServer is not initialized. Cannot process Discord message.")
+            val server = server ?: return Fabricord.logger.error(
+                // MinecraftServerNotInitialized + CantProcessMessage
+                lm.getSysMessage(FabricordMessageKey.System.Discord.MinecraftServerNotInitialized,
+                    lm.getSysMessage(FabricordMessageKey.System.Discord.CantProcessMessage)))
 
-            executorService.submit {
-                val mentionedPlayers = findMentionedPlayers(event.message.contentRaw, server.playerManager.playerList)
-                if (mentionedPlayers.isNotEmpty()) {
-                    DiscordMessageHandler.handleMentionedDiscordMessage(event, server, mentionedPlayers, false)
-                } else {
-                    DiscordMessageHandler.handleDiscordMessage(event, server)
+            if (event.channel == Fabricord.logChannelID?.let { jda?.getTextChannelById(it) }) {
+                executorService.submit {
+                    val mentionedPlayers = findMentionedPlayers(event.message.contentRaw, server.playerManager.playerList)
+                    if (mentionedPlayers.isNotEmpty()) {
+                        DiscordMessageHandler.handleMentionedDiscordMessage(event, server, mentionedPlayers, false)
+                    } else {
+                        DiscordMessageHandler.handleDiscordMessage(event, server)
+                    }
+                }
+            } else if (event.channel == consoleLogChannelID?.let { jda?.getTextChannelById(it) }) {
+                if (!event.author.isBot) {
+                    val command = event.message.contentRaw
+                    server.execute {
+                        server.commandManager.executeWithPrefix(server.commandSource, command)
+                    }
                 }
             }
         }
     }
 
     private fun handlePlayerListCommand(event: SlashCommandInteractionEvent) {
+        val discordUserLang = event.userLocale.locale
+
         val server = server ?: run {
-            Fabricord.logger.error("MinecraftServer is not initialized. Cannot process /playerlist command.")
-            event.reply("Sorry, I can't get the player list right now.")
+            Fabricord.logger.error(
+                // MinecraftServerNotInitialized + CantProcessCommand
+                lm.getSysMessage(FabricordMessageKey.System.Discord.MinecraftServerNotInitialized,
+                    lm.getSysMessage(FabricordMessageKey.System.Discord.CantProcessCommand)))
+            event.reply(lm.getSysMessageByLangCode(FabricordMessageKey.System.Discord.CantGetPlayerList, discordUserLang))
                 .setEphemeral(true)
                 .queue {
                     executorService.schedule({

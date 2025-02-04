@@ -1,13 +1,9 @@
 system:
+  # 初期化関連
   initializing: "Fabricordの初期化中..."
-
-  missingRequiredProp:
-    - "Bot tokenまたはlog channel IDがconfigファイルにありません。"
-    - "modを初めて起動しましたか？"
-    - "configファイルを%sで確認してください。"
-
   initialized: "Fabricordは正常に初期化されました。"
 
+  # 設定関連
   creatingConfigDir: "configディレクトリを%sで作成中"
   failedToCreateConfigDirBySec: "セキュリティ制限により、必要なファイルやディレクトリの作成/チェックに失敗しました"
   failedToCreateConfigDirByIO: "I/Oエラーにより、必要なファイルやディレクトリの作成/チェックに失敗しました"
@@ -18,13 +14,27 @@ system:
   failedToLoadConfigByIO: "I/Oエラーにより、configファイルの読み込みに失敗しました"
   failedToLoadConfigByUnknown: "configファイルの読み込み中に予期せぬエラーが発生しました"
 
+  switchedLocalChatState: "ローカルチャットの状態を切り替えました: %s"
+
+  # 設定不足エラー
+  missingRequiredProp:
+    - "Bot tokenまたはlog channel IDがconfigファイルにありません。"
+    - "modを初めて起動しましたか？"
+    - "configファイルを%sで確認してください。"
+
   discord:
-    botNowOnline: "Botがオンラインになりました。"
+    botNowOnline: "Botがオンラインになりました。 (%s)"
     botNowOffline: "Botがオフラインになりました。"
-
+    failedToStartBotByLoginExc: "提供されたトークンを使用してBotの起動に失敗しました。"
+    failedToStartBotByUnknown: "Botの起動中に予期せぬエラーが発生しました。"
+    discordBotIsNotInitialized: "Botが起動されていないため、停止できません。"
     webHookUrlNotConfigured: "メッセージスタイルが'modern'に設定されていますが、Webhook URLが設定されていません。"
-
-    failedToStartBotByLoginExc: "提供されたトークンを使用してのBotの起動に失敗しました"
-    failedToStartBotByUnknown: "Botの起動中に予期せぬエラーが発生しました"
-
-    discordBotIsNotInitialized: "Discord Botが起動されていないため、停止できません。"
+    cantGetPlayerList: "申し訳ありませんが、現在プレイヤーリストを取得できません。"
+    minecraftServerNotInitialized: "Minecraftサーバーが初期化されていません。 %s"
+    cantProcessMessage: "Discordのメッセージを処理できません。"
+    cantProcessCommand: "/playerlistコマンドを処理できません。"
+    webHookUrlNotConfiguredOrBlank: "Webhook URLが設定されていないか、空白です。"
+    errorDuringWebHookSend: "Discord Webhookへのメッセージ送信中に予期せぬエラーが発生しました: %s"
+    botNotInitialized: "Botが起動されていないため、操作できません。"
+    failedToStartBot: "Botの起動に失敗しました。"
+    failedToStopBot: "Botの停止に失敗しました。"
