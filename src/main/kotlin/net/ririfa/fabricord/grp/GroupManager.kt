@@ -36,6 +36,7 @@ object GroupManager {
 		.setPrettyPrinting()
 		.create()
 
+	//TODO: Use LangMan for messages
 	fun initialize() {
 		if (Files.exists(grpFile)) {
 			logger.info("Loading from $grpFile")

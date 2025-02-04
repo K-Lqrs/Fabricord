@@ -36,7 +36,7 @@ dependencies {
 
 	modApi("org.yaml:snakeyaml:2.3")
 	modApi("net.kyori:adventure-text-serializer-gson:4.17.0")
-	modApi("net.ririfa:langman:1.2.2-SNAPSHOT")
+	modApi("net.ririfa:langman:1.2.2")
 	modCompileOnly("org.apache.logging.log4j:log4j-api:+")
 	modCompileOnly("org.apache.logging.log4j:log4j-core:+")
 
