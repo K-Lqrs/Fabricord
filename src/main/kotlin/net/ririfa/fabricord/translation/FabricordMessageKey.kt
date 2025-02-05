@@ -28,10 +28,23 @@ sealed class FabricordMessageKey : MessageKey<FabricordMessageProvider, Text> {
 		object SwitchedLocalChatState : System()
 
 		sealed class GRP : System() {
+			object LoadingGroupFile : GRP()
+			object  GroupFileSaved : GRP()
+
 			object GroupCreated : GRP()
 			object GroupCreatedWithMembers : GRP()
 
+			object NoGroupFoundWithID : GRP()
+			object NoGroupFoundWithName : GRP()
+			object LoadedGroups : GRP()
+
+			object MultipleGroupsFound : GRP()
+
 			object PlayerNotFound : GRP()
+			object GroupFileNotFound : GRP()
+
+			object FailedToLoadGroupFile : GRP()
+			object FailedToSaveGroupFile : GRP()
 		}
 
 		sealed class Discord : System() {

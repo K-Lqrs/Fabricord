@@ -1,3 +1,5 @@
+@file:Suppress("DuplicatedCode")
+
 package net.ririfa.fabricord.grp
 
 import com.google.gson.Gson
@@ -8,6 +10,7 @@ import com.mojang.brigadier.arguments.StringArgumentType.greedyString
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
+import net.minecraft.network.packet.s2c.play.CommandSuggestionsS2CPacket
 import net.minecraft.server.command.CommandManager.argument
 import net.minecraft.server.command.CommandManager.literal
 import net.minecraft.server.command.ServerCommandSource
@@ -16,10 +19,12 @@ import net.minecraft.text.Text
 import net.ririfa.fabricord.Fabricord.Companion.grpFile
 import net.ririfa.fabricord.discord.DiscordBotManager.server
 import net.ririfa.fabricord.translation.FabricordMessageKey
+import net.ririfa.fabricord.translation.FabricordMessageProvider
 import net.ririfa.fabricord.translation.adapt
 import net.ririfa.fabricord.utils.ShortUUID
 import net.ririfa.fabricord.utils.ShortUUIDTypeAdapter
 import net.ririfa.fabricord.utils.UUIDTypeAdapter
+import net.ririfa.langman.LangMan
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.nio.file.Files
@@ -27,6 +32,7 @@ import java.util.UUID
 
 object GroupManager {
 	private val logger: Logger = LoggerFactory.getLogger(this::class.simpleName)
+	lateinit var langMan: LangMan<FabricordMessageProvider, Text>
 
 	private val groups = mutableMapOf<ShortUUID, Group>()
 
@@ -36,10 +42,9 @@ object GroupManager {
 		.setPrettyPrinting()
 		.create()
 
-	//TODO: Use LangMan for messages
 	fun initialize() {
 		if (Files.exists(grpFile)) {
-			logger.info("Loading from $grpFile")
+			logger.info(langMan.getSysMessage(FabricordMessageKey.System.GRP.LoadingGroupFile))
 
 			try {
 				val jsonString = Files.readString(grpFile)
@@ -47,12 +52,12 @@ object GroupManager {
 				val loaded = gson.fromJson<Map<ShortUUID, Group>>(jsonString, type)
 				groups.clear()
 				groups.putAll(loaded)
-				logger.info("Loaded ${groups.size} groups")
+				logger.info(langMan.getSysMessage(FabricordMessageKey.System.GRP.LoadedGroups, groups.size))
 			} catch (e: Exception) {
-				logger.error("Failed to load groups.json: ${e.message}", e)
+				logger.error(langMan.getSysMessage(FabricordMessageKey.System.GRP.FailedToLoadGroupFile), e)
 			}
 		} else {
-			logger.info("groups.json not found, starting fresh.")
+			logger.info(langMan.getSysMessage(FabricordMessageKey.System.GRP.GroupFileNotFound))
 		}
 	}
 
@@ -60,9 +65,9 @@ object GroupManager {
 		try {
 			val jsonString = gson.toJson(groups)
 			Files.writeString(grpFile, jsonString)
-			logger.info("Saved groups to $grpFile")
+			logger.info(langMan.getSysMessage(FabricordMessageKey.System.GRP.GroupFileSaved, grpFile))
 		} catch (e: Exception) {
-			logger.error("Failed to save groups.json: ${e.message}", e)
+			logger.error(langMan.getSysMessage(FabricordMessageKey.System.GRP.FailedToSaveGroupFile), e)
 		}
 	}
 
@@ -90,13 +95,12 @@ object GroupManager {
 			CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->
 				dispatcher.register(
 					literal("grp")
-						// ルート実行時 => ヘルプ表示
+						// region /grp help
 						.executes { context ->
 							showHelp(context.source)
 							1
 						}
 
-						// /grp help
 						.then(
 							literal("help")
 								.executes { ctx ->
@@ -104,14 +108,13 @@ object GroupManager {
 									1
 								}
 						)
+						// endregion
 
-						// Main logic for this command
-
-						// /grp create <groupName> [<players...>]
+						// region /grp create
 						.then(
 							literal("create")
 								.then(
-									argument("groupName", StringArgumentType.string())
+									argument("groupName", greedyString())
 										// /grp create <groupName>
 										.executes { ctx ->
 											val src = ctx.source
@@ -127,7 +130,7 @@ object GroupManager {
 
 										// /grp create <groupName> <players...>
 										.then(
-											argument("players", greedyString())
+											argument("players", StringArgumentType.string())
 												.executes { ctx ->
 													val src = ctx.source
 													val player = src.player ?: return@executes 0
@@ -166,8 +169,9 @@ object GroupManager {
 										)
 								)
 						)
+						// endregion
 
-						// /grp join <groupNameOrID>
+						//region /grp join <groupNameOrID>
 						.then(
 							literal("join")
 								.then(
@@ -175,6 +179,7 @@ object GroupManager {
 										.executes { ctx ->
 											val src = ctx.source
 											val player = src.player ?: return@executes 0
+											val ap = player.adapt()
 											val input = StringArgumentType.getString(ctx, "targetGroup")
 
 											// 1) ShortUUIDとして解釈できればID検索
@@ -187,7 +192,7 @@ object GroupManager {
 											if (shortId != null) {
 												val groupById = getGroupById(shortId)
 												if (groupById == null) {
-													src.sendMessage(Text.literal("No group found for ID: ${input}"))
+													src.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.NoGroupFoundWithID, input))
 												} else {
 													joinGroup(player, groupById, src)
 												}
@@ -198,13 +203,13 @@ object GroupManager {
 											val groupsByName = getGroupsByName(input)
 											when {
 												groupsByName.isEmpty() -> {
-													src.sendMessage(Text.literal("No group found with name: $input"))
+													src.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.NoGroupFoundWithName, input))
 												}
 
 												groupsByName.size > 1 -> {
 													src.sendMessage(
-														Text.literal(
-															"Multiple groups found with that name. Please specify group ID instead."
+														ap.getMessage(
+															FabricordMessageKey.System.GRP.MultipleGroupsFound
 														)
 													)
 												}
@@ -217,8 +222,9 @@ object GroupManager {
 										}
 								)
 						)
+						//endregion
 
-						// /grp del <groupIdOrName>
+						//region /grp del <groupIdOrName>
 						.then(
 							literal("del")
 								.then(
@@ -274,6 +280,9 @@ object GroupManager {
 										}
 								)
 						)
+						//endregion
+
+
 				)
 			}
 		}
@@ -296,7 +305,6 @@ object GroupManager {
 				}
 			}
 		}
-
 
 		private fun showHelp(source: ServerCommandSource) {
 			var msg = Component.text("Group commands:")

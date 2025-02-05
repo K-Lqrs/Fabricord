@@ -22,10 +22,24 @@ system:
 
 
   grp:
+    loadingGroupFile: "Loading from %s"
+    groupFileSaved: "Saved groups to %s"
+
+
     groupCreated: "Created group: '%s' (ID: %s)"
     groupCreatedWithMembers: "Created group: '%s' (ID: %s) with %s members"
 
+    noGroupFoundWithID: "No group found for ID: %s"
+    noGroupFoundWithName: "No group found with name: %s"
+    loadedGroups: "Loaded ${groups.size} groups"
+
+    multipleGroupsFound: "Multiple groups found with that name. Please specify group ID instead."
+
     playerNotFound: "Player not found: %s"
+    groupFileNotFound: "groups.json not found, starting fresh."
+
+    failedToLoadGroupFile: "Failed to load groups.json: %s"
+    failedToSaveGroupFile: "Failed to save groups.json: %s"
 
   discord:
     botNowOnline: "Bot is now online. (%s)"
