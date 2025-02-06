@@ -10,7 +10,6 @@ import com.mojang.brigadier.arguments.StringArgumentType.greedyString
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
-import net.minecraft.network.packet.s2c.play.CommandSuggestionsS2CPacket
 import net.minecraft.server.command.CommandManager.argument
 import net.minecraft.server.command.CommandManager.literal
 import net.minecraft.server.command.ServerCommandSource
@@ -287,6 +286,7 @@ object GroupManager {
 			}
 		}
 
+		//TODO: Use LangMan
 		private fun joinGroup(player: ServerPlayerEntity, group: Group, source: ServerCommandSource) {
 			if (group.members.contains(player.uuid)) {
 				source.sendMessage(Text.literal("You are already a member of this group."))

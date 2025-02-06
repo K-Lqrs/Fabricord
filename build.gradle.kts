@@ -82,6 +82,16 @@ tasks.named<ProcessResources>("processResources") {
 	}
 }
 
+tasks.named("remapJar") {
+	dependsOn(tasks.named("jar"))
+	dependsOn(tasks.named("sourcesJar"))
+}
+
+tasks.named("remapSourcesJar") {
+	dependsOn(tasks.named("sourcesJar"))
+	dependsOn(tasks.named("jar"))
+}
+
 tasks.withType<Jar> {
 	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
