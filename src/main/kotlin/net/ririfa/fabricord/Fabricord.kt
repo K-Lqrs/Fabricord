@@ -13,7 +13,6 @@ import net.minecraft.server.MinecraftServer
 import net.minecraft.server.command.CommandManager.argument
 import net.minecraft.server.command.CommandManager.literal
 import net.minecraft.text.Text
-import net.ririfa.langman.LangMan
 import net.ririfa.fabricord.discord.DiscordBotManager
 import net.ririfa.fabricord.discord.DiscordEmbed
 import net.ririfa.fabricord.discord.DiscordPlayerEventHandler
@@ -36,6 +35,7 @@ import net.ririfa.fabricord.utils.Utils.copyResourceToFile
 import net.ririfa.fabricord.utils.Utils.getNullableBoolean
 import net.ririfa.fabricord.utils.Utils.getNullableString
 import net.ririfa.langman.InitType
+import net.ririfa.langman.LangMan
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.core.LogEvent
@@ -46,10 +46,14 @@ import org.slf4j.LoggerFactory
 import org.yaml.snakeyaml.Yaml
 import java.io.File
 import java.io.IOException
-import java.nio.file.*
-import java.util.UUID
-import java.util.concurrent.*
-import kotlin.collections.set
+import java.nio.file.FileSystems
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.util.*
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
 import kotlin.io.path.notExists
 
 class Fabricord : DedicatedServerModInitializer {
@@ -149,9 +153,9 @@ class Fabricord : DedicatedServerModInitializer {
 
 			if (uuid in localChatToggled) return@ChatMessage
 
-			if (uuid in GroupManager.playerInGroupedChat) {
-				val groupID = GroupManager.playerInGroupedChat[uuid] ?: return@ChatMessage
-				val group = GroupManager.getGroupById(groupID) ?: return@ChatMessage
+			if (uuid in playerInGroupedChat) {
+				val groupID = playerInGroupedChat[uuid] ?: return@ChatMessage
+				val group = getGroupById(groupID) ?: return@ChatMessage
 				val members = group.members
 				val textToSend = Text.literal("${sender.name.string}: ${message.content.string}")
 
