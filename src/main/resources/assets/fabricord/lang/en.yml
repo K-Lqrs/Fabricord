@@ -41,6 +41,9 @@ system:
     failedToLoadGroupFile: "Failed to load groups.json: %s"
     failedToSaveGroupFile: "Failed to save groups.json: %s"
 
+    switchedToGroupChat: "Switched to group chat: %s"
+    notMemberOfGroup: "You are not a member of group: %s"
+
   discord:
     botNowOnline: "Bot is now online. (%s)"
     botNowOffline: "Bot is now offline."

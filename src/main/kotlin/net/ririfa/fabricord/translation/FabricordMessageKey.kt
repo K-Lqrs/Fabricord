@@ -45,6 +45,9 @@ sealed class FabricordMessageKey : MessageKey<FabricordMessageProvider, Text> {
 
 			object FailedToLoadGroupFile : GRP()
 			object FailedToSaveGroupFile : GRP()
+
+			object SwitchedToGroupChat : GRP()
+			object NotMemberOfGroup : GRP()
 		}
 
 		sealed class Discord : System() {

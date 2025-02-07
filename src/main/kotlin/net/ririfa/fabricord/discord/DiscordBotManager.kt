@@ -47,10 +47,11 @@ object DiscordBotManager : ListenerAdapter() {
         }, 0, 1750, TimeUnit.MILLISECONDS)
     }
 
-    fun init(s: MinecraftServer) {
+    fun init(s: MinecraftServer): MinecraftServer {
         server = s
         lm = Fabricord.instance.langMan
         startBot()
+        return server!!
     }
 
     private fun startBot() {

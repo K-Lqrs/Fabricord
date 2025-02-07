@@ -1,5 +1,6 @@
 package net.ririfa.fabricord
 
+import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.arguments.StringArgumentType.greedyString
 import net.fabricmc.api.DedicatedServerModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
@@ -7,6 +8,8 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.fabricmc.loader.api.FabricLoader
+import net.minecraft.network.message.MessageType
+import net.minecraft.server.MinecraftServer
 import net.minecraft.server.command.CommandManager.argument
 import net.minecraft.server.command.CommandManager.literal
 import net.minecraft.text.Text
@@ -15,9 +18,20 @@ import net.ririfa.fabricord.discord.DiscordBotManager
 import net.ririfa.fabricord.discord.DiscordEmbed
 import net.ririfa.fabricord.discord.DiscordPlayerEventHandler
 import net.ririfa.fabricord.discord.DiscordPlayerEventHandler.handleMCMessage
+import net.ririfa.fabricord.grp.GroupManager
+import net.ririfa.fabricord.grp.GroupManager.Command.findPlayerUUIDByName
+import net.ririfa.fabricord.grp.GroupManager.Command.joinGroup
+import net.ririfa.fabricord.grp.GroupManager.Command.showHelp
+import net.ririfa.fabricord.grp.GroupManager.createGroup
+import net.ririfa.fabricord.grp.GroupManager.deleteGroup
+import net.ririfa.fabricord.grp.GroupManager.getGroupById
+import net.ririfa.fabricord.grp.GroupManager.getGroupsByName
+import net.ririfa.fabricord.grp.GroupManager.playerInGroupedChat
 import net.ririfa.fabricord.translation.FabricordMessageKey
 import net.ririfa.fabricord.translation.FabricordMessageProvider
 import net.ririfa.fabricord.translation.adapt
+import net.ririfa.fabricord.utils.ShortUUID
+import net.ririfa.fabricord.utils.Utils
 import net.ririfa.fabricord.utils.Utils.copyResourceToFile
 import net.ririfa.fabricord.utils.Utils.getNullableBoolean
 import net.ririfa.fabricord.utils.Utils.getNullableString
@@ -35,6 +49,7 @@ import java.io.IOException
 import java.nio.file.*
 import java.util.UUID
 import java.util.concurrent.*
+import kotlin.collections.set
 import kotlin.io.path.notExists
 
 class Fabricord : DedicatedServerModInitializer {
@@ -58,7 +73,7 @@ class Fabricord : DedicatedServerModInitializer {
 
 		private val yaml = Yaml()
 		private var initializeIsDone = false
-		private val localChatToggled = mutableMapOf<UUID, Boolean>()
+		private val localChatToggled = mutableListOf<UUID>()
 
 		//region Configurations
 		// Required
@@ -85,6 +100,7 @@ class Fabricord : DedicatedServerModInitializer {
 	}
 
 	lateinit var langMan: LangMan<FabricordMessageProvider, Text>
+	lateinit var server: MinecraftServer
 
 	override fun onInitializeServer() {
 		instance = this
@@ -128,9 +144,25 @@ class Fabricord : DedicatedServerModInitializer {
 		ca = ConsoleTrackerAppender("FabricordConsoleTracker")
 		val rootLogger = LogManager.getRootLogger() as org.apache.logging.log4j.core.Logger
 		rootLogger.addAppender(ca)
-		ServerMessageEvents.CHAT_MESSAGE.register(ServerMessageEvents.ChatMessage { message, sender, _ ->
+		ServerMessageEvents.CHAT_MESSAGE.register(ServerMessageEvents.ChatMessage { message, sender, params ->
 			val uuid = sender.uuid
+
 			if (uuid in localChatToggled) return@ChatMessage
+
+			if (uuid in GroupManager.playerInGroupedChat) {
+				val groupID = GroupManager.playerInGroupedChat[uuid] ?: return@ChatMessage
+				val group = GroupManager.getGroupById(groupID) ?: return@ChatMessage
+				val members = group.members
+				val textToSend = Text.literal("${sender.name.string}: ${message.content.string}")
+
+				members.forEach { member ->
+					val entity = server.playerManager.getPlayer(member) ?: return@forEach
+					entity.sendMessage(textToSend, false)
+				}
+
+
+				return@ChatMessage
+			}
 
 			val content = message.content.string
 			handleMCMessage(sender, content)
@@ -159,9 +191,11 @@ class Fabricord : DedicatedServerModInitializer {
 		})
 
 		ServerLifecycleEvents.SERVER_STARTED.register { server ->
+			GroupManager.initialize()
 			executorService.submit {
 				try {
-					DiscordBotManager.init(server)
+					val s = DiscordBotManager.init(server)
+					this.server = s
 				} catch (e: Exception) {
 					logger.error(langMan.getSysMessage(FabricordMessageKey.System.Discord.FailedToStartBot), e)
 					server.stop(false)
@@ -179,6 +213,7 @@ class Fabricord : DedicatedServerModInitializer {
 
 				rootLogger.removeAppender(ca)
 				ca.stop()
+				GroupManager.save()
 			} catch (e: Exception) {
 				logger.error(langMan.getSysMessage(FabricordMessageKey.System.Discord.FailedToStopBot), e)
 			}
@@ -190,9 +225,13 @@ class Fabricord : DedicatedServerModInitializer {
 					.executes { context ->
 						val player = context.source.player ?: return@executes 0
 						val uuid = player.uuid
-						val current = localChatToggled.getOrDefault(uuid, false)
+						val current = uuid in localChatToggled
 						val newState = !current
-						localChatToggled[uuid] = newState
+						if (newState) {
+							localChatToggled.add(uuid)
+						} else {
+							localChatToggled.remove(uuid)
+						}
 						player.sendMessage(
 							player.adapt().getMessage(FabricordMessageKey.System.SwitchedLocalChatState, newState),
 							false
@@ -204,14 +243,332 @@ class Fabricord : DedicatedServerModInitializer {
 							.executes { context ->
 								val player = context.source.player ?: return@executes 0
 								val message = context.getArgument("message", String::class.java)
-								val textToSend = Text.literal("${player.name.string}: $message")
-								player.server.playerManager.broadcast(textToSend, false)
+								val signedMessage = Utils.createSignedMessage(player, message)
+								val parameters = MessageType.params(MessageType.CHAT, player)
+
+								player.server.playerManager.broadcast(
+									signedMessage,
+									player,
+									parameters
+								)
+
 								return@executes 1
 							}
 					)
 			)
+			dispatcher.register(
+				literal("grp")
+					// region /grp help
+					.executes { context ->
+						showHelp(context.source)
+						1
+					}
 
+					.then(
+						literal("help")
+							.executes { ctx ->
+								showHelp(ctx.source)
+								1
+							}
+					)
+					// endregion
 
+					// region /grp create
+					.then(
+						literal("create")
+							.then(
+								argument("groupName", greedyString())
+									// /grp create <groupName>
+									.executes { ctx ->
+										val src = ctx.source
+										val player = src.player ?: return@executes 0
+										val ap = player.adapt()
+
+										val groupName = StringArgumentType.getString(ctx, "groupName")
+										val group = createGroup(groupName, player.uuid)
+										// GroupCreate + GroupName + GroupID
+										src.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.GroupCreated, group.name, group.id.toShortString()))
+										1
+									}
+
+									// /grp create <groupName> <players...>
+									.then(
+										argument("players", StringArgumentType.string())
+											.executes { ctx ->
+												val src = ctx.source
+												val player = src.player ?: return@executes 0
+												val ap = player.adapt()
+
+												val groupName = StringArgumentType.getString(ctx, "groupName")
+												val playersArg = StringArgumentType.getString(ctx, "players")
+												val membersToAdd = mutableListOf<UUID>()
+
+												val names = playersArg.split(" ")
+												names.forEach { name ->
+													try {
+														val uuid = UUID.fromString(name)
+														membersToAdd.add(uuid)
+													} catch (_: IllegalArgumentException) {
+														val uuid = findPlayerUUIDByName(name)
+														if (uuid != null) {
+															membersToAdd.add(uuid)
+														} else {
+															src.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.PlayerNotFound, name))
+														}
+													}
+												}
+
+												val group = createGroup(groupName, player.uuid, false, membersToAdd)
+												src.sendMessage(
+													ap.getMessage(
+														FabricordMessageKey.System.GRP.GroupCreatedWithMembers,
+														group.name,
+														group.id.toShortString(),
+														group.members.size
+													)
+												)
+												1
+											}
+									)
+							)
+					)
+					// endregion
+
+					//region /grp join <groupNameOrID>
+					.then(
+						literal("join")
+							.then(
+								argument("targetGroup", StringArgumentType.string())
+									.executes { ctx ->
+										val src = ctx.source
+										val player = src.player ?: return@executes 0
+										val ap = player.adapt()
+										val input = StringArgumentType.getString(ctx, "targetGroup")
+
+										// 1) ShortUUIDとして解釈できればID検索
+										val shortId = try {
+											ShortUUID.fromShortString(input)
+										} catch (_: Exception) {
+											null
+										}
+
+										if (shortId != null) {
+											val groupById = getGroupById(shortId)
+											if (groupById == null) {
+												src.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.NoGroupFoundWithID, input))
+											} else {
+												joinGroup(player, groupById, src)
+											}
+											return@executes 1
+										}
+
+										// 2) グループ名として検索
+										val groupsByName = getGroupsByName(input)
+										when {
+											groupsByName.isEmpty() -> {
+												src.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.NoGroupFoundWithName, input))
+											}
+
+											groupsByName.size > 1 -> {
+												src.sendMessage(
+													ap.getMessage(
+														FabricordMessageKey.System.GRP.MultipleGroupsFound
+													)
+												)
+											}
+
+											else -> {
+												joinGroup(player, groupsByName.first(), src)
+											}
+										}
+										1
+									}
+							)
+					)
+					//endregion
+
+					//region /grp leave <groupNameOrID>
+					.then(
+						literal("leave")
+							.then(
+								argument("targetGroup", StringArgumentType.string())
+									.executes { ctx ->
+										val src = ctx.source
+										val player = src.player ?: return@executes 0
+										val ap = player.adapt()
+										val input = StringArgumentType.getString(ctx, "targetGroup")
+
+										val shortId = try {
+											ShortUUID.fromShortString(input)
+										} catch (_: Exception) {
+											null
+										}
+
+										if (shortId != null) {
+											val group = getGroupById(shortId)
+											if (group == null) {
+												src.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.NoGroupFoundWithID, input))
+											} else {
+												if (group.members.remove(player.uuid)) {
+													src.sendMessage(Text.literal("Left group: ${group.name} (ID: ${group.id.toShortString()})"))
+												} else {
+													src.sendMessage(Text.literal("You are not a member of this group."))
+												}
+											}
+											return@executes 1
+										}
+
+										val groupsByName = getGroupsByName(input)
+										when {
+											groupsByName.isEmpty() -> {
+												src.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.NoGroupFoundWithName, input))
+											}
+
+											groupsByName.size > 1 -> {
+												src.sendMessage(
+													ap.getMessage(
+														FabricordMessageKey.System.GRP.MultipleGroupsFound
+													)
+												)
+											}
+
+											else -> {
+												val group = groupsByName.first()
+												if (group.members.remove(player.uuid)) {
+													src.sendMessage(Text.literal("Left group: ${group.name} (ID: ${group.id.toShortString()})"))
+												} else {
+													src.sendMessage(Text.literal("You are not a member of this group."))
+												}
+											}
+										}
+										1
+									}
+							)
+
+					)
+					//endregion
+
+					//region /grp del <groupNameOrID>
+					.then(
+						literal("del")
+							.then(
+								argument("targetGroup", StringArgumentType.string())
+									.executes { ctx ->
+										val src = ctx.source
+										val player = src.player ?: return@executes 0
+										val input = StringArgumentType.getString(ctx, "targetGroup")
+
+										// 同様にIDか名前か判別
+										val shortId = try {
+											ShortUUID.fromShortString(input)
+										} catch (_: Exception) {
+											null
+										}
+										if (shortId != null) {
+											val g = getGroupById(shortId)
+											if (g != null) {
+												if (g.owner == player.uuid) {
+													deleteGroup(shortId)
+													src.sendMessage(Text.literal("Deleted group: ${g.name} (ID: ${g.id.toShortString()})"))
+												} else {
+													src.sendMessage(Text.literal("You are not the owner of this group."))
+												}
+											} else {
+												src.sendMessage(Text.literal("No group found for ID: $input"))
+											}
+											return@executes 1
+										}
+
+										// 名前検索→複数ヒットならエラー
+										val found = getGroupsByName(input)
+										when {
+											found.isEmpty() -> {
+												src.sendMessage(Text.literal("No group found with name: $input"))
+											}
+
+											found.size > 1 -> {
+												src.sendMessage(Text.literal("Multiple groups with that name. Use group ID."))
+											}
+
+											else -> {
+												val group = found.first()
+												if (group.owner == player.uuid) {
+													deleteGroup(group.id)
+													src.sendMessage(Text.literal("Deleted group: ${group.name} (ID: ${group.id.toShortString()})"))
+												} else {
+													src.sendMessage(Text.literal("You are not the owner of this group."))
+												}
+											}
+										}
+										1
+									}
+							)
+					)
+					//endregion
+
+					//region /grp switch <groupNameOrID>
+					// グループチャットとグローバルチャットの切り替え
+					.then(
+						literal("switch")
+							.then(
+								argument("targetGroup", StringArgumentType.string())
+									.executes { ctx ->
+										val src = ctx.source
+										val player = src.player ?: return@executes 0
+										val ap = player.adapt()
+										val input = StringArgumentType.getString(ctx, "targetGroup")
+
+										val shortId = try {
+											ShortUUID.fromShortString(input)
+										} catch (_: Exception) {
+											null
+										}
+
+										if (shortId != null) {
+											val group = getGroupById(shortId)
+											if (group == null) {
+												src.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.NoGroupFoundWithID, input))
+											} else {
+												if (group.members.contains(player.uuid)) {
+													playerInGroupedChat[player.uuid] = group.id
+													src.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.SwitchedToGroupChat, group.name))
+												} else {
+													src.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.NotMemberOfGroup, group.name))
+												}
+											}
+											return@executes 1
+										}
+
+										val groupsByName = getGroupsByName(input)
+										when {
+											groupsByName.isEmpty() -> {
+												src.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.NoGroupFoundWithName, input))
+											}
+
+											groupsByName.size > 1 -> {
+												src.sendMessage(
+													ap.getMessage(
+														FabricordMessageKey.System.GRP.MultipleGroupsFound
+													)
+												)
+											}
+
+											else -> {
+												val group = groupsByName.first()
+												if (group.members.contains(player.uuid)) {
+													playerInGroupedChat[player.uuid] = group.id
+													src.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.SwitchedToGroupChat, group.name))
+												} else {
+													src.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.NotMemberOfGroup, group.name))
+												}
+											}
+										}
+										1
+									}
+							)
+					)
+				//endregion
+			)
 		}
 	}
 

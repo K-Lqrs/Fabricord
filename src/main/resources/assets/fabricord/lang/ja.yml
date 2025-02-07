@@ -22,6 +22,28 @@ system:
     - "modを初めて起動しましたか？"
     - "configファイルを%sで確認してください。"
 
+  grp:
+    loadingGroupFile: "%s からグループデータを読み込んでいます..."
+    groupFileSaved: "グループデータを %s に保存しました。"
+
+    groupCreated: "グループを作成しました: '%s' (ID: %s)"
+    groupCreatedWithMembers: "グループを作成しました: '%s' (ID: %s)（%s人のメンバーと共に）"
+
+    noGroupFoundWithID: "指定されたIDのグループが見つかりません: %s"
+    noGroupFoundWithName: "指定された名前のグループが見つかりません: %s"
+    loadedGroups: "${groups.size} 個のグループを読み込みました。"
+
+    multipleGroupsFound: "同じ名前のグループが複数見つかりました。グループIDを指定してください。"
+
+    playerNotFound: "プレイヤーが見つかりません: %s"
+    groupFileNotFound: "groups.json が見つかりませんでした。新しいデータで開始します。"
+
+    failedToLoadGroupFile: "groups.json の読み込みに失敗しました: %s"
+    failedToSaveGroupFile: "groups.json の保存に失敗しました: %s"
+
+    switchedToGroupChat: "グループチャットに切り替えました: %s"
+    notMemberOfGroup: "あなたはグループ '%s' のメンバーではありません。"
+
   discord:
     botNowOnline: "Botがオンラインになりました。 (%s)"
     botNowOffline: "Botがオフラインになりました。"
