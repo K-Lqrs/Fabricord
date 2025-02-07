@@ -67,7 +67,7 @@ object DiscordMessageHandler {
         }
 
         val member = event.member
-        val memberName = member?.user?.globalName ?: "Unknown Name"
+        val memberName = member?.user?.name ?: "Unknown"
         val memberId = member?.user?.id ?: "00000000000000000000"
         val idSuggest = "<@$memberId>"
         val highestRole = member?.roles?.maxByOrNull { it.position }

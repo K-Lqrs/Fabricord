@@ -223,7 +223,68 @@ object GroupManager {
 						)
 						//endregion
 
-						//region /grp del <groupIdOrName>
+						//region /grp leave <groupNameOrID>
+						.then(
+							literal("leave")
+								.then(
+									argument("targetGroup", StringArgumentType.string())
+										.executes { ctx ->
+											val src = ctx.source
+											val player = src.player ?: return@executes 0
+											val ap = player.adapt()
+											val input = StringArgumentType.getString(ctx, "targetGroup")
+
+											val shortId = try {
+												ShortUUID.fromShortString(input)
+											} catch (_: Exception) {
+												null
+											}
+
+											if (shortId != null) {
+												val group = getGroupById(shortId)
+												if (group == null) {
+													src.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.NoGroupFoundWithID, input))
+												} else {
+													if (group.members.remove(player.uuid)) {
+														src.sendMessage(Text.literal("Left group: ${group.name} (ID: ${group.id.toShortString()})"))
+													} else {
+														src.sendMessage(Text.literal("You are not a member of this group."))
+													}
+												}
+												return@executes 1
+											}
+
+											val groupsByName = getGroupsByName(input)
+											when {
+												groupsByName.isEmpty() -> {
+													src.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.NoGroupFoundWithName, input))
+												}
+
+												groupsByName.size > 1 -> {
+													src.sendMessage(
+														ap.getMessage(
+															FabricordMessageKey.System.GRP.MultipleGroupsFound
+														)
+													)
+												}
+
+												else -> {
+													val group = groupsByName.first()
+													if (group.members.remove(player.uuid)) {
+														src.sendMessage(Text.literal("Left group: ${group.name} (ID: ${group.id.toShortString()})"))
+													} else {
+														src.sendMessage(Text.literal("You are not a member of this group."))
+													}
+												}
+											}
+											1
+										}
+								)
+
+						)
+						//endregion
+
+						//region /grp del <groupNameOrID>
 						.then(
 							literal("del")
 								.then(
@@ -281,7 +342,12 @@ object GroupManager {
 						)
 						//endregion
 
+						//region /grp switch
+						// グループチャットとグローバルチャットの切り替え
+						.then(
+							literal("switch")
 
+						)
 				)
 			}
 		}
