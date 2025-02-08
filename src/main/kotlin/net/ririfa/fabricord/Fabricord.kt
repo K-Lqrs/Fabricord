@@ -36,8 +36,7 @@ import net.ririfa.fabricord.utils.Utils.getNullableBoolean
 import net.ririfa.fabricord.utils.Utils.getNullableString
 import net.ririfa.langman.InitType
 import net.ririfa.langman.LangMan
-import org.apache.logging.log4j.Level
-import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.*
 import org.apache.logging.log4j.core.LogEvent
 import org.apache.logging.log4j.core.appender.AbstractAppender
 import org.apache.logging.log4j.core.layout.PatternLayout
@@ -51,9 +50,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
-import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledExecutorService
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.*
 import kotlin.io.path.notExists
 
 class Fabricord : DedicatedServerModInitializer {
@@ -148,6 +145,7 @@ class Fabricord : DedicatedServerModInitializer {
 		ca = ConsoleTrackerAppender("FabricordConsoleTracker")
 		val rootLogger = LogManager.getRootLogger() as org.apache.logging.log4j.core.Logger
 		rootLogger.addAppender(ca)
+
 		ServerMessageEvents.CHAT_MESSAGE.register(ServerMessageEvents.ChatMessage { message, sender, params ->
 			val uuid = sender.uuid
 
@@ -361,6 +359,10 @@ class Fabricord : DedicatedServerModInitializer {
 											if (groupById == null) {
 												src.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.NoGroupFoundWithID, input))
 											} else {
+												if (!groupById.open) {
+													//TODO: Send request to join
+													return@executes 1
+												}
 												joinGroup(player, groupById, src)
 											}
 											return@executes 1
@@ -379,6 +381,11 @@ class Fabricord : DedicatedServerModInitializer {
 														FabricordMessageKey.System.GRP.MultipleGroupsFound
 													)
 												)
+											}
+
+											!groupsByName.first().open -> {
+												//TODO: Send request to join
+												return@executes 1
 											}
 
 											else -> {
@@ -572,6 +579,11 @@ class Fabricord : DedicatedServerModInitializer {
 							)
 					)
 				//endregion
+
+					//region /grp pendinglist
+					.then(
+						literal("pendinglist")
+					)
 			)
 		}
 	}

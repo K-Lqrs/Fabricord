@@ -114,8 +114,11 @@ object GroupManager {
 
 		fun showHelp(source: ServerCommandSource) {
 			var msg = Component.text("Group commands:")
+				.appendNewline()
 				.append(Component.text("/grp create <groupName> [<players...>]"))
+				.appendNewline()
 				.append(Component.text("/grp join <groupNameOrID>"))
+				.appendNewline()
 				.append(Component.text("/grp del <groupIdOrName>"))
 
 			val s = GsonComponentSerializer.gson().serialize(msg)
