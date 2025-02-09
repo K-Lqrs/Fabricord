@@ -28,7 +28,7 @@ object GroupManager {
 	private val logger: Logger = LoggerFactory.getLogger(this::class.simpleName)
 	lateinit var langMan: LangMan<FabricordMessageProvider, Text>
 
-	private val groups = mutableMapOf<ShortUUID, Group>()
+	internal val groups = mutableMapOf<ShortUUID, Group>()
 	val playerInGroupedChat = mutableMapOf<UUID, ShortUUID>()
 
 	private val gson: Gson = GsonBuilder()
@@ -119,7 +119,9 @@ object GroupManager {
 				.appendNewline()
 				.append(Component.text("/grp join <groupNameOrID>"))
 				.appendNewline()
-				.append(Component.text("/grp del <groupIdOrName>"))
+				.append(Component.text("/grp del <groupNameOrID>"))
+				.appendNewline()
+
 
 			val s = GsonComponentSerializer.gson().serialize(msg)
 			source.sendMessage(Text.Serialization.fromJson(s, server?.registryManager ?: return))

@@ -36,7 +36,8 @@ import net.ririfa.fabricord.utils.Utils.getNullableBoolean
 import net.ririfa.fabricord.utils.Utils.getNullableString
 import net.ririfa.langman.InitType
 import net.ririfa.langman.LangMan
-import org.apache.logging.log4j.*
+import org.apache.logging.log4j.Level
+import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.core.LogEvent
 import org.apache.logging.log4j.core.appender.AbstractAppender
 import org.apache.logging.log4j.core.layout.PatternLayout
@@ -50,7 +51,9 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
-import java.util.concurrent.*
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
 import kotlin.io.path.notExists
 
 class Fabricord : DedicatedServerModInitializer {
@@ -360,7 +363,7 @@ class Fabricord : DedicatedServerModInitializer {
 												src.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.NoGroupFoundWithID, input))
 											} else {
 												if (!groupById.open) {
-													//TODO: Send request to join
+													groupById.addJoinRequest(player.uuid)
 													return@executes 1
 												}
 												joinGroup(player, groupById, src)
@@ -517,6 +520,66 @@ class Fabricord : DedicatedServerModInitializer {
 					)
 					//endregion
 
+					//region /grp accept <player>
+					.then(
+						literal("accept")
+							.then(
+								argument("player", StringArgumentType.string())
+									.executes { ctx ->
+										val src = ctx.source
+										val player = src.player ?: return@executes 0
+										val ap = player.adapt()
+										val playerName = StringArgumentType.getString(ctx, "player")
+
+										val group = GroupManager.groups.values.find { it.owner == player.uuid && it.joinRequests.any { uuid ->
+											src.server.playerManager.getPlayer(uuid)?.name?.string == playerName
+										} }
+
+										if (group == null) {
+											src.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.NoPendingRequestsForPlayer, playerName))
+											return@executes 1
+										}
+
+										val targetUUID = group.joinRequests.find { src.server.playerManager.getPlayer(it)?.name?.string == playerName } ?: return@executes 1
+										group.approveJoinRequest(targetUUID)
+
+										src.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.JoinRequestApproved, playerName, group.name))
+										return@executes 1
+									}
+							)
+					)
+					//endregion
+
+					//region /grp deny <player>
+					.then(
+						literal("deny")
+							.then(
+								argument("player", StringArgumentType.string())
+									.executes { ctx ->
+										val src = ctx.source
+										val player = src.player ?: return@executes 0
+										val ap = player.adapt()
+										val playerName = StringArgumentType.getString(ctx, "player")
+
+										val group = GroupManager.groups.values.find { it.owner == player.uuid && it.joinRequests.any { uuid ->
+											src.server.playerManager.getPlayer(uuid)?.name?.string == playerName
+										} }
+
+										if (group == null) {
+											src.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.NoPendingRequestsForPlayer, playerName))
+											return@executes 1
+										}
+
+										val targetUUID = group.joinRequests.find { src.server.playerManager.getPlayer(it)?.name?.string == playerName } ?: return@executes 1
+										group.denyJoinRequest(targetUUID)
+
+										src.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.JoinRequestDenied, playerName, group.name))
+										return@executes 1
+									}
+							)
+					)
+					//endregion
+
 					//region /grp switch <groupNameOrID>
 					// グループチャットとグローバルチャットの切り替え
 					.then(
@@ -583,7 +646,43 @@ class Fabricord : DedicatedServerModInitializer {
 					//region /grp pendinglist
 					.then(
 						literal("pendinglist")
+							.executes { ctx ->
+								val src = ctx.source
+								val player = src.player ?: return@executes 0
+								val ap = player.adapt()
+
+								val ownedGroups = GroupManager.groups.values.filter { it.owner == player.uuid }
+
+								if (ownedGroups.isEmpty()) {
+									src.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.NoOwnedGroups))
+									return@executes 1
+								}
+
+								var hasRequests = false
+
+								// 各グループの参加リクエストを表示
+								for (group in ownedGroups) {
+									val requestNames = group.joinRequests.mapNotNull {
+										src.server.playerManager.getPlayer(it)?.name?.string
+									}
+
+									if (requestNames.isEmpty()) {
+										src.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.NoPendingRequests, group.name))
+									} else {
+										hasRequests = true
+										val message = "Pending requests for ${group.name}: ${requestNames.joinToString(", ")}"
+										src.sendMessage(Text.literal(message))
+									}
+								}
+
+								if (!hasRequests) {
+									src.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.NoPendingRequestsOverall))
+								}
+
+								return@executes 1
+							}
 					)
+				//endregion
 			)
 		}
 	}

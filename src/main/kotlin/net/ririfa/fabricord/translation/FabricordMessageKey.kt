@@ -48,6 +48,12 @@ sealed class FabricordMessageKey : MessageKey<FabricordMessageProvider, Text> {
 
 			object SwitchedToGroupChat : GRP()
 			object NotMemberOfGroup : GRP()
+			object NoPendingRequests : GRP()
+			object NoPendingRequestsOverall : GRP()
+			object NoOwnedGroups : GRP()
+			object NoPendingRequestsForPlayer : GRP()
+			object JoinRequestApproved : GRP()
+			object JoinRequestDenied : GRP()
 		}
 
 		sealed class Discord : System() {
