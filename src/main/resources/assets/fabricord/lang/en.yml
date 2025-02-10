@@ -43,6 +43,10 @@ system:
 
     switchedToGroupChat: "Switched to group chat: %s"
     notMemberOfGroup: "You are not a member of group: %s"
+    youAreAlreadyMember: "You are already a member of this group"
+    joinedToGroup: "Joined group: %s (ID: %s)"
+    youAlreadySentRequest: "You have already requested to join this group."
+    joinRequestSent: "Join request sent to %s. The group owner must approve your request."
 
   discord:
     botNowOnline: "Bot is now online. (%s)"

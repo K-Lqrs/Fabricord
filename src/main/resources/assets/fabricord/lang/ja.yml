@@ -43,6 +43,10 @@ system:
 
     switchedToGroupChat: "グループチャットに切り替えました: %s"
     notMemberOfGroup: "あなたはグループ '%s' のメンバーではありません。"
+    youAreAlreadyMember: "あなたはすでにこのグループのメンバーです"
+    joinedToGroup: "グループに参加しました: %s (ID: %s)"
+    youAlreadySentRequest: "このグループへの参加リクエストはすでに送信されています。"
+    joinRequestSent: "%s に参加リクエストを送信しました。グループのオーナーがリクエストを承認する必要があります。"
 
   discord:
     botNowOnline: "Botがオンラインになりました。 (%s)"

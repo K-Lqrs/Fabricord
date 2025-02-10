@@ -54,6 +54,10 @@ sealed class FabricordMessageKey : MessageKey<FabricordMessageProvider, Text> {
 			object NoPendingRequestsForPlayer : GRP()
 			object JoinRequestApproved : GRP()
 			object JoinRequestDenied : GRP()
+			object YouAreAlreadyMember : GRP()
+			object JoinedToGroup : GRP()
+			object YouAlreadySentRequest : GRP()
+			object JoinRequestSent : GRP()
 		}
 
 		sealed class Discord : System() {

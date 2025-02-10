@@ -15,6 +15,7 @@ import net.ririfa.fabricord.Fabricord.Companion.grpFile
 import net.ririfa.fabricord.discord.DiscordBotManager.server
 import net.ririfa.fabricord.translation.FabricordMessageKey
 import net.ririfa.fabricord.translation.FabricordMessageProvider
+import net.ririfa.fabricord.translation.adapt
 import net.ririfa.fabricord.utils.ShortUUID
 import net.ririfa.fabricord.utils.ShortUUIDTypeAdapter
 import net.ririfa.fabricord.utils.UUIDTypeAdapter
@@ -92,22 +93,22 @@ object GroupManager {
 	}
 
 	object Command {
-		//TODO: Use LangMan
 		internal fun joinGroup(player: ServerPlayerEntity, group: Group, source: ServerCommandSource) {
+			val ap = player.adapt()
 			if (group.members.contains(player.uuid)) {
-				source.sendMessage(Text.literal("You are already a member of this group."))
+				source.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.YouAreAlreadyMember))
 				return
 			}
 
 			if (group.open) {
 				group.members.add(player.uuid)
-				source.sendMessage(Text.literal("Joined group: ${group.name} (ID: ${group.id.toShortString()})"))
+				source.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.JoinedToGroup, group.name, group.id))
 			} else {
 				if (group.joinRequests.contains(player.uuid)) {
-					source.sendMessage(Text.literal("You have already requested to join this group."))
+					source.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.YouAlreadySentRequest))
 				} else {
 					group.joinRequests.add(player.uuid)
-					source.sendMessage(Text.literal("Join request sent to ${group.name}. The group owner must approve your request."))
+					source.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.JoinRequestSent, group.name))
 				}
 			}
 		}

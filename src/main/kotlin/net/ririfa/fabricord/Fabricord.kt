@@ -142,6 +142,11 @@ class Fabricord : DedicatedServerModInitializer {
 
 		initializeIsDone = true
 		logger.info(langMan.getSysMessage(FabricordMessageKey.System.Initialized))
+		if (langMan.isDebug) {
+			availableLang.forEach { lang ->
+				langMan.logMissingKeys(lang)
+			}
+		}
 	}
 
 	private fun registerEvents() {
@@ -660,7 +665,6 @@ class Fabricord : DedicatedServerModInitializer {
 
 								var hasRequests = false
 
-								// 各グループの参加リクエストを表示
 								for (group in ownedGroups) {
 									val requestNames = group.joinRequests.mapNotNull {
 										src.server.playerManager.getPlayer(it)?.name?.string

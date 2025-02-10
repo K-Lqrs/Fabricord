@@ -6,12 +6,11 @@ plugins {
 	id("fabric-loom")
 }
 
-group = "net.ririfa.fabricord"
+group = "net.ririfa"
 version = "4.1.0-alpha"
 
 repositories {
 	mavenCentral()
-	maven("https://repo.ririfa.net/maven2/")
 }
 
 val includeInJar: Configuration by configurations.creating
@@ -36,7 +35,7 @@ dependencies {
 
 	modApi("org.yaml:snakeyaml:2.3")
 	modApi("net.kyori:adventure-text-serializer-gson:4.17.0")
-	modApi("net.ririfa:langman:1.2.2")
+	modApi("net.ririfa:langman:1.3.1")
 	modCompileOnly("org.apache.logging.log4j:log4j-api:+")
 	modCompileOnly("org.apache.logging.log4j:log4j-core:+")
 
@@ -45,7 +44,7 @@ dependencies {
 	}
 	includeInJar("org.yaml:snakeyaml:2.0")
 	includeInJar("net.kyori:adventure-text-serializer-gson:4.17.0")
-	includeInJar("net.ririfa:langman:1.2.2")
+	includeInJar("net.ririfa:langman:1.3.1")
 }
 
 val targetJavaVersion = 21
