@@ -58,7 +58,7 @@ class Fabricord : DedicatedServerModInitializer {
 		internal lateinit var ca: ConsoleTrackerAppender
 
 		private val serverDir: Path = loader.gameDir.toRealPath()
-		private val modDir: Path = serverDir.resolve(MOD_ID)
+		internal val modDir: Path = serverDir.resolve(MOD_ID)
 		private val configFile: Path = modDir.resolve("config.yml")
 		private val langDir: File = modDir.resolve("lang").toFile()
 		private val availableLang = listOf("en", "ja")

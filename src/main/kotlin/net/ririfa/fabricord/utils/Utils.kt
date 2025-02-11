@@ -41,9 +41,4 @@ object Utils {
         }
         return Pair(updatedMessage, mentionedPlayers)
     }
-
-    @JvmStatic
-    fun getPlayerByUUID(players: List<ServerPlayerEntity>, uuid: String): ServerPlayerEntity? {
-        return players.find { it.uuid.toString() == uuid }
-    }
 }

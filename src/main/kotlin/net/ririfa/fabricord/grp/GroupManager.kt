@@ -76,8 +76,9 @@ object GroupManager {
 
 	fun save() {
 		try {
-			val jsonString = gson.toJson(groups)
-			Files.writeString(grpFile, jsonString)
+			val gjs = gson.toJson(groups)
+			Files.writeString(grpFile, gjs)
+			PlayerGroupStorage.save()
 			logger.info(langMan.getSysMessage(FabricordMessageKey.System.GRP.GroupFileSaved, grpFile))
 		} catch (e: Exception) {
 			logger.error(langMan.getSysMessage(FabricordMessageKey.System.GRP.FailedToSaveGroupFile, e.message ?: ""), e)
@@ -97,11 +98,6 @@ object GroupManager {
 		return groups.firstOrNull { it.id == id }
 	}
 
-	@JvmStatic
-	fun getGroupMembers(id: ShortUUID): List<UUID> {
-		return groups.firstOrNull { it.id == id }?.members?.toList() ?: emptyList()
-	}
-
 	fun getGroupsByName(name: String): List<Group> {
 		return groups.filter { it.name.equals(name, ignoreCase = true) }
 	}
@@ -115,7 +111,7 @@ object GroupManager {
 		return server?.playerManager?.playerList?.firstOrNull { it.name.string.equals(name, ignoreCase = true) }
 	}
 
-	internal fun joinGroup(player: ServerPlayerEntity, group: Group, source: ServerCommandSource) {
+	fun joinGroup(player: ServerPlayerEntity, group: Group, source: ServerCommandSource) {
 		val ap = player.adapt()
 		if (group.members.contains(player.uuid)) {
 			source.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.YouAreAlreadyMember))
@@ -148,11 +144,6 @@ object GroupManager {
 
 		val s = GsonComponentSerializer.gson().serialize(msg)
 		source.sendMessage(Text.Serialization.fromJson(s, server?.registryManager ?: return))
-	}
-
-	internal fun findPlayerUUIDByName(name: String): UUID? {
-		val p = server?.playerManager?.playerList?.firstOrNull { it.name.string.equals(name, ignoreCase = true) } ?: return null
-		return p.uuid
 	}
 
 	enum class Commands(val register: (dispatcher: CommandDispatcher<ServerCommandSource>) -> Unit) {
@@ -289,14 +280,16 @@ object GroupManager {
 										val nameOrID = it.getArgument("groupNameOrID", String::class.java)
 										val group = try {
 											getGroupById(ShortUUID.fromString(nameOrID))
-										} catch (e: Exception) {
+										} catch (_: Exception) {
 											null
 										} ?: getGroupsByName(nameOrID).firstOrNull()
 										if (group == null) {
 											source.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.GroupNotFound, nameOrID))
 											return@executes 0
 										}
-										playerDefaultGroup[player.uuid] = group.id
+
+										PlayerGroupStorage.setDefaultGroup(player.uuid, group.id.toShortString())
+
 										source.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.DefaultGroupSet, group.name, group.id.toShortString()))
 										1
 									}
@@ -318,17 +311,18 @@ object GroupManager {
 								}
 								val ap = player.adapt()
 
-								val currentGroup = playerInGroupedChat[player.uuid]
+								val currentGroup = PlayerGroupStorage.getCurrentGroup(player.uuid)
 								if (currentGroup == null) {
-									val defaultGroup = playerDefaultGroup[player.uuid]
-									if (defaultGroup != null && groups.any { it.id == defaultGroup }) {
-										playerInGroupedChat[player.uuid] = defaultGroup
-										source.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.SwitchedToGroupChat, groups.first { it.id == defaultGroup }.name))
+									// グローバル → デフォルトグループに切り替え
+									val defaultGroup = PlayerGroupStorage.getDefaultGroup(player.uuid)
+									if (defaultGroup != null && groups.any { it.id.toShortString() == defaultGroup }) {
+										PlayerGroupStorage.setCurrentGroup(player.uuid, defaultGroup)
+										source.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.SwitchedToGroupChat, groups.first { it.id.toShortString() == defaultGroup }.name))
 									} else {
 										source.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.NoDefaultGroupSet))
 									}
 								} else {
-									playerInGroupedChat.remove(player.uuid)
+									PlayerGroupStorage.setCurrentGroup(player.uuid, null)
 									source.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.SwitchedToGlobalChat))
 								}
 								1
@@ -346,7 +340,7 @@ object GroupManager {
 										val nameOrID = it.getArgument("groupNameOrID", String::class.java)
 										val group = try {
 											getGroupById(ShortUUID.fromString(nameOrID))
-										} catch (e: Exception) {
+										} catch (_: Exception) {
 											null
 										} ?: getGroupsByName(nameOrID).firstOrNull()
 
@@ -355,11 +349,12 @@ object GroupManager {
 											return@executes 0
 										}
 
-										if (playerInGroupedChat[player.uuid] == group.id) {
-											playerInGroupedChat.remove(player.uuid)
+										val isCurrentlyInGroup = PlayerGroupStorage.getCurrentGroup(player.uuid) == group.id.toShortString()
+										if (isCurrentlyInGroup) {
+											PlayerGroupStorage.setCurrentGroup(player.uuid, null)
 											source.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.SwitchedToGlobalChat))
 										} else {
-											playerInGroupedChat[player.uuid] = group.id
+											PlayerGroupStorage.setCurrentGroup(player.uuid, group.id.toShortString())
 											source.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.SwitchedToGroupChat, group.name))
 										}
 										1
@@ -368,6 +363,6 @@ object GroupManager {
 					)
 			)
 		}),
-	}
 
+	}
 }
