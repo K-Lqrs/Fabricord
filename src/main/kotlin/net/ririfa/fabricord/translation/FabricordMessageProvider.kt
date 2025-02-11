@@ -16,7 +16,3 @@ class FabricordMessageProvider(val player: ServerPlayerEntity) : MessageProvider
 fun ServerPlayerEntity.adapt(): FabricordMessageProvider {
 	return FabricordMessageProvider(this)
 }
-
-fun FabricordMessageProvider.getAPlayer(): ServerPlayerEntity {
-	return this.player
-}

@@ -5,7 +5,6 @@ import java.lang.reflect.Type
 
 class ShortUUIDTypeAdapter : JsonSerializer<ShortUUID>, JsonDeserializer<ShortUUID> {
 	override fun serialize(src: ShortUUID?, typeOfSrc: Type?, context: JsonSerializationContext?): JsonElement {
-		// ShortUUID → 文字列
 		return JsonPrimitive(src?.toShortString())
 	}
 

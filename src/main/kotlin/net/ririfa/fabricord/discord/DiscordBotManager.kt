@@ -44,7 +44,7 @@ object DiscordBotManager : ListenerAdapter() {
     init {
         logScheduler.scheduleAtFixedRate({
             flushLogQueue()
-        }, 0, 1750, TimeUnit.MILLISECONDS)
+        }, 0, 2000, TimeUnit.MILLISECONDS)
     }
 
     fun init(s: MinecraftServer): MinecraftServer {

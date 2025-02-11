@@ -26,12 +26,12 @@ system:
     loadingGroupFile: "%s からグループデータを読み込んでいます..."
     groupFileSaved: "グループデータを %s に保存しました。"
 
-    groupCreated: "グループを作成しました: '%s' (ID: %s)"
+    groupCreated: "グループを作成しました: '%name' (ID: %id)"
     groupCreatedWithMembers: "グループを作成しました: '%s' (ID: %s)（%s人のメンバーと共に）"
 
     noGroupFoundWithID: "指定されたIDのグループが見つかりません: %s"
     noGroupFoundWithName: "指定された名前のグループが見つかりません: %s"
-    loadedGroups: "${groups.size} 個のグループを読み込みました。"
+    loadedGroups: "%s 個のグループを読み込みました。"
 
     multipleGroupsFound: "同じ名前のグループが複数見つかりました。グループIDを指定してください。"
 
@@ -47,6 +47,8 @@ system:
     joinedToGroup: "グループに参加しました: %s (ID: %s)"
     youAlreadySentRequest: "このグループへの参加リクエストはすでに送信されています。"
     joinRequestSent: "%s に参加リクエストを送信しました。グループのオーナーがリクエストを承認する必要があります。"
+
+    groupedChatMessageBase: "[%s] <%s> %s"
 
   discord:
     botNowOnline: "Botがオンラインになりました。 (%s)"

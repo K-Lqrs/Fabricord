@@ -31,7 +31,7 @@ system:
 
     noGroupFoundWithID: "No group found for ID: %s"
     noGroupFoundWithName: "No group found with name: %s"
-    loadedGroups: "Loaded ${groups.size} groups"
+    loadedGroups: "Loaded %s groups"
 
     multipleGroupsFound: "Multiple groups found with that name. Please specify group ID instead."
 
@@ -47,6 +47,8 @@ system:
     joinedToGroup: "Joined group: %s (ID: %s)"
     youAlreadySentRequest: "You have already requested to join this group."
     joinRequestSent: "Join request sent to %s. The group owner must approve your request."
+
+    groupedChatMessageBase: "[%s] <%s> %s"
 
   discord:
     botNowOnline: "Bot is now online. (%s)"

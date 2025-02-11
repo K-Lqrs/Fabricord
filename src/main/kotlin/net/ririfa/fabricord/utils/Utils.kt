@@ -1,6 +1,5 @@
 package net.ririfa.fabricord.utils
 
-import net.minecraft.network.message.*
 import net.minecraft.server.network.ServerPlayerEntity
 import net.ririfa.fabricord.Fabricord
 import java.io.InputStream
@@ -43,12 +42,8 @@ object Utils {
         return Pair(updatedMessage, mentionedPlayers)
     }
 
-
-    fun createSignedMessage(player: ServerPlayerEntity, message: String): SignedMessage {
-        val messageBody = MessageBody.ofUnsigned(message)
-        val messageLink = MessageLink.of(player.uuid)
-        val messageSignature: MessageSignatureData? = null
-        val filterMask = FilterMask.PASS_THROUGH
-        return SignedMessage(messageLink, messageSignature, messageBody, null, filterMask)
+    @JvmStatic
+    fun getPlayerByUUID(players: List<ServerPlayerEntity>, uuid: String): ServerPlayerEntity? {
+        return players.find { it.uuid.toString() == uuid }
     }
 }
