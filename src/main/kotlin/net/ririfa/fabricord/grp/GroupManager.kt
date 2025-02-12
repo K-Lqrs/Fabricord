@@ -10,13 +10,14 @@ import com.mojang.brigadier.arguments.BoolArgumentType.bool
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.arguments.StringArgumentType.greedyString
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.TextComponent
 import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.event.HoverEvent
 import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import net.minecraft.server.command.CommandManager.argument
-import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.command.CommandManager.literal
+import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.ririfa.fabricord.Fabricord
@@ -146,7 +147,7 @@ object GroupManager {
 		source.sendMessage(Text.Serialization.fromJson(s, server?.registryManager ?: return))
 	}
 
-	enum class Commands(val register: (dispatcher: CommandDispatcher<ServerCommandSource>) -> Unit) {
+	enum class Commands(val register: (dispatcher: CommandDispatcher<ServerCommandSource>) -> Unit,  val help: () -> TextComponent?) {
 		HELP({ dispatcher ->
 			dispatcher.register(
 				literal("grp")
@@ -155,7 +156,7 @@ object GroupManager {
 						1
 					}
 			)
-		}),
+		}, { null }),
 
 		CREATE({ dispatcher ->
 			dispatcher.register(
@@ -228,7 +229,7 @@ object GroupManager {
 							)
 					)
 			)
-		}),
+		}, { null }),
 
 		DELETE({ dispatcher ->
 			dispatcher.register(
@@ -261,7 +262,7 @@ object GroupManager {
 							)
 					)
 			)
-		}),
+		}, { null }),
 
 		SETDEFAULT({ dispatcher ->
 			dispatcher.register(
@@ -296,7 +297,7 @@ object GroupManager {
 							)
 					)
 			)
-		}),
+		}, { null }),
 
 		SWITCH({ dispatcher ->
 			dispatcher.register(
@@ -317,7 +318,12 @@ object GroupManager {
 									val defaultGroup = PlayerGroupStorage.getDefaultGroup(player.uuid)
 									if (defaultGroup != null && groups.any { it.id.toShortString() == defaultGroup }) {
 										PlayerGroupStorage.setCurrentGroup(player.uuid, defaultGroup)
-										source.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.SwitchedToGroupChat, groups.first { it.id.toShortString() == defaultGroup }.name))
+										source.sendMessage(
+											ap.getMessage(
+												FabricordMessageKey.System.GRP.SwitchedToGroupChat,
+												groups.first { it.id.toShortString() == defaultGroup }.name
+											)
+										)
 									} else {
 										source.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.NoDefaultGroupSet))
 									}
@@ -362,7 +368,7 @@ object GroupManager {
 							)
 					)
 			)
-		}),
+		}, { null }),
 
 	}
 }
