@@ -46,6 +46,8 @@ import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.notExists
 
+val Logger = Fabricord.logger
+
 class Fabricord : DedicatedServerModInitializer {
 	companion object {
 		lateinit var instance: Fabricord
@@ -106,7 +108,7 @@ class Fabricord : DedicatedServerModInitializer {
 		langMan = LangMan.createNew(
 			{ Text.of(it) },
 			FabricordMessageKey::class,
-			true
+			false
 		)
 
 		langMan.init(InitType.YAML, langDir, availableLang)
@@ -132,10 +134,8 @@ class Fabricord : DedicatedServerModInitializer {
 
 		initializeIsDone = true
 		logger.info(langMan.getSysMessage(FabricordMessageKey.System.Initialized))
-		if (langMan.isDebug) {
-			availableLang.forEach { lang ->
-				langMan.logMissingKeys(lang)
-			}
+		availableLang.forEach { lang ->
+			langMan.logMissingKeys(lang)
 		}
 	}
 

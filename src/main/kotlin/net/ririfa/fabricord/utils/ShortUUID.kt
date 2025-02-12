@@ -38,6 +38,7 @@ class ShortUUID private constructor(
 		 * @return A new ShortUUID instance.
 		 */
 		fun fromShortString(shortString: String): ShortUUID {
+			isValidShortString(shortString) || throw IllegalArgumentException("Invalid short string")
 			return ShortUUID(null, shortString)
 		}
 

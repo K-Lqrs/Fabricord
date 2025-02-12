@@ -1,17 +1,18 @@
 package net.ririfa.fabricord.discord
 
-import net.ririfa.fabricord.Fabricord
 import net.dv8tion.jda.api.EmbedBuilder
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
+import net.ririfa.fabricord.Fabricord
 import net.ririfa.fabricord.Fabricord.Companion.playerJoinMessage
 import net.ririfa.fabricord.Fabricord.Companion.playerLeaveMessage
+import net.ririfa.fabricord.Logger
 import java.awt.Color
 
 object DiscordEmbed {
     private fun sendEmbedToDiscord(color: Color, author: String? = null, imageUrl: String, channelId: String = Fabricord.logChannelID!!) {
         if (channelId.isBlank()) {
-            Fabricord.logger.error("Channel ID is blank.")
+            Logger.error("Channel ID is blank.")
             return
         }
 

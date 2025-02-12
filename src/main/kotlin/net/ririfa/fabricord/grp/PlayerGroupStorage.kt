@@ -3,6 +3,7 @@ package net.ririfa.fabricord.grp
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import net.ririfa.fabricord.Fabricord
+import net.ririfa.fabricord.Logger
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
@@ -24,7 +25,7 @@ object PlayerGroupStorage {
 				val json = Files.readString(file)
 				data = gson.fromJson(json, object : com.google.gson.reflect.TypeToken<MutableMap<UUID, PlayerGroupInfo>>() {}.type)
 			} catch (e: Exception) {
-				println("Failed to load player group info: ${e.message}")
+				Logger.error("Failed to load player group info: ${e.message}")
 			}
 		}
 	}
@@ -34,7 +35,7 @@ object PlayerGroupStorage {
 			val json = gson.toJson(data)
 			Files.writeString(file, json, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
 		} catch (e: Exception) {
-			println("Failed to save player group info: ${e.message}")
+			Logger.error("Failed to save player group info: ${e.message}")
 		}
 	}
 

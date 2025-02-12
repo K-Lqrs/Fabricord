@@ -4,6 +4,7 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.ririfa.fabricord.Fabricord
+import net.ririfa.fabricord.Logger
 import net.ririfa.fabricord.translation.FabricordMessageKey
 import net.ririfa.fabricord.translation.FabricordMessageProvider
 import net.ririfa.langman.LangMan
@@ -33,12 +34,12 @@ object DiscordPlayerEventHandler {
 
     private fun modernStyle(player: ServerPlayerEntity, message: String) {
         if (Fabricord.webHookId.isNullOrBlank()) {
-            Fabricord.logger.error(lm.getSysMessage(FabricordMessageKey.System.Discord.WebHookUrlNotConfiguredOrBlank))
+            Logger.error(lm.getSysMessage(FabricordMessageKey.System.Discord.WebHookUrlNotConfiguredOrBlank))
         }
 
         try {
             val webHookClient = DiscordBotManager.webHook ?: run {
-                Fabricord.logger.error(lm.getSysMessage(FabricordMessageKey.System.Discord.WebHookUrlNotConfigured))
+                Logger.error(lm.getSysMessage(FabricordMessageKey.System.Discord.WebHookUrlNotConfigured))
                 return
             }
 
@@ -55,7 +56,7 @@ object DiscordPlayerEventHandler {
                 .queue()
 
         } catch (e: Exception) {
-            Fabricord.logger.error(lm.getSysMessage(FabricordMessageKey.System.Discord.ErrorDuringWebHookSend, e.localizedMessage), e)
+            Logger.error(lm.getSysMessage(FabricordMessageKey.System.Discord.ErrorDuringWebHookSend, e.localizedMessage), e)
         }
     }
 }

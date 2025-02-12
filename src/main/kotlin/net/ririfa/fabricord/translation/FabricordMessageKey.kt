@@ -33,16 +33,10 @@ sealed class FabricordMessageKey : MessageKey<FabricordMessageProvider, Text> {
 			object ClickToCopyID : GRP()
 
 			object GroupCreated : GRP()
-			object GroupCreatedWithMembers : GRP()
 
-			object NoGroupFoundWithID : GRP()
-			object NoGroupFoundWithName : GRP()
 			object LoadedGroups : GRP()
 
 			object MultipleGroupsFound : GRP()
-
-			object PlayerNotFound : GRP()
-			object GroupFileNotFound : GRP()
 
 			object FailedToLoadGroupFile : GRP()
 			object FailedToSaveGroupFile : GRP()
@@ -50,17 +44,6 @@ sealed class FabricordMessageKey : MessageKey<FabricordMessageProvider, Text> {
 
 			object SwitchedToGroupChat : GRP()
 			object SwitchedToGlobalChat : GRP()
-			object NotMemberOfGroup : GRP()
-			object NoPendingRequests : GRP()
-			object NoPendingRequestsOverall : GRP()
-			object NoOwnedGroups : GRP()
-			object NoPendingRequestsForPlayer : GRP()
-			object JoinRequestApproved : GRP()
-			object JoinRequestDenied : GRP()
-			object YouAreAlreadyMember : GRP()
-			object JoinedToGroup : GRP()
-			object YouAlreadySentRequest : GRP()
-			object JoinRequestSent : GRP()
 			object DefaultGroupSet : GRP()
 			object GroupNotFound : GRP()
 			object GroupDeleted : GRP()

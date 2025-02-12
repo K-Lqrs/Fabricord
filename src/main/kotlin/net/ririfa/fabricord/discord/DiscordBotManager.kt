@@ -17,6 +17,7 @@ import net.minecraft.text.Text
 import net.ririfa.fabricord.Fabricord
 import net.ririfa.fabricord.Fabricord.Companion.consoleLogChannelID
 import net.ririfa.fabricord.Fabricord.Companion.executorService
+import net.ririfa.fabricord.Logger
 import net.ririfa.fabricord.translation.FabricordMessageKey
 import net.ririfa.fabricord.translation.FabricordMessageProvider
 import net.ririfa.langman.LangMan
@@ -76,20 +77,20 @@ object DiscordBotManager : ListenerAdapter() {
                 jda?.updateCommands()
 
                 botIsInitialized = true
-                Fabricord.logger.info(lm.getSysMessage(FabricordMessageKey.System.Discord.BotNowOnline, jda?.selfUser?.name ?: "Bot"))
+                Logger.info(lm.getSysMessage(FabricordMessageKey.System.Discord.BotNowOnline, jda?.selfUser?.name ?: "Bot"))
                 Fabricord.serverStartMessage?.let { sendToDiscord(it) }
 
                 if (Fabricord.messageStyle == "modern") {
                     if (!Fabricord.webHookId.isNullOrBlank()) {
                         webHook = jda?.retrieveWebhookById(Fabricord.webHookId!!)?.complete()
                     } else {
-                        Fabricord.logger.error(lm.getSysMessage(FabricordMessageKey.System.Discord.WebHookUrlNotConfigured))
+                        Logger.error(lm.getSysMessage(FabricordMessageKey.System.Discord.WebHookUrlNotConfigured))
                     }
                 }
             } catch (e: LoginException) {
-                Fabricord.logger.error(lm.getSysMessage(FabricordMessageKey.System.Discord.FailedToStartBotByLoginExc), e)
+                Logger.error(lm.getSysMessage(FabricordMessageKey.System.Discord.FailedToStartBotByLoginExc), e)
             } catch (e: Exception) {
-                Fabricord.logger.error(lm.getSysMessage(FabricordMessageKey.System.Discord.FailedToStartBotByUnknown), e)
+                Logger.error(lm.getSysMessage(FabricordMessageKey.System.Discord.FailedToStartBotByUnknown), e)
             }
         }
     }
@@ -97,12 +98,12 @@ object DiscordBotManager : ListenerAdapter() {
     fun stopBot() {
         if (botIsInitialized) {
             Fabricord.serverStopMessage?.let { sendToDiscord(it) }
-            Fabricord.logger.info(lm.getSysMessage(FabricordMessageKey.System.Discord.BotNowOffline))
+            Logger.info(lm.getSysMessage(FabricordMessageKey.System.Discord.BotNowOffline))
             jda?.shutdown()
             botIsInitialized = false
             logScheduler.shutdownNow()
         } else {
-            Fabricord.logger.error(lm.getSysMessage(FabricordMessageKey.System.Discord.DiscordBotIsNotInitialized))
+            Logger.error(lm.getSysMessage(FabricordMessageKey.System.Discord.DiscordBotIsNotInitialized))
         }
     }
 
@@ -136,7 +137,7 @@ object DiscordBotManager : ListenerAdapter() {
 
     private val discordListener = object : ListenerAdapter() {
         override fun onMessageReceived(event: MessageReceivedEvent) {
-            val server = server ?: return Fabricord.logger.error(
+            val server = server ?: return Logger.error(
                 // MinecraftServerNotInitialized + CantProcessMessage
                 lm.getSysMessage(FabricordMessageKey.System.Discord.MinecraftServerNotInitialized,
                     lm.getSysMessage(FabricordMessageKey.System.Discord.CantProcessMessage)))
@@ -165,7 +166,7 @@ object DiscordBotManager : ListenerAdapter() {
         val discordUserLang = event.userLocale.locale
 
         val server = server ?: run {
-            Fabricord.logger.error(
+            Logger.error(
                 // MinecraftServerNotInitialized + CantProcessCommand
                 lm.getSysMessage(FabricordMessageKey.System.Discord.MinecraftServerNotInitialized,
                     lm.getSysMessage(FabricordMessageKey.System.Discord.CantProcessCommand)))

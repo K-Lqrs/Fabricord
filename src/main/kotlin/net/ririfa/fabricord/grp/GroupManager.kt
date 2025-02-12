@@ -45,7 +45,6 @@ object GroupManager {
 	internal val groups = mutableListOf<Group>()
 	@JvmField
 	val playerInGroupedChat = mutableMapOf<UUID, ShortUUID>()
-	val playerDefaultGroup = mutableMapOf<UUID, ShortUUID?>()
 
 	private val gson: Gson = GsonBuilder()
 		.registerTypeAdapter(UUID::class.java, UUIDTypeAdapter())
@@ -112,42 +111,24 @@ object GroupManager {
 		return server?.playerManager?.playerList?.firstOrNull { it.name.string.equals(name, ignoreCase = true) }
 	}
 
-	fun joinGroup(player: ServerPlayerEntity, group: Group, source: ServerCommandSource) {
-		val ap = player.adapt()
-		if (group.members.contains(player.uuid)) {
-			source.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.YouAreAlreadyMember))
-			return
-		}
-
-		if (group.open) {
-			group.members.add(player.uuid)
-			source.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.JoinedToGroup, group.name, group.id))
-		} else {
-			if (group.joinRequests.contains(player.uuid)) {
-				source.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.YouAlreadySentRequest))
-			} else {
-				group.joinRequests.add(player.uuid)
-				source.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.JoinRequestSent, group.name))
-			}
-		}
-	}
-
 	fun showHelp(source: ServerCommandSource) {
 		var msg = Component.text("Group commands:")
-			.appendNewline()
-			.append(Component.text("/grp create <groupName> [<players...>]"))
-			.appendNewline()
-			.append(Component.text("/grp join <groupNameOrID>"))
-			.appendNewline()
-			.append(Component.text("/grp del <groupNameOrID>"))
-			.appendNewline()
+		for (cmd in Commands.entries) {
+			val help = cmd.help()
+			if (help != null) {
+				msg = msg.append(Component.newline())
+					.append(Component.text("/grp ${cmd.name.lowercase()}", TextColor.color(0x55CDFC)))
+					.append(Component.text(" - "))
+					.append(help)
+			}
+		}
 
 
 		val s = GsonComponentSerializer.gson().serialize(msg)
 		source.sendMessage(Text.Serialization.fromJson(s, server?.registryManager ?: return))
 	}
 
-	enum class Commands(val register: (dispatcher: CommandDispatcher<ServerCommandSource>) -> Unit,  val help: () -> TextComponent?) {
+	enum class Commands(val register: (dispatcher: CommandDispatcher<ServerCommandSource>) -> Unit, val help: () -> TextComponent?) {
 		HELP({ dispatcher ->
 			dispatcher.register(
 				literal("grp")
@@ -167,7 +148,7 @@ object GroupManager {
 								argument("groupName", StringArgumentType.string())
 									.then(
 										argument("isOpen", bool())
-											.executes { // ← ここでメンバーなしの場合を処理
+											.executes {
 												val source = it.source
 												val player = source.player ?: run {
 													source.sendMessage(Text.of("You must be a player to use this command"))
@@ -183,7 +164,7 @@ object GroupManager {
 												var rawMessage: Component = Component.text(ap.getRawMessage(FabricordMessageKey.System.GRP.GroupCreated))
 
 												val idComponent = Component.text(group.id.toShortString(), TextColor.color(0x55CDFC))
-													.clickEvent(ClickEvent.suggestCommand(group.id.toShortString()))
+													.clickEvent(ClickEvent.copyToClipboard(group.id.toShortString()))
 													.hoverEvent(HoverEvent.showText(Component.text(ap.getRawMessage(FabricordMessageKey.System.GRP.ClickToCopyID))))
 
 												rawMessage = rawMessage.replaceText { builder ->
@@ -246,14 +227,13 @@ object GroupManager {
 										}
 										val ap = player.adapt()
 										val nameOrID = it.getArgument("groupNameOrID", String::class.java)
-										val group = try {
-											getGroupById(ShortUUID.fromString(nameOrID))
-										} catch (e: Exception) {
-											null
-										} ?: getGroupsByName(nameOrID).firstOrNull()
-										if (group == null) {
-											source.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.GroupNotFound, nameOrID))
-											return@executes 0
+										val group = getGroupById(ShortUUID.fromShortString(nameOrID)) ?: run {
+											val groups = getGroupsByName(nameOrID)
+											if (groups.size > 1) {
+												source.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.MultipleGroupsFound, nameOrID))
+												return@executes 0
+											}
+											groups.first()
 										}
 										deleteGroup(group.id)
 										source.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.GroupDeleted, group.name, group.id))
@@ -279,14 +259,13 @@ object GroupManager {
 										}
 										val ap = player.adapt()
 										val nameOrID = it.getArgument("groupNameOrID", String::class.java)
-										val group = try {
-											getGroupById(ShortUUID.fromString(nameOrID))
-										} catch (_: Exception) {
-											null
-										} ?: getGroupsByName(nameOrID).firstOrNull()
-										if (group == null) {
-											source.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.GroupNotFound, nameOrID))
-											return@executes 0
+										val group = getGroupById(ShortUUID.fromShortString(nameOrID)) ?: run {
+											val groups = getGroupsByName(nameOrID)
+											if (groups.size > 1) {
+												source.sendMessage(ap.getMessage(FabricordMessageKey.System.GRP.MultipleGroupsFound, nameOrID))
+												return@executes 0
+											}
+											groups.first()
 										}
 
 										PlayerGroupStorage.setDefaultGroup(player.uuid, group.id.toShortString())
@@ -314,7 +293,6 @@ object GroupManager {
 
 								val currentGroup = PlayerGroupStorage.getCurrentGroup(player.uuid)
 								if (currentGroup == null) {
-									// グローバル → デフォルトグループに切り替え
 									val defaultGroup = PlayerGroupStorage.getDefaultGroup(player.uuid)
 									if (defaultGroup != null && groups.any { it.id.toShortString() == defaultGroup }) {
 										PlayerGroupStorage.setCurrentGroup(player.uuid, defaultGroup)

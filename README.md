@@ -1,3 +1,5 @@
+**We are very sorry, the implementation of the functionality has been delayed. We apologise for any inconvenience this may cause to our users.**
+
 # Fabricord
 A modern message style like DiscordSRV will be reproduced as a Fabric version mod.
 
