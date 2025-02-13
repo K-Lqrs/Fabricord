@@ -14,6 +14,8 @@ import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
 import kotlin.io.path.exists
 
 class Fabricord : DedicatedServerModInitializer {
@@ -29,6 +31,8 @@ class Fabricord : DedicatedServerModInitializer {
 		val serverDir: Path = loader.gameDir
 		val modDir: Path = serverDir.resolve(MOD_ID)
 		val langDir: Path = modDir.resolve("lang")
+
+		val thread: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
 	}
 
 	override fun onInitializeServer() {

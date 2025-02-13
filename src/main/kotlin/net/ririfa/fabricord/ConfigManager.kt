@@ -1,6 +1,6 @@
 package net.ririfa.fabricord
 
-import net.ririfa.fabricord.annotations.Needed
+import net.ririfa.fabricord.annotations.Required
 import net.ririfa.fabricord.util.copyResourceToFile
 import net.ririfa.fabricord.util.toBooleanOrNull
 import org.yaml.snakeyaml.Yaml
@@ -12,6 +12,8 @@ import java.nio.file.Path
 import kotlin.io.path.notExists
 
 object ConfigManager {
+	lateinit var parsedConfig: Map<String, Any>
+
 	lateinit var configFile: Path
 	lateinit var config: Config
 	val yaml = Yaml()
@@ -27,12 +29,15 @@ object ConfigManager {
 	}
 
 	inline fun <reified T> lc(key: String): T? {
-		validateConfigFileProp()
-
-		val config: Map<String, Any> = Files.newInputStream(configFile).use { yaml.load(it) }
-
-		val value = resolveNestedKey(config, key)
+		reloadConfig()
+		val value = resolveNestedKey(parsedConfig, key)
 		return parseValue(value)
+	}
+
+	fun reloadConfig(force: Boolean = false) {
+		if (force || !::parsedConfig.isInitialized) {
+			parsedConfig = Files.newInputStream(configFile).use { yaml.load(it) }
+		}
 	}
 
 	// >==================== Helpers ====================< \\
@@ -71,31 +76,20 @@ object ConfigManager {
 
 	inline fun <reified T> parseValue(value: Any?): T? {
 		return when (T::class) {
-			String::class -> value as? T
+			String::class -> value?.toString() as? T
 			Int::class -> value?.toString()?.toIntOrNull() as? T
 			Boolean::class -> value?.toString()?.toBooleanOrNull() as? T
 			Double::class -> value?.toString()?.toDoubleOrNull() as? T
 			Short::class -> value?.toString()?.toShortOrNull() as? T
 			Long::class -> value?.toString()?.toLongOrNull() as? T
 			Float::class -> value?.toString()?.toFloatOrNull() as? T
-
-			// There is a special type! :D
 			Byte::class -> value?.toString()?.toByteOrNull() as? T
 			Char::class -> (value as? String)?.singleOrNull() as? T
-			List::class -> value as? List<*> as? T
-			Array<String>::class -> (value as? List<*>)?.filterIsInstance<String>()?.toTypedArray() as? T
-			Array<Int>::class -> (value as? List<*>)?.filterIsInstance<Int>()?.toTypedArray() as? T
-			Array<Double>::class -> (value as? List<*>)?.filterIsInstance<Double>()?.toTypedArray() as? T
-			Map::class -> value as? Map<*, *> as? T
-			BigInteger::class -> (value?.toString())?.let { BigInteger(it) } as? T
-			BigDecimal::class -> (value?.toString())?.let { BigDecimal(it) } as? T
+			BigInteger::class -> value?.toString()?.let { BigInteger(it) } as? T
+			BigDecimal::class -> value?.toString()?.let { BigDecimal(it) } as? T
+			List::class -> (value as? List<*>)?.filterIsInstance<T>() as? T
+			Set::class -> (value as? List<*>)?.filterIsInstance<T>()?.toSet() as? T
 			else -> value as? T
-		}
-	}
-
-	fun validateConfigFileProp() {
-		if (!::configFile.isInitialized) {
-			throw IllegalStateException("Config file is not initialized.")
 		}
 	}
 
@@ -105,7 +99,7 @@ object ConfigManager {
 		val fields = clazz.declaredFields
 
 		for (field in fields) {
-			if (field.isAnnotationPresent(Needed::class.java)) {
+			if (field.isAnnotationPresent(Required::class.java)) {
 				field.isAccessible = true
 				val value = field.get(config)
 				if (value == null) {
@@ -117,8 +111,8 @@ object ConfigManager {
 
 	// >================================================< \\
 	data class Config(
-		@Needed val botToken: String,
-		@Needed val logChannelID: String,
+		@Required val botToken: String,
+		@Required val logChannelID: String,
 
 		var botActivityMessage: String? = null,
 		var botActivityStatus: String? = null,
@@ -129,6 +123,11 @@ object ConfigManager {
 		var serverStopMessage: String? = null,
 		var playerJoinMessage: String? = null,
 		var playerLeaveMessage: String? = null,
+
+		var allowMentions: Boolean? = true,
+		var useUserPermissionForMentions: Boolean? = false,
+		var mentionBlockedUserID: Set<String> = emptySet(),
+		var mentionBlockedRoleID: Set<String> = emptySet(),
 	) {
 		fun nullCheck() {
 			if (botActivityMessage.isNullOrBlank()) botActivityMessage = "Minecraft Server"
@@ -143,6 +142,7 @@ object ConfigManager {
 	}
 }
 
+// This is a wrapper function for ConfigManager.lc<T>(key)
 inline fun <reified T> lc(key: String): T? {
 	return ConfigManager.lc<T>(key)
 }

@@ -23,3 +23,9 @@ fun copyResourceToFile(resourcePath: String, outputPath: Path) {
 	Files.copy(inputStream, outputPath)
 	Fabricord.logger.info("Copied resource $fullPath to $outputPath")
 }
+
+fun extractWebhookIdFromUrl(url: String?): String? {
+	val regex = Regex("https://discord.com/api/webhooks/([0-9]+)/[a-zA-Z0-9_-]+")
+	val matchResult = url?.let { regex.find(it) }
+	return matchResult?.groupValues?.get(1)
+}

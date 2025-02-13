@@ -1,0 +1,7 @@
+Discord:
+  Config:
+    LogChannelIDIsBlank: "メインログを出力するチャンネルIDが空です。"
+
+Exception:
+  Config:
+    WebHookUrlIsNotConfiguredOrInvalid: "Webhook URLが、Configファイル(%s)内で定義されていないか、無効です。"

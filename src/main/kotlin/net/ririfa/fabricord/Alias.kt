@@ -5,6 +5,7 @@ import net.minecraft.server.MinecraftServer
 import net.ririfa.fabricord.discord.DiscordBotManager
 import org.slf4j.Logger
 import java.nio.file.Path
+import java.util.concurrent.TimeUnit
 
 val JDA = DiscordBotManager.jda
 	get() {
@@ -22,3 +23,13 @@ val ServerDir: Path = Fabricord.serverDir
 val ModDir: Path = Fabricord.modDir
 val ConfigDir: Path = ConfigManager.configFile
 val Config = ConfigManager.config
+val T = Fabricord.thread
+
+@Suppress("FunctionName")
+inline fun FT(delay: Long = 0, period: Long = -1, unit: TimeUnit = TimeUnit.MILLISECONDS, crossinline task: () -> Unit) {
+	if (period > 0) {
+		T.scheduleAtFixedRate({ task() }, delay, period, unit)
+	} else {
+		T.schedule({ task() }, delay, unit)
+	}
+}

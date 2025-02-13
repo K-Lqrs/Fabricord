@@ -9,4 +9,10 @@ sealed class FabricordMessageKey : MessageKey<FabricordMessageProvider, Text> {
 			object LogChannelIDIsBlank : Config()
 		}
 	}
+
+	sealed class Exception : FabricordMessageKey() {
+		sealed class Config : Exception() {
+			object WebHookUrlIsNotConfiguredOrInvalid : Config()
+		}
+	}
 }
