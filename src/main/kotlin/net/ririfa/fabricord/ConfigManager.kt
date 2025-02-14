@@ -115,8 +115,8 @@ object ConfigManager {
 			}
 
 			config = Config(
-				botToken = lc<String>("bot.token"),
-				logChannelID = lc<String>("bot.logChannelID"),
+				botToken = lc<String>("bot.token") ?: "",
+				logChannelID = lc<String>("bot.logChannelID") ?: "",
 				botActivityMessage = lc("bot.activityMessage"),
 				botActivityStatus = lc("bot.activityStatus"),
 				botOnlineStatus = lc("bot.onlineStatus"),
@@ -143,8 +143,8 @@ object ConfigManager {
 
 	// >================================================< \\
 	data class Config(
-		@Required val botToken: String?,
-		@Required val logChannelID: String?,
+		@Required val botToken: String,
+		@Required val logChannelID: String,
 
 		var botActivityMessage: String? = null,
 		var botActivityStatus: String? = null,
