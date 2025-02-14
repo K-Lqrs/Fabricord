@@ -21,11 +21,7 @@ object ConfigManager {
 		checkRequiredFilesAndDirectories()
 		reloadConfig()
 		loadConfig()
-	}
-
-	fun validate() {
-		checkRequiredConfig()
-		config.nullCheck()
+		validate()
 	}
 
 	inline fun <reified T> lc(key: String): T? {
@@ -40,6 +36,11 @@ object ConfigManager {
 	}
 
 	// >==================== Helpers ====================< \\
+
+	private fun validate() {
+		checkRequiredConfig()
+		config.nullCheck()
+	}
 
 	private fun checkRequiredFilesAndDirectories() {
 		try {
