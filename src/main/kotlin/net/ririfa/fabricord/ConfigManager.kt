@@ -13,23 +13,22 @@ import kotlin.io.path.notExists
 
 object ConfigManager {
 	lateinit var parsedConfig: Map<String, Any>
-
-	lateinit var configFile: Path
 	lateinit var config: Config
 	val yaml = Yaml()
+	val configFile: Path = ModDir.resolve("config.yml")
 
-	fun init(config: Config) {
-		this.config = config
+	fun init() {
 		checkRequiredFilesAndDirectories()
+		reloadConfig()
+		loadConfig()
 	}
 
 	fun validate() {
-		checkNeededConfig()
+		checkRequiredConfig()
 		config.nullCheck()
 	}
 
 	inline fun <reified T> lc(key: String): T? {
-		reloadConfig()
 		val value = resolveNestedKey(parsedConfig, key)
 		return parseValue(value)
 	}
@@ -93,7 +92,7 @@ object ConfigManager {
 		}
 	}
 
-	private fun checkNeededConfig() {
+	private fun checkRequiredConfig() {
 		val config = config
 		val clazz = config::class.java
 		val fields = clazz.declaredFields
@@ -109,10 +108,43 @@ object ConfigManager {
 		}
 	}
 
+	private fun loadConfig() {
+		try {
+			if (!::parsedConfig.isInitialized) {
+				throw IllegalStateException("parsedConfig is not initialized. Call reloadConfig() first.")
+			}
+
+			config = Config(
+				botToken = lc<String>("bot.token"),
+				logChannelID = lc<String>("bot.logChannelID"),
+				botActivityMessage = lc("bot.activityMessage"),
+				botActivityStatus = lc("bot.activityStatus"),
+				botOnlineStatus = lc("bot.onlineStatus"),
+				messageStyle = lc("bot.messageStyle"),
+				webHookUrl = lc("bot.webHookUrl"),
+				serverStartMessage = lc("messages.serverStart"),
+				serverStopMessage = lc("messages.serverStop"),
+				playerJoinMessage = lc("messages.playerJoin"),
+				playerLeaveMessage = lc("messages.playerLeave"),
+				allowMentions = lc("mentions.allowMentions"),
+				useUserPermissionForMentions = lc("mentions.useUserPermissionForMentions"),
+				mentionBlockedUserID = lc("mentions.blockedUserIDs"),
+				mentionBlockedRoleID = lc("mentions.blockedRoleIDs"),
+				enableConsoleLog = lc("logging.enableConsoleLog"),
+				consoleLogChannelID = lc("logging.consoleLogChannelID")
+			)
+
+			checkRequiredConfig()
+
+		} catch (e: Exception) {
+			Logger.error("Failed to load config: ${e.message}", e)
+		}
+	}
+
 	// >================================================< \\
 	data class Config(
-		@Required val botToken: String,
-		@Required val logChannelID: String,
+		@Required val botToken: String?,
+		@Required val logChannelID: String?,
 
 		var botActivityMessage: String? = null,
 		var botActivityStatus: String? = null,
@@ -126,8 +158,11 @@ object ConfigManager {
 
 		var allowMentions: Boolean? = true,
 		var useUserPermissionForMentions: Boolean? = false,
-		var mentionBlockedUserID: Set<String> = emptySet(),
-		var mentionBlockedRoleID: Set<String> = emptySet(),
+		var mentionBlockedUserID: Set<String>? = emptySet(),
+		var mentionBlockedRoleID: Set<String>? = emptySet(),
+
+		var enableConsoleLog: Boolean? = true,
+		var consoleLogChannelID: String? = null,
 	) {
 		fun nullCheck() {
 			if (botActivityMessage.isNullOrBlank()) botActivityMessage = "Minecraft Server"
@@ -138,11 +173,14 @@ object ConfigManager {
 			if (serverStopMessage.isNullOrBlank()) serverStopMessage = ":octagonal_sign: **Server has stopped!**"
 			if (playerJoinMessage.isNullOrBlank()) playerJoinMessage = "%player% joined the server"
 			if (playerLeaveMessage.isNullOrBlank()) playerLeaveMessage = "%player% left the server"
+
+			if (allowMentions == null) allowMentions = true
+			if (useUserPermissionForMentions == null) useUserPermissionForMentions = false
+			if (mentionBlockedUserID == null) mentionBlockedUserID = emptySet()
+			if (mentionBlockedRoleID == null) mentionBlockedRoleID = emptySet()
+
+			if (enableConsoleLog == null) enableConsoleLog = true
+			if (consoleLogChannelID.isNullOrBlank()) consoleLogChannelID = "0"
 		}
 	}
-}
-
-// This is a wrapper function for ConfigManager.lc<T>(key)
-inline fun <reified T> lc(key: String): T? {
-	return ConfigManager.lc<T>(key)
 }

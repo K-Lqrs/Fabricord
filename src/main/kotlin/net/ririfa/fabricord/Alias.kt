@@ -5,6 +5,7 @@ import net.minecraft.server.MinecraftServer
 import net.ririfa.fabricord.discord.DiscordBotManager
 import org.slf4j.Logger
 import java.nio.file.Path
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 val JDA = DiscordBotManager.jda
@@ -26,10 +27,22 @@ val Config = ConfigManager.config
 val T = Fabricord.thread
 
 @Suppress("FunctionName")
-inline fun FT(delay: Long = 0, period: Long = -1, unit: TimeUnit = TimeUnit.MILLISECONDS, crossinline task: () -> Unit) {
+inline fun FT(
+	delay: Long = 0,
+	period: Long = -1,
+	unit: TimeUnit = TimeUnit.MILLISECONDS,
+	newThread: Boolean = false,
+	crossinline task: () -> Unit
+) {
+	val executor = if (newThread) Executors.newSingleThreadScheduledExecutor() else T
+
 	if (period > 0) {
-		T.scheduleAtFixedRate({ task() }, delay, period, unit)
+		executor.scheduleAtFixedRate({ task() }, delay, period, unit)
 	} else {
-		T.schedule({ task() }, delay, unit)
+		executor.schedule({ task() }, delay, unit)
+	}
+
+	if (newThread && period <= 0) {
+		executor.shutdown()
 	}
 }

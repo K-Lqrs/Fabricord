@@ -32,7 +32,7 @@ class Fabricord : DedicatedServerModInitializer {
 		val modDir: Path = serverDir.resolve(MOD_ID)
 		val langDir: Path = modDir.resolve("lang")
 
-		val thread: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
+		val thread: ScheduledExecutorService = Executors.newScheduledThreadPool(2)
 	}
 
 	override fun onInitializeServer() {

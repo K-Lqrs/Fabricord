@@ -1,5 +1,6 @@
 package net.ririfa.fabricord
 
+import net.ririfa.fabricord.discord.DiscordBotManager
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.core.LogEvent
 import org.apache.logging.log4j.core.appender.AbstractAppender
@@ -20,34 +21,19 @@ class ConsoleTrackerAppender(name: String) : AbstractAppender(name, null, Patter
 			safeMessage = "\u200B$safeMessage\u200B"
 		}
 
-		when (level) {
-			Level.INFO, Level.WARN ->
-
-				//
-				"""
-            ```
-            $safeMessage
-            ```
-            """.trimIndent()
-			//
+		val formattedMessage = when (level) {
+			Level.INFO, Level.WARN -> "```\n$safeMessage\n```"
 
 			Level.ERROR -> {
 				val errorMessage = safeMessage
 					.lineSequence()
 					.joinToString("\n") { "- $it" }
-
-				//
-				"""
-            ```diff
-            $errorMessage
-            ```
-            """.trimIndent()
-				//
+				"```diff\n$errorMessage\n```"
 			}
 
 			else -> return
 		}
 
-		// DiscordBotManager.sendToDiscordConsole(formattedMessage)
+		DiscordBotManager.sendToDiscordConsole(formattedMessage)
 	}
 }
