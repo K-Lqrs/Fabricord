@@ -2,7 +2,10 @@ package net.ririfa.fabricord
 
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.server.MinecraftServer
+import net.minecraft.text.Text
 import net.ririfa.fabricord.discord.DiscordBotManager
+import net.ririfa.fabricord.translation.FabricordMessageProvider
+import net.ririfa.langman.LangMan
 import org.slf4j.Logger
 import java.nio.file.Path
 import java.util.concurrent.Executors
@@ -16,14 +19,14 @@ val JDA = DiscordBotManager.jda
 		return field
 	}
 val FC = Fabricord.instance
-val LM = Fabricord.langMan
+val LM: LangMan<FabricordMessageProvider, Text> by lazy { Fabricord.langMan }
 val Logger: Logger = Fabricord.logger
-val Server: MinecraftServer = Fabricord.server
+val Server: MinecraftServer by lazy { Fabricord.server }
 val Loader: FabricLoader = Fabricord.loader
 val ServerDir: Path = Fabricord.serverDir
 val ModDir: Path = Fabricord.modDir
 val ConfigDir: Path = ConfigManager.configFile
-val Config = ConfigManager.config
+val Config: ConfigManager.Config by lazy { ConfigManager.config }
 val T = Fabricord.thread
 
 @Suppress("FunctionName")

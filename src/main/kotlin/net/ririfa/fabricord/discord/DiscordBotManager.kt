@@ -12,7 +12,6 @@ import net.dv8tion.jda.api.requests.GatewayIntent
 import net.minecraft.server.network.ServerPlayerEntity
 import net.ririfa.fabricord.*
 import net.ririfa.fabricord.translation.FabricordMessageKey
-import net.ririfa.fabricord.util.extractWebhookIdFromUrl
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.TimeUnit
@@ -59,7 +58,6 @@ object DiscordBotManager {
 				botIsInitialized = true
 				Logger.info(LM.getSysMessage(TODO(), jda?.selfUser?.name ?: "Bot"))
 				Config.serverStartMessage?.let { sendToDiscord(it) }
-
 			} catch (e: LoginException) {
 				Logger.error(TODO())
 			} catch (e: Exception) {
@@ -130,7 +128,7 @@ object DiscordBotManager {
 
 	private fun validateConfigForModern(): Boolean {
 		if (Config.messageStyle == "modern") {
-			val id = extractWebhookIdFromUrl(Config.webHookUrl)
+			val id = Config.webHookId
 
 			return if (!id.isNullOrBlank()) {
 				jda?.retrieveWebhookById(id)?.queue { webhook ->

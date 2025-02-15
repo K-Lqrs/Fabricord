@@ -1,7 +1,9 @@
 package net.ririfa.fabricord
 
 import net.ririfa.fabricord.annotations.Required
+import net.ririfa.fabricord.translation.FabricordMessageKey
 import net.ririfa.fabricord.util.copyResourceToFile
+import net.ririfa.fabricord.util.extractWebhookIdFromUrl
 import net.ririfa.fabricord.util.toBooleanOrNull
 import org.yaml.snakeyaml.Yaml
 import java.io.IOException
@@ -10,6 +12,7 @@ import java.math.BigInteger
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.notExists
+import kotlin.reflect.full.memberProperties
 
 object ConfigManager {
 	lateinit var parsedConfig: Map<String, Any>
@@ -45,7 +48,7 @@ object ConfigManager {
 	private fun checkRequiredFilesAndDirectories() {
 		try {
 			if (!Files.exists(ModDir)) {
-				Logger.info(LM.getSysMessage(TODO(), ModDir))
+				Logger.info(LM.getSysMessage(FabricordMessageKey.System.Initialization.DirectoriesAndFiles.ModDirDoesNotExist, ModDir))
 				Files.createDirectories(ModDir)
 			}
 			if (configFile.notExists()) {
@@ -94,16 +97,16 @@ object ConfigManager {
 	}
 
 	private fun checkRequiredConfig() {
-		val config = config
-		val clazz = config::class.java
-		val fields = clazz.declaredFields
+		val clazz = config::class
+		val properties = clazz.memberProperties
 
-		for (field in fields) {
-			if (field.isAnnotationPresent(Required::class.java)) {
-				field.isAccessible = true
-				val value = field.get(config)
-				if (value == null) {
-					throw IllegalStateException("Field ${field.name} is needed but not initialized.")
+		Logger.debug("Found ${properties.size} properties in Config class.")
+
+		for (property in properties) {
+			if (property.annotations.any { it is Required }) {
+				val value = property.getter.call(config) as? String
+				if (value.isNullOrBlank()) {
+					throw IllegalStateException("Property ${property.name} is needed but not initialized.")
 				}
 			}
 		}
@@ -122,7 +125,7 @@ object ConfigManager {
 				botActivityStatus = lc("bot.activityStatus"),
 				botOnlineStatus = lc("bot.onlineStatus"),
 				messageStyle = lc("bot.messageStyle"),
-				webHookUrl = lc("bot.webHookUrl"),
+				webHookId = extractWebhookIdFromUrl(lc("bot.webHookUrl")),
 				serverStartMessage = lc("messages.serverStart"),
 				serverStopMessage = lc("messages.serverStop"),
 				playerJoinMessage = lc("messages.playerJoin"),
@@ -134,9 +137,6 @@ object ConfigManager {
 				enableConsoleLog = lc("logging.enableConsoleLog"),
 				consoleLogChannelID = lc("logging.consoleLogChannelID")
 			)
-
-			checkRequiredConfig()
-
 		} catch (e: Exception) {
 			Logger.error("Failed to load config: ${e.message}", e)
 		}
@@ -151,7 +151,7 @@ object ConfigManager {
 		var botActivityStatus: String? = null,
 		var botOnlineStatus: String? = null,
 		var messageStyle: String? = null,
-		val webHookUrl: String? = null,
+		val webHookId: String? = null,
 		var serverStartMessage: String? = null,
 		var serverStopMessage: String? = null,
 		var playerJoinMessage: String? = null,

@@ -1,6 +1,7 @@
 package net.ririfa.fabricord
 
 import net.fabricmc.api.DedicatedServerModInitializer
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
@@ -9,6 +10,7 @@ import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.ririfa.fabricord.discord.DiscordBotManager
 import net.ririfa.fabricord.discord.DiscordEmbed
+import net.ririfa.fabricord.discord.DiscordPlayerEventHandler.handleMCMessage
 import net.ririfa.fabricord.translation.FabricordMessageKey
 import net.ririfa.fabricord.translation.FabricordMessageProvider
 import net.ririfa.fabricord.translation.adapt
@@ -23,7 +25,6 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
-import kotlin.io.path.exists
 
 class Fabricord : DedicatedServerModInitializer {
 	companion object {
@@ -62,7 +63,18 @@ class Fabricord : DedicatedServerModInitializer {
 
 	private fun extractLangFiles() {
 		try {
-			val langPath = "assets/fabricord/lang/"
+			val targetDir = Paths.get("$ModDir/lang")
+			if (!Files.exists(targetDir)) {
+				Files.createDirectories(targetDir)
+			}
+
+			val devSourceDir = Paths.get("build/resources/main/assets/$MOD_ID/lang")
+			if (Files.exists(devSourceDir)) {
+				copyLanguageFiles(devSourceDir, targetDir)
+				return
+			}
+
+			val langPath = "assets/$MOD_ID/lang/"
 			val classLoader = this::class.java.classLoader
 			val resourceUrl = classLoader.getResource(langPath)
 
@@ -75,18 +87,22 @@ class Fabricord : DedicatedServerModInitializer {
 			val fs = if (uri.scheme == "jar") FileSystems.newFileSystem(uri, emptyMap<String, Any>()) else null
 			val langDirPath = Paths.get(uri)
 
-			Files.walk(langDirPath).use { paths ->
-				paths.filter { Files.isRegularFile(it) && it.toString().endsWith(".yml") }.forEach { resourceFile ->
-					val targetFile = langDir.resolve(resourceFile.fileName.toString())
-					if (!targetFile.exists()) {
-						Files.copy(resourceFile, targetFile)
-					}
-				}
-			}
+			copyLanguageFiles(langDirPath, targetDir)
 
 			fs?.close()
 		} catch (e: Exception) {
 			logger.error("Failed to extract language files", e)
+		}
+	}
+
+	private fun copyLanguageFiles(sourceDir: Path, targetDir: Path) {
+		Files.walk(sourceDir).use { paths ->
+			paths.filter { Files.isRegularFile(it) && it.toString().endsWith(".yml") }.forEach { resourceFile ->
+				val targetFile = targetDir.resolve(resourceFile.fileName.toString())
+				if (!Files.exists(targetFile)) {
+					Files.copy(resourceFile, targetFile)
+				}
+			}
 		}
 	}
 
@@ -95,6 +111,9 @@ class Fabricord : DedicatedServerModInitializer {
 		val rootLogger = LogManager.getRootLogger() as org.apache.logging.log4j.core.Logger
 		rootLogger.addAppender(consoleAppender)
 
+		CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->
+			CommandManager.registerAll(dispatcher)
+		}
 		ServerLifecycleEvents.SERVER_STARTED.register { server ->
 			Fabricord.server = server
 			DiscordBotManager.start()
@@ -126,7 +145,12 @@ class Fabricord : DedicatedServerModInitializer {
 			}
 		})
 		ServerMessageEvents.CHAT_MESSAGE.register(ServerMessageEvents.ChatMessage { message, sender, params ->
-			TODO()
+			val uuid = sender.uuid
+
+			//TODO: Add return for local and grouped chat player
+
+			val content = message.content.string
+			handleMCMessage(sender, content)
 		})
 	}
 }

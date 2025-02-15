@@ -1,7 +1,82 @@
+System:
+  Initialization:
+    DirectoriesAndFiles:
+      ModDirDoesNotExist: "Modディレクトリが %s に存在しないため、作成します。"
+
 Discord:
   Config:
     LogChannelIDIsBlank: "メインログを出力するチャンネルIDが空です。"
 
 Exception:
   Config:
-    WebHookUrlIsNotConfiguredOrInvalid: "Webhook URLが、Configファイル(%s)内で定義されていないか、無効です。"
+    WebHookUrlIsNotConfiguredOrInvalid: "Webhook URL が設定ファイル (%s) に正しく設定されていません。"
+
+Command:
+  Group:
+
+
+  Help:
+    Group:
+      Create:
+        About: "グループチャットを作成します。"
+        Usage: "/grp create <Str/グループ名> <Str/公開かどうか> [任意|Bool/MCID/UUID]"
+
+      Delete:
+        About: "グループチャットを削除します。"
+        Usage: "/grp delete <Str/グループ名かID>"
+
+      Join:
+        About: "グループチャットに参加します。公開グループではない場合、申請が送信されます。"
+        Usage: "/grp join <Str/グループ名かID>"
+
+      Leave:
+        About: "グループチャットから退出します。"
+        Usage: "/grp leave <Str/グループ名かID>"
+
+      List:
+        About: "グループチャットの一覧を表示します。"
+        Usage: "/grp list"
+
+      JoinedList:
+        About: "参加済みのグループチャットの一覧を表示します。"
+        Usage: "/grp joinedlist"
+
+      PendingList:
+        About: "自分がオーナーであるグループの中で、承認待ちのユーザーの一覧を表示します。"
+        Usage: "/grp pendinglist [任意|Str/グループ名かID]"
+
+      Info:
+        About: "グループチャットの情報を表示します。"
+        Usage: "/grp info <Str/グループ名かID>"
+
+      SetDefaultGrp:
+        About: "デフォルトのグループを設定します。複数個設定できず、2回目以降の設定では、以前の設定が上書きされます。"
+        Usage: "/grp setdefault <Str/グループ名かID>"
+
+      Switch:
+        About: "デフォルトグループが設定されている場合、そのグループとグローバルチャットを切り替えます。\n 設定されていない場合は引数が必要です。"
+        Usage: "/grp switch [任意|Str/グループ名かID]"
+
+      Invite:
+        About: "グループチャットにユーザーを招待します。"
+        Usage: "/grp invite <Str/グループ名かID> <Str/MCID/UUID>"
+
+      Kick:
+        About: "グループチャットからユーザーをキックします。"
+        Usage: "/grp kick <Str/グループ名かID> <Str/MCID/UUID>"
+
+      AcceptRequest:
+        About: "グループチャットへの参加申請を承認します。"
+        Usage: "/grp acceptrequest <Str/申請ID('pendinglist'で確認できます)>"
+
+      DenyRequest:
+        About: "グループチャットへの参加申請を拒否します。"
+        Usage: "/grp denyrequest <Str/申請ID('pendinglist'で確認できます)>"
+
+      SetPublic:
+        About: "グループチャットの公開設定を変更します。"
+        Usage: "/grp setpublic <Str/グループ名かID> <Bool/公開かどうか>"
+
+      TransferOwner:
+        About: "グループチャットのオーナーを譲渡します。"
+        Usage: "/grp transferowner <Str/グループ名かID> <Str/MCID/UUID>"
