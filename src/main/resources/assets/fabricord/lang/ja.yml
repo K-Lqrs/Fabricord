@@ -9,6 +9,8 @@ Discord:
 
 Exception:
   Config:
+    RequiredPropertyIsNotConfigured: "設定ファイル (%s) に必要なプロパティ(%s)が設定されていません。"
+
     WebHookUrlIsNotConfiguredOrInvalid: "Webhook URL が設定ファイル (%s) に正しく設定されていません。"
 
 Command:

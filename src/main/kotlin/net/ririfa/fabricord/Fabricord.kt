@@ -13,7 +13,6 @@ import net.ririfa.fabricord.discord.DiscordEmbed
 import net.ririfa.fabricord.discord.DiscordPlayerEventHandler.handleMCMessage
 import net.ririfa.fabricord.translation.FabricordMessageKey
 import net.ririfa.fabricord.translation.FabricordMessageProvider
-import net.ririfa.fabricord.translation.adapt
 import net.ririfa.langman.InitType
 import net.ririfa.langman.LangMan
 import org.apache.logging.log4j.LogManager
@@ -43,6 +42,8 @@ class Fabricord : DedicatedServerModInitializer {
 
 		val thread: ScheduledExecutorService = Executors.newScheduledThreadPool(2)
 		val availableLang = listOf<String>("en", "ja")
+
+		val scheduler: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
 	}
 
 	override fun onInitializeServer() {
@@ -116,10 +117,14 @@ class Fabricord : DedicatedServerModInitializer {
 		}
 		ServerLifecycleEvents.SERVER_STARTED.register { server ->
 			Fabricord.server = server
-			DiscordBotManager.start()
+			if (!(ConfigManager.isErrorOccurred)) {
+				DiscordBotManager.start()
+			}
 		}
 		ServerLifecycleEvents.SERVER_STOPPING.register { server ->
-			DiscordBotManager.stop()
+			if (DiscordBotManager.botIsInitialized) {
+				DiscordBotManager.stop()
+			}
 			rootLogger.removeAppender(consoleAppender)
 			consoleAppender.stop()
 		}
@@ -127,30 +132,29 @@ class Fabricord : DedicatedServerModInitializer {
 		ServerPlayConnectionEvents.JOIN.register { handler, _, _ ->
 			val player = handler.player
 
-			if (!DiscordBotManager.botIsInitialized) {
-				player.networkHandler.disconnect(
-					player.adapt().getMessage(TODO())
-				)
-				return@register
-			}
-
-			FT {
-				DiscordEmbed.sendPlayerJoinEmbed(player)
+			if (DiscordBotManager.botIsInitialized) {
+				FT {
+					DiscordEmbed.sendPlayerJoinEmbed(player)
+				}
 			}
 		}
 		ServerPlayConnectionEvents.DISCONNECT.register(ServerPlayConnectionEvents.Disconnect { handler, _ ->
-			FT {
-				val player = handler.player
-				DiscordEmbed.sendPlayerLeftEmbed(player)
+			if (DiscordBotManager.botIsInitialized) {
+				FT {
+					val player = handler.player
+					DiscordEmbed.sendPlayerLeftEmbed(player)
+				}
 			}
 		})
 		ServerMessageEvents.CHAT_MESSAGE.register(ServerMessageEvents.ChatMessage { message, sender, params ->
-			val uuid = sender.uuid
+			if (DiscordBotManager.botIsInitialized) {
+				val uuid = sender.uuid
 
-			//TODO: Add return for local and grouped chat player
+				//TODO: Add return for local and grouped chat player
 
-			val content = message.content.string
-			handleMCMessage(sender, content)
+				val content = message.content.string
+				handleMCMessage(sender, content)
+			}
 		})
 	}
 }

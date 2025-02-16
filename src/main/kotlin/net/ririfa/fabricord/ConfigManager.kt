@@ -19,6 +19,7 @@ object ConfigManager {
 	lateinit var config: Config
 	val yaml = Yaml()
 	val configFile: Path = ModDir.resolve("config.yml")
+	var isErrorOccurred = false
 
 	fun init() {
 		checkRequiredFilesAndDirectories()
@@ -106,7 +107,8 @@ object ConfigManager {
 			if (property.annotations.any { it is Required }) {
 				val value = property.getter.call(config) as? String
 				if (value.isNullOrBlank()) {
-					throw IllegalStateException("Property ${property.name} is needed but not initialized.")
+					Logger.error(LM.getSysMessage(FabricordMessageKey.Exception.Config.RequiredPropertyIsNotConfigured, configFile, property.name))
+					isErrorOccurred = true
 				}
 			}
 		}
