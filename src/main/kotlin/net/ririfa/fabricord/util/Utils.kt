@@ -1,6 +1,10 @@
 package net.ririfa.fabricord.util
 
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
+import net.minecraft.registry.DynamicRegistryManager
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.Text
 import net.ririfa.fabricord.Fabricord
 import java.io.InputStream
 import java.nio.file.Files
@@ -46,4 +50,9 @@ fun replaceUUIDsWithMCIDs(message: String, players: List<ServerPlayerEntity>): P
 		}
 	}
 	return Pair(updatedMessage, mentionedPlayers)
+}
+
+fun Component.toText(registryManager: DynamicRegistryManager): Text? {
+	val json = GsonComponentSerializer.gson().serialize(this)
+	return Text.Serialization.fromJson(json, registryManager)
 }

@@ -2,6 +2,7 @@ package net.ririfa.fabricord
 
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.IntegerArgumentType
+import net.kyori.adventure.text.Component
 import net.minecraft.server.command.CommandManager.argument
 import net.minecraft.server.command.CommandManager.literal
 import net.minecraft.server.command.ServerCommandSource
@@ -36,14 +37,17 @@ object CommandManager {
 		val totalPages = commandHelpPages.size
 
 		if (totalPages == 0) {
-			player.sendMessage(Text.of("ヘルプがありません").copy().styled { it.withColor(Formatting.RED) })
+			//TODO
+			player.sendMessage(Text.of("").copy().styled { it.withColor(Formatting.RED) })
 			return
 		}
 
-		val pageIndex = (page - 1).coerceIn(0, totalPages - 1) // 1-based indexを0-basedに変換
+		val pageIndex = (page - 1).coerceIn(0, totalPages - 1)
 		val commandPage = commandHelpPages[pageIndex]
 
-		player.sendMessage(Text.of("§a=== ヘルプ (${pageIndex + 1}/$totalPages) ==="))
+		val name = player.adapt().getMessage(FabricordMessageKey.Command.Help.Page.Name)
+
+		player.sendMessage(Text.of("§a=== $name (${pageIndex + 1}/$totalPages) ==="))
 
 		commandPage.forEach { (command, pair) ->
 			val aboutMessage = pair.first?.let { player.adapt().getMessage(it) }
@@ -74,7 +78,13 @@ object CommandManager {
 		}),
 
 		CREATE({ dispatcher ->
+			dispatcher.register(
+				literal("grp")
+					.then(
+						literal("create")
 
+					)
+			)
 		}),
 
 		DELETE({ dispatcher ->

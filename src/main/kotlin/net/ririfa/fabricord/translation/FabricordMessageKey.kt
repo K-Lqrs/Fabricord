@@ -34,6 +34,10 @@ sealed class FabricordMessageKey : MessageKey<FabricordMessageProvider, Text> {
 		}
 
 		sealed class Help : Command() {
+			sealed class Page : Help() {
+				object Name : Page()
+			}
+
 			sealed class Group : Help() {
 				// /grp create <name|str> <open|bool> [players|ServerPlayerEntity]
 				@Indexed(1)
