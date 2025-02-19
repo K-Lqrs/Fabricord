@@ -6,6 +6,7 @@ import net.ririfa.fabricord.Config
 import net.ririfa.fabricord.FT
 import net.ririfa.fabricord.LM
 import net.ririfa.fabricord.Logger
+import net.ririfa.fabricord.translation.FabricordMessageKey
 
 object DiscordPlayerEventHandler {
 	fun handleMCMessage(player: ServerPlayerEntity, message: String) {
@@ -26,12 +27,12 @@ object DiscordPlayerEventHandler {
 
 	private fun modernStyle(player: ServerPlayerEntity, message: String) {
 		if (Config.webHookId.isNullOrBlank()) {
-			Logger.error(LM.getSysMessage(TODO()))
+			Logger.error(LM.getSysMessage(FabricordMessageKey.Discord.Config.WebHookIdIsBlank))
 		}
 
 		try {
 			val webHookClient = DiscordBotManager.webHook ?: run {
-				Logger.error(LM.getSysMessage(TODO()))
+				Logger.error(LM.getSysMessage(FabricordMessageKey.Discord.Bot.WebHookNotInitialized))
 				return
 			}
 
@@ -48,7 +49,7 @@ object DiscordPlayerEventHandler {
 				.queue()
 
 		} catch (e: Exception) {
-			Logger.error(LM.getSysMessage(TODO()), e)
+			Logger.error(LM.getSysMessage(FabricordMessageKey.System.Discord.ErrorDuringSendingModernMessage), e)
 		}
 	}
 }

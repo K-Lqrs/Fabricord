@@ -1,11 +1,32 @@
 System:
   Initialization:
+    JDANotInitialized: "JDAが初期化されていません"
+
+    FailedToCheckOrCreateRequiredDirOrFileBySec: "セキュリティエラーにより、必要なファイル/ディレクトリのチェックまたは作成に失敗しました。"
+    FailedToCheckOrCreateRequiredDirOrFileByIO: "I/Oエラーにより、必要なファイル/ディレクトリのチェックまたは作成に失敗しました。"
+    FailedToCheckOrCreateRequiredDirOrFile: "不明なエラーにより、必要なファイル/ディレクトリのチェックまたは作成に失敗しました。"
+
     DirectoriesAndFiles:
       ModDirDoesNotExist: "Modディレクトリが %s に存在しないため、作成します。"
+
+  Discord:
+    ErrorDuringSendingModernMessage: "'modern'メッセージの送信中にエラーが発生しました。"
 
 Discord:
   Config:
     LogChannelIDIsBlank: "メインログを出力するチャンネルIDが空です。"
+    WebHookIdIsBlank: "Webhook ID が空です。"
+
+  Bot:
+    BotNowOnline: "Botがオンラインになりました: %s"
+    BotNowOffline: "Botがオフラインになりました: %s"
+
+    WebHookNotInitialized: "Webhook Client が初期化されていません。"
+
+    CannotStartBot: "不明なエラーにより、Botへの接続に失敗しました。"
+    CannotStopBot: "不明なエラーにより、Botの停止に失敗しました。"
+
+    CannotLoginToBot: "ログインエラーにより、Botに接続できません。"
 
 Exception:
   Config:
@@ -18,6 +39,8 @@ Command:
 
 
   Help:
+    Page: "ページ"
+
     Group:
       Create:
         About: "グループチャットを作成します。"

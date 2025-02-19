@@ -7,16 +7,38 @@ import net.ririfa.langman.MessageKey
 sealed class FabricordMessageKey : MessageKey<FabricordMessageProvider, Text> {
 	sealed class System : FabricordMessageKey() {
 		sealed class Initialization : System() {
+			object JDANotInitialized : Initialization()
+
+			object FailedToCheckOrCreateRequiredDirOrFileBySec : Initialization()
+			object FailedToCheckOrCreateRequiredDirOrFileByIO : Initialization()
+			object FailedToCheckOrCreateRequiredDirOrFile : Initialization()
+
 			sealed class DirectoriesAndFiles : Initialization() {
 				object ModDirDoesNotExist : DirectoriesAndFiles()
-				object ConfigFileDoesNotExist : DirectoriesAndFiles()
 			}
+		}
+
+		sealed class Discord : System() {
+			object ErrorDuringSendingModernMessage : Discord()
 		}
 	}
 
 	sealed class Discord : FabricordMessageKey() {
 		sealed class Config : Discord() {
 			object LogChannelIDIsBlank : Config()
+			object WebHookIdIsBlank : Config()
+		}
+
+		sealed class Bot : Discord() {
+			object BotNowOnline : Bot()
+			object BotNowOffline : Bot()
+
+			object WebHookNotInitialized : Bot()
+
+			object CannotStartBot : Bot()
+			object CannotStopBot : Bot()
+
+			object CannotLoginToBot : Bot()
 		}
 	}
 
@@ -34,9 +56,7 @@ sealed class FabricordMessageKey : MessageKey<FabricordMessageProvider, Text> {
 		}
 
 		sealed class Help : Command() {
-			sealed class Page : Help() {
-				object Name : Page()
-			}
+			object Page : Help()
 
 			sealed class Group : Help() {
 				// /grp create <name|str> <open|bool> [players|ServerPlayerEntity]
@@ -151,12 +171,6 @@ sealed class FabricordMessageKey : MessageKey<FabricordMessageProvider, Text> {
 					object Usage : TransferOwner()
 				}
 			}
-		}
-
-		sealed class Other : Command() {
-			object ThereAreNoHelpMessages : Other()
-
-			object YouMustBeAPlayerToUseThisCommand : Other()
 		}
 	}
 }

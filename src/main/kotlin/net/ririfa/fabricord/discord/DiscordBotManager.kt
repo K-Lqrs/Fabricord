@@ -56,12 +56,12 @@ object DiscordBotManager {
 				)?.queue()
 
 				botIsInitialized = true
-				Logger.info(LM.getSysMessage(TODO(), jda?.selfUser?.name ?: "Bot"))
+				Logger.info(LM.getSysMessage(FabricordMessageKey.Discord.Bot.BotNowOnline, jda?.selfUser?.name ?: "Bot"))
 				Config.serverStartMessage?.let { sendToDiscord(it) }
 			} catch (e: LoginException) {
-				Logger.error(TODO())
+				Logger.error(LM.getSysMessage(FabricordMessageKey.Discord.Bot.CannotLoginToBot), e)
 			} catch (e: Exception) {
-				Logger.error(TODO())
+				Logger.error(LM.getSysMessage(FabricordMessageKey.Discord.Bot.CannotStartBot), e)
 			}
 		}
 	}
@@ -73,9 +73,9 @@ object DiscordBotManager {
 			try {
 				jda?.shutdown()
 				botIsInitialized = false
-				Logger.info(TODO())
+				Logger.info(LM.getSysMessage(FabricordMessageKey.Discord.Bot.BotNowOffline, jda?.selfUser?.name ?: "Bot"))
 			} catch (e: Exception) {
-				Logger.error(TODO())
+				Logger.error(LM.getSysMessage(FabricordMessageKey.Discord.Bot.CannotStopBot), e)
 				e.printStackTrace()
 			}
 		}

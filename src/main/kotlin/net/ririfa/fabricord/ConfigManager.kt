@@ -56,11 +56,11 @@ object ConfigManager {
 				copyResourceToFile("config.yml", configFile)
 			}
 		} catch (e: SecurityException) {
-			Logger.error(LM.getSysMessage(TODO()), e)
+			Logger.error(LM.getSysMessage(FabricordMessageKey.System.Initialization.FailedToCheckOrCreateRequiredDirOrFileBySec), e)
 		} catch (e: IOException) {
-			Logger.error(LM.getSysMessage(TODO()), e)
+			Logger.error(LM.getSysMessage(FabricordMessageKey.System.Initialization.FailedToCheckOrCreateRequiredDirOrFileByIO), e)
 		} catch (e: Exception) {
-			Logger.error(LM.getSysMessage(TODO()), e)
+			Logger.error(LM.getSysMessage(FabricordMessageKey.System.Initialization.FailedToCheckOrCreateRequiredDirOrFile), e)
 		}
 	}
 
