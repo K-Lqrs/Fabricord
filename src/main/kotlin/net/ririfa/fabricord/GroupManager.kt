@@ -5,26 +5,29 @@ import com.mojang.brigadier.arguments.IntegerArgumentType
 import net.minecraft.server.command.CommandManager.argument
 import net.minecraft.server.command.CommandManager.literal
 import net.minecraft.server.command.ServerCommandSource
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.ririfa.fabricord.annotations.Indexed
 import net.ririfa.fabricord.translation.FabricordMessageKey
 import net.ririfa.fabricord.translation.adapt
 import kotlin.reflect.full.findAnnotation
 
-object CommandManager {
+//TODO: Creation of files for storing default groups, reading and writing data and maintaining status.
+object GroupManager {
 	fun registerAll(dispatcher: CommandDispatcher<ServerCommandSource>) {
 		Commands.entries.forEach { it.register(dispatcher) }
 	}
 
 	fun showHelpToPlayer(source: ServerCommandSource, page: Int) {
 		val player = source.player ?: run {
-			source.sendError(Text.of("このコマンドはプレイヤー専用です"))
+			val player = (source.entity as ServerPlayerEntity).adapt()
+			source.sendError(player.getMessage(FabricordMessageKey.Command.ThisCommandIsPlayerOnly))
 			return
 		}
 
 		val commandHelpMap = FabricordMessageKey.Command.Help.Group::class
 			.sealedSubclasses
-			.sortedBy { it.findAnnotation<Indexed>()?.value ?: Int.MAX_VALUE }
+			.sortedBy { it.findAnnotation<Indexed>()?.value }
 			.associateWith { subclass ->
 				val about = subclass.sealedSubclasses.find { it.simpleName == "About" }?.objectInstance
 				val usage = subclass.sealedSubclasses.find { it.simpleName == "Usage" }?.objectInstance
@@ -37,7 +40,7 @@ object CommandManager {
 		val pageIndex = (page - 1).coerceIn(0, totalPages - 1)
 		val commandPage = commandHelpPages[pageIndex]
 
-		val name = player.adapt().getMessage(FabricordMessageKey.Command.Help.Page).string
+		val name = player.adapt().getMessage(FabricordMessageKey.Command.Page).string
 
 		player.sendMessage(Text.of("§a=== $name (${pageIndex + 1}/$totalPages) ==="))
 

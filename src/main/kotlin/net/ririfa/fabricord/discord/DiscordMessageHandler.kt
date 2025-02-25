@@ -63,7 +63,7 @@ object DiscordMessageHandler {
 	}
 
 	private fun createMessage(event: MessageReceivedEvent, isMention: Boolean, updatedContent: String?, rm: DynamicRegistryManager.Immutable): Text? {
-		val channelId: String = Config.logChannelID!!
+		val channelId: String = Config.logChannelID
 		if (event.channel.id != channelId || event.author.isBot) {
 			return null
 		}

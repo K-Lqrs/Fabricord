@@ -21,6 +21,7 @@ object DiscordBotManager {
 	var jda: JDA? = null
 	var webHook: Webhook? = null
 
+	@JvmField
 	var botIsInitialized = false
 
 	private val intents = GatewayIntent.MESSAGE_CONTENT

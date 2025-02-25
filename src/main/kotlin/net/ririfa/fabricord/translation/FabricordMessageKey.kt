@@ -51,13 +51,21 @@ sealed class FabricordMessageKey : MessageKey<FabricordMessageProvider, Text> {
 	}
 
 	sealed class Command : FabricordMessageKey() {
-		sealed class Group : Command() {
+		object ThisCommandIsPlayerOnly : Command()
 
+		object Page : Help()
+
+		sealed class LC : Command() {
+			object SwitchedLocalChatState : LC()
+
+			sealed class State : LC() {
+				object True : State()
+				object False : State()
+			}
 		}
 
+		@Suppress("unused")
 		sealed class Help : Command() {
-			object Page : Help()
-
 			sealed class Group : Help() {
 				// /grp create <name|str> <open|bool> [players|ServerPlayerEntity]
 				@Indexed(1)

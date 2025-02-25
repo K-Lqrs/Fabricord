@@ -1,5 +1,7 @@
 package net.ririfa.fabricord
 
+import com.mojang.brigadier.CommandDispatcher
+import com.mojang.brigadier.arguments.StringArgumentType.greedyString
 import net.fabricmc.api.DedicatedServerModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
@@ -7,12 +9,16 @@ import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.server.MinecraftServer
+import net.minecraft.server.command.CommandManager.argument
+import net.minecraft.server.command.CommandManager.literal
+import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
 import net.ririfa.fabricord.discord.DiscordBotManager
 import net.ririfa.fabricord.discord.DiscordEmbed
 import net.ririfa.fabricord.discord.DiscordPlayerEventHandler.handleMCMessage
 import net.ririfa.fabricord.translation.FabricordMessageKey
 import net.ririfa.fabricord.translation.FabricordMessageProvider
+import net.ririfa.fabricord.translation.adapt
 import net.ririfa.langman.InitType
 import net.ririfa.langman.LangMan
 import org.apache.logging.log4j.LogManager
@@ -22,6 +28,7 @@ import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 
@@ -43,7 +50,7 @@ class Fabricord : DedicatedServerModInitializer {
 		val thread: ScheduledExecutorService = Executors.newScheduledThreadPool(2)
 		val availableLang = listOf<String>("en", "ja")
 
-		val scheduler: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
+		private val localChatToggled = mutableListOf<UUID>()
 	}
 
 	override fun onInitializeServer() {
@@ -113,7 +120,8 @@ class Fabricord : DedicatedServerModInitializer {
 		rootLogger.addAppender(consoleAppender)
 
 		CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->
-			CommandManager.registerAll(dispatcher)
+			//			GroupManager.registerAll(dispatcher)
+			registerLCCommand(dispatcher)
 		}
 		ServerLifecycleEvents.SERVER_STARTED.register { server ->
 			Fabricord.server = server
@@ -150,11 +158,59 @@ class Fabricord : DedicatedServerModInitializer {
 			if (DiscordBotManager.botIsInitialized) {
 				val uuid = sender.uuid
 
-				//TODO: Add return for local and grouped chat player
+				//TODO: Also consider group chats -> [GroupManager]
+				// But probably controllable via Mixin.
+				if (uuid in localChatToggled) return@ChatMessage
 
 				val content = message.content.string
 				handleMCMessage(sender, content)
 			}
 		})
+	}
+
+	private fun registerLCCommand(dispatcher: CommandDispatcher<ServerCommandSource>) {
+		dispatcher.register(
+			literal("lc")
+				.executes { context ->
+					val player = context.source.player ?: return@executes 0
+					val uuid = player.uuid
+					val current = uuid in localChatToggled
+					val newState = !current
+					if (newState) {
+						localChatToggled.add(uuid)
+					} else {
+						localChatToggled.remove(uuid)
+					}
+					val stateMSG = if (newState == true) {
+						player.adapt().getMessage(FabricordMessageKey.Command.LC.State.True)
+					} else {
+						player.adapt().getMessage(FabricordMessageKey.Command.LC.State.False)
+					}.string
+					player.sendMessage(
+						player.adapt().getMessage(FabricordMessageKey.Command.LC.SwitchedLocalChatState, stateMSG),
+						false
+					)
+					return@executes 1
+				}
+				.then(
+					argument("message", greedyString())
+						.executes { context ->
+							val player = context.source.player ?: return@executes 0
+							val message = context.getArgument("message", String::class.java)
+
+							player.server.playerManager.playerList.forEach {
+								it.sendMessageToClient(
+									Text.of(
+										"<${player.name.string}> $message"
+									),
+									true
+								)
+							}
+
+							return@executes 1
+						}
+				)
+		)
+
 	}
 }

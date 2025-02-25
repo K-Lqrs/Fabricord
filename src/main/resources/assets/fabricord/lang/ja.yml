@@ -35,12 +35,17 @@ Exception:
     WebHookUrlIsNotConfiguredOrInvalid: "Webhook URL が設定ファイル (%s) に正しく設定されていません。"
 
 Command:
-  Group:
+  ThisCommandIsPlayerOnly: "このコマンドはプレイヤーのみ実行可能です。"
 
+  Page: "ページ"
+
+  LC:
+    SwitchedLocalChatState: "ローカルチャットの状態を %s にしました"
+    State:
+      True: "ON"
+      False: "OFF"
 
   Help:
-    Page: "ページ"
-
     Group:
       Create:
         About: "グループチャットを作成します。"
