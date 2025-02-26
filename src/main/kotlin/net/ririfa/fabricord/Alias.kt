@@ -12,13 +12,7 @@ import java.nio.file.Path
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-val JDA = DiscordBotManager.jda
-	get() {
-		if (field == null) {
-			Logger.error(LM.getSysMessage(FabricordMessageKey.System.Initialization.JDANotInitialized))
-		}
-		return field
-	}
+val JDA by lazy { DiscordBotManager.jda }
 val FC = Fabricord.instance
 val LM: LangMan<FabricordMessageProvider, Text> by lazy { Fabricord.langMan }
 val Logger: Logger = Fabricord.logger

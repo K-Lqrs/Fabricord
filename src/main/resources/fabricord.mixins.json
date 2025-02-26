@@ -4,8 +4,7 @@
   "compatibilityLevel": "JAVA_21",
   "server": [
     "PlayerAdvancementTrackerMixin",
-    "ServerPlayerEntityMixin",
-    "ServerPlayNetworkHandlerMixin"
+    "ServerPlayerEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -37,6 +37,7 @@ sealed class FabricordMessageKey : MessageKey<FabricordMessageProvider, Text> {
 
 			object CannotStartBot : Bot()
 			object CannotStopBot : Bot()
+			object TimedOutForStoppingBot : Bot()
 
 			object CannotLoginToBot : Bot()
 		}

@@ -3,7 +3,7 @@
 # Fabricord
 A modern message style like DiscordSRV will be reproduced as a Fabric version mod.
 
-
+![CodeFactor](https://www.codefactor.io/repository/github/ririf4/fabricord/badge)
 ![GitHub License](https://img.shields.io/github/license/KT-Ruxy/Fabricord?style=plastic&logo=github&link=https%3A%2F%2Fgithub.com%2FKT-Ruxy%2FFabricord%2Fblob%2Fkotlin%2FLICENSE) ![GitHub release (with filter)](https://img.shields.io/github/v/release/Elysium-7/Fabricord?style=plastic) ![GitHub commit activity (branch)](https://img.shields.io/github/commit-activity/t/Elysium-7/Fabricord?style=plastic)
 
 ## Overview

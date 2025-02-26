@@ -61,9 +61,6 @@ PlayerJoinMessage: ""
 # It will be replaced with the player's name.
 # If blank, the message will use the default message.
 PlayerLeaveMessage: ""
-# >-----------------------------< #
-
-# >----- Experimental Settings -----< #
 
 # This setting allows Minecraft and Discord consoles to work together.
 # Each message interacts with each other and the console can be run from the Discord side.
@@ -72,5 +69,10 @@ EnableConsoleLog: false
 # Enter the channel ID of the target channel to be linked.
 # ***Please enter ID carefully to avoid mistakes.***
 ConsoleLogChannelID: ""
+# >-----------------------------< #
+
+# >----- Experimental Settings -----< #
+
+# There are no experimental settings available at this time ;)
 
 # >--------------------------------< #

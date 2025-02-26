@@ -25,6 +25,7 @@ Discord:
 
     CannotStartBot: "不明なエラーにより、Botへの接続に失敗しました。"
     CannotStopBot: "不明なエラーにより、Botの停止に失敗しました。"
+    TimedOutForStoppingBot: "Botの停止がタイムアウトしたため、強制的に停止します。"
 
     CannotLoginToBot: "ログインエラーにより、Botに接続できません。"
 
@@ -41,9 +42,6 @@ Command:
 
   LC:
     SwitchedLocalChatState: "ローカルチャットの状態を %s にしました"
-    State:
-      True: "ON"
-      False: "OFF"
 
   Help:
     Group:

@@ -121,23 +121,23 @@ object ConfigManager {
 			}
 
 			config = Config(
-				botToken = lc<String>("bot.token") ?: "",
-				logChannelID = lc<String>("bot.logChannelID") ?: "",
-				botActivityMessage = lc("bot.activityMessage"),
-				botActivityStatus = lc("bot.activityStatus"),
-				botOnlineStatus = lc("bot.onlineStatus"),
-				messageStyle = lc("bot.messageStyle"),
-				webHookId = extractWebhookIdFromUrl(lc("bot.webHookUrl")),
-				serverStartMessage = lc("messages.serverStart"),
-				serverStopMessage = lc("messages.serverStop"),
-				playerJoinMessage = lc("messages.playerJoin"),
-				playerLeaveMessage = lc("messages.playerLeave"),
-				allowMentions = lc("mentions.allowMentions"),
-				useUserPermissionForMentions = lc("mentions.useUserPermissionForMentions"),
-				mentionBlockedUserID = lc("mentions.blockedUserIDs"),
-				mentionBlockedRoleID = lc("mentions.blockedRoleIDs"),
-				enableConsoleLog = lc("logging.enableConsoleLog"),
-				consoleLogChannelID = lc("logging.consoleLogChannelID")
+				botToken = lc<String>("BotToken") ?: "",
+				logChannelID = lc<String>("LogChannelID") ?: "",
+				botActivityMessage = lc("BotActivityMessage"),
+				botActivityStatus = lc("BotActivityStatus"),
+				botOnlineStatus = lc("BotOnlineStatus"),
+				messageStyle = lc("MessageStyle"),
+				webHookId = extractWebhookIdFromUrl(lc("WebhookUrl")),
+				serverStartMessage = lc("ServerStartMessage"),
+				serverStopMessage = lc("ServerStopMessage"),
+				playerJoinMessage = lc("PlayerJoinMessage"),
+				playerLeaveMessage = lc("PlayerLeaveMessage"),
+				allowMentions = lc("AllowMentions"),
+				useUserPermissionForMentions = lc("UseUserPermissionForMentions"),
+				mentionBlockedUserID = lc("blockedUserIDs"),
+				mentionBlockedRoleID = lc("blockedRoleIDs"),
+				enableConsoleLog = lc("EnableConsoleLog"),
+				consoleLogChannelID = lc("ConsoleLogChannelID")
 			)
 		} catch (e: Exception) {
 			Logger.error("Failed to load config: ${e.message}", e)

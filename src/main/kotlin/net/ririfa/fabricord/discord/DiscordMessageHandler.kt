@@ -1,17 +1,14 @@
 package net.ririfa.fabricord.discord
 
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
-import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.event.ClickEvent
-import net.kyori.adventure.text.format.TextColor
-import net.kyori.adventure.text.format.TextDecoration
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
-import net.minecraft.registry.DynamicRegistryManager
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
+import net.minecraft.text.ClickEvent
+import net.minecraft.text.HoverEvent
 import net.minecraft.text.Text
+import net.minecraft.text.TextColor
 import net.ririfa.fabricord.Config
 import net.ririfa.fabricord.FT
 import net.ririfa.fabricord.Server
@@ -21,7 +18,7 @@ import java.awt.Color
 object DiscordMessageHandler {
 	fun handleDiscordMessage(event: MessageReceivedEvent) {
 		FT {
-			val message: Text = createMessage(event, false, null, Server.registryManager) ?: return@FT
+			val message: Text = createMessage(event, false, null) ?: return@FT
 			sendToAllPlayers(Server, message)
 		}
 	}
@@ -35,9 +32,9 @@ object DiscordMessageHandler {
 			}
 
 			val mentionMessage: Text =
-				createMessage(event, true, if (foundUUID) updatedMessageContent.first else event.message.contentRaw, Server.registryManager) ?: return@FT
+				createMessage(event, true, if (foundUUID) updatedMessageContent.first else event.message.contentRaw) ?: return@FT
 			val generalMessage: Text =
-				createMessage(event, false, if (foundUUID) updatedMessageContent.first else event.message.contentRaw, Server.registryManager) ?: return@FT
+				createMessage(event, false, if (foundUUID) updatedMessageContent.first else event.message.contentRaw) ?: return@FT
 
 			mentionedPlayers.forEach { player ->
 				player.sendMessage(mentionMessage, false)
@@ -62,52 +59,60 @@ object DiscordMessageHandler {
 		}
 	}
 
-	private fun createMessage(event: MessageReceivedEvent, isMention: Boolean, updatedContent: String?, rm: DynamicRegistryManager.Immutable): Text? {
+	private fun createMessage(event: MessageReceivedEvent, isMention: Boolean, updatedContent: String?): Text? {
 		val channelId: String = Config.logChannelID
 		if (event.channel.id != channelId || event.author.isBot) {
 			return null
 		}
 
-		val member = event.member
-		val memberName = member?.user?.name ?: "Unknown"
+		val guildName = event.guild.name
+		val member = event.guild.getMember(event.author)
+		val memberName = member?.effectiveName ?: member?.user?.globalName ?: member?.user?.name ?: "Unknown"
 		val memberId = member?.user?.id ?: "00000000000000000000"
 		val idSuggest = "<@$memberId>"
 		val highestRole = member?.roles?.maxByOrNull { it.position }
 		val roleName = highestRole?.name
-		val rIdSuggest = highestRole?.id?.let { "<@&$it>" }
+		val rId = highestRole?.id ?: "00000000000000000000"
+		val rIdSuggest = rId.let { "<@&$it>" }
 		val roleColor = highestRole?.color ?: Color.WHITE
-		val kyoriRoleColor = TextColor.color(roleColor.red, roleColor.green, roleColor.blue)
+		val roleTextColor = TextColor.fromRgb((roleColor.red shl 16) or (roleColor.green shl 8) or roleColor.blue)
 
-		var componentMessage = Component.text("[", TextColor.color(0xFFFFFF))
-			.append(Component.text("Discord", TextColor.color(0x55CDFC)))
+		val discordText = Text.literal("Discord")
+			.styled {
+				it.withColor(0x55CDFC)
+					.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.of(guildName))) }
 
-		componentMessage = if (roleName != null) {
-			componentMessage.append(Component.text(" | ", TextColor.color(0xFFFFFF)))
-				.append(
-					Component.text(roleName, kyoriRoleColor)
-						.clickEvent(ClickEvent.suggestCommand(rIdSuggest!!))
-				)
-				.append(Component.text("]", TextColor.color(0xFFFFFF)))
-				.append(Component.text(" "))
+		val roleText = roleName?.let {
+			Text.literal(" | $it")
+				.styled {
+					it.withColor(roleTextColor)
+						.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.of(rId)))
+						.withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, rIdSuggest))
+				}
+		} ?: Text.literal("")
+
+		val memberText = Text.literal(" $memberName")
+			.styled {
+				it.withColor(0x55CDFC)
+					.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.of(memberId)))
+					.withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, idSuggest))
+			}
+
+		val messageContent = updatedContent ?: event.message.contentDisplay
+		val messageText = if (isMention) {
+			Text.literal(" » $messageContent").styled { it.withBold(true) }
 		} else {
-			componentMessage.append(Component.text("]", TextColor.color(0xFFFFFF)))
-				.append(Component.text(" "))
+			Text.literal(" » $messageContent")
 		}
 
-		componentMessage = componentMessage.append(
-			Component.text(memberName)
-				.clickEvent(ClickEvent.suggestCommand(idSuggest))
-		)
-
-		val messageContent = if (isMention) {
-			Component.text(" » " + (updatedContent ?: event.message.contentDisplay)).decorate(TextDecoration.BOLD)
-		} else {
-			Component.text(" » " + (updatedContent ?: event.message.contentDisplay))
-		}
-
-		componentMessage = componentMessage.append(messageContent)
-
-		val json = GsonComponentSerializer.gson().serialize(componentMessage)
-		return Text.Serialization.fromJson(json, rm)
+		return Text.empty()
+			.append(Text.literal("[").styled { it.withColor(0xFFFFFF) })
+			.append(discordText)
+			.append(Text.of(" | "))
+			.append(roleText)
+			.append(Text.literal("] ").styled { it.withColor(0xFFFFFF) })
+			.append(memberText)
+			.append(messageText)
 	}
+
 }

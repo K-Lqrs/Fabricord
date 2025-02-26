@@ -32,10 +32,10 @@ dependencies {
 	modApi("net.dv8tion:JDA:5.2.1") {
 		exclude("net.java.dev.jna", "jna")
 	}
-
 	modApi("org.yaml:snakeyaml:2.3")
 	modApi("net.kyori:adventure-text-serializer-gson:4.17.0")
 	modApi("net.ririfa:langman:1.4.2")
+
 	modCompileOnly("org.apache.logging.log4j:log4j-api:+")
 	modCompileOnly("org.apache.logging.log4j:log4j-core:+")
 
@@ -102,7 +102,7 @@ tasks.withType<Jar> {
 	}
 
 	from({
-		(configurations["includeInJar"])
+		configurations["includeInJar"]
 			.filter { it.exists() && !it.name.startsWith("kotlin") }
 			.map { if (it.isDirectory) it else project.zipTree(it) }
 	})

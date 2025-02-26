@@ -13,8 +13,10 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.ririfa.fabricord.*
 import net.ririfa.fabricord.translation.FabricordMessageKey
 import java.util.*
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import javax.security.auth.login.LoginException
 
 object DiscordBotManager {
@@ -72,9 +74,25 @@ object DiscordBotManager {
 			Config.serverStopMessage?.let { sendToDiscord(it) }
 
 			try {
-				jda?.shutdown()
 				botIsInitialized = false
-				Logger.info(LM.getSysMessage(FabricordMessageKey.Discord.Bot.BotNowOffline, jda?.selfUser?.name ?: "Bot"))
+
+				jda?.let { instance ->
+					val shutdownFuture = CompletableFuture.runAsync {
+						try {
+							instance.shutdown()
+						} catch (e: Exception) {
+							Logger.error("Error during JDA shutdown: ", e)
+						}
+					}
+
+					try {
+						shutdownFuture.get(5, TimeUnit.SECONDS)
+						Logger.info(LM.getSysMessage(FabricordMessageKey.Discord.Bot.BotNowOffline, instance.selfUser.name))
+					} catch (_: TimeoutException) {
+						Logger.warn(LM.getSysMessage(FabricordMessageKey.Discord.Bot.TimedOutForStoppingBot))
+						instance.shutdownNow()
+					}
+				}
 			} catch (e: Exception) {
 				Logger.error(LM.getSysMessage(FabricordMessageKey.Discord.Bot.CannotStopBot), e)
 				e.printStackTrace()

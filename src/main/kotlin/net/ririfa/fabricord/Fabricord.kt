@@ -65,6 +65,9 @@ class Fabricord : DedicatedServerModInitializer {
 			langDir.toFile(),
 			availableLang
 		)
+		availableLang.forEach {
+			langMan.logMissingKeys(it)
+		}
 		ConfigManager.init()
 		registerServerEvents()
 	}
@@ -182,10 +185,10 @@ class Fabricord : DedicatedServerModInitializer {
 						localChatToggled.remove(uuid)
 					}
 					val stateMSG = if (newState == true) {
-						player.adapt().getMessage(FabricordMessageKey.Command.LC.State.True)
+						"ON"
 					} else {
-						player.adapt().getMessage(FabricordMessageKey.Command.LC.State.False)
-					}.string
+						"OFF"
+					}
 					player.sendMessage(
 						player.adapt().getMessage(FabricordMessageKey.Command.LC.SwitchedLocalChatState, stateMSG),
 						false
@@ -199,11 +202,11 @@ class Fabricord : DedicatedServerModInitializer {
 							val message = context.getArgument("message", String::class.java)
 
 							player.server.playerManager.playerList.forEach {
-								it.sendMessageToClient(
+								it.sendMessage(
 									Text.of(
 										"<${player.name.string}> $message"
 									),
-									true
+									false
 								)
 							}
 
